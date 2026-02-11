@@ -480,8 +480,20 @@
           // 2. Try Network Fetch
           try {
               const response = await fetch(fileName);
-              if (!response.ok) throw new Error('Network response was not ok');
+              
+              // Check for valid response (Vercel rewrites might return index.html for missing files)
+              const contentType = response.headers.get('content-type');
+              if (!response.ok || (contentType && contentType.includes('text/html'))) {
+                   throw new Error('Network response was not ok or returned HTML');
+              }
+
               const text = await response.text();
+              
+              // Double check content
+              if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+                  throw new Error('Returned HTML instead of text');
+              }
+
               renderContentWithHighlight(text);
           } catch (error) {
               console.warn('Fetch failed, attempting offline fallback...', error);
