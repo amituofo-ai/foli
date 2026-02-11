@@ -1,0 +1,40 @@
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+*.tmp
+
+# Word Temporary Files (Lock files)
+~$*
+
+# Temporary Script Output / Intermediate Files
+p1_*.txt
+p2_*.txt
+titles_*.txt
+*_clean.txt
+*_found.txt
+
+# Source Data Folders (Raw content)
+佛经/
+搜索结果文字/
+祖师大德/
+素斋/
+
+# Raw Text Files in Root (Content)
+*.txt
+*.docx
+
+# Test Files
+test_*.html
+
+# Node / JS (Future proofing)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Optional: If you want to ignore large generated data files and only commit source text
+# (Currently keeping them so the site works out-of-the-box)
+# search_data.js
+# sutras_data.js
