@@ -1,0 +1,225 @@
+// Test script for Lunar Date Conversion and Fast Day Logic for 2026
+
+// Mocking the Solar and Lunar classes from lunar-javascript library
+// In a real environment, these would be provided by the library.
+// For this test script, we will load the library dynamically or assume it's available in the context if run in browser.
+// Since we are running in a node-like environment via RunCommand, we need to handle the library.
+
+// However, since we don't have the library installed in node_modules, we will try to read the library file
+// or create a simple mock if the library is complex.
+// But the user asked to "test the library", so we should try to use the actual library file if possible.
+// The library is at e:/素材/foli/lunar.js (based on index.html: <script src="https://unpkg.com/lunar-javascript/lunar.js"></script>)
+// Wait, index.html uses unpkg. Let's see if we have a local copy.
+
+const fs = require('fs');
+const path = require('path');
+
+// We don't have a local copy of lunar.js in the file list provided in previous turns.
+// It seems it's only linked via CDN in index.html.
+// So we cannot run it directly in Node unless we download it or mock it.
+
+// Let's create a test HTML file that imports the library and runs the tests in the browser context (conceptually)
+// OR we can try to download it.
+
+// Better approach for this environment: 
+// 1. Create a temporary HTML file with the test logic.
+// 2. Use the library from CDN (if internet access is allowed/working for the user) OR
+//    User asked to "test the library", implying they want verification.
+
+// Let's try to verify the logic by writing a Node script that simulates the logic using a small polyfill 
+// OR check if we can use the library.
+
+// Since I cannot open a browser to run the test, I will write a script that CAN be run if the library was present,
+// but for now, I will manually verify the logic against known 2026 dates using a reliable calculation or online source
+// and then update the code to handle edge cases (like small months).
+
+// Logic to check:
+// Six Fast Days: Lunar 8, 14, 15, 23, 29, 30.
+// Edge case: Small months (29 days). If month is small, 30th is missing. 
+// Usually, for small months, 29th is considered the last day.
+// Some traditions map 30th to 29th in small months, effectively having 28, 29 as fast days?
+// Or just 29.
+// Standard Six Fast Days are specific dates. If a date doesn't exist, it doesn't exist.
+// However, in many Buddhist calendars, if the 30th is missing, the 29th is treated as the fast day (or end of month).
+// Let's check how `lunar-javascript` handles `lunar.getDay()`.
+
+// Let's create a test file `test_lunar_2026.html` which the user can open to see the results.
+// This is the most reliable way to "test" using the actual library they are using.
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>2026 Fast Day Test</title>
+    <script src="https://unpkg.com/lunar-javascript/lunar.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .pass { color: green; }
+        .fail { color: red; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>2026 Lunar Calendar & Fast Day Test (Buddhist Year 2570)</h1>
+    <div id="results">Running tests...</div>
+
+    <script>
+        function runTests() {
+            const results = [];
+            const year = 2026;
+            const sixFastDays = [8, 14, 15, 23, 29, 30];
+            
+            let html = '<table><tr><th>公历日期</th><th>农历日期</th><th>星期</th><th>斋日判断</th><th>备注</th></tr>';
+            
+            // Iterate through every day of 2026
+            const startDate = new Date(year, 0, 1);
+            const endDate = new Date(year, 11, 31);
+            
+            let fastDayCount = 0;
+            // Reset start date for iteration
+            let currentDate = new Date(startDate);
+
+            while (currentDate <= endDate) {
+                const solar = Solar.fromDate(currentDate);
+                const lunar = solar.getLunar();
+                const day = lunar.getDay();
+                const month = lunar.getMonth();
+                // Get number of days in this lunar month (29 or 30)
+                // Note: lunar-javascript might have different method name, check docs or common methods
+                // Assuming lunar.getMonthDays() or similar logic
+                // Actually lunar-javascript provides lunar.getDayCount() ? Let's try or infer.
+                // Standard lunar month days: 29 or 30.
+                
+                // Let's rely on standard Lunar logic.
+                // If it is small month (29 days), then day 30 doesn't exist.
+                // But for Fast Days, if 30th is required, usually 29th counts as the end of month fast day?
+                // Or maybe 28th counts for 29th?
+                // Standard Buddhist calendar rules often say: 
+                // "If month is small (29 days), the 29th is the 29th fast day, and there is no 30th fast day."
+                // OR "The 29th covers both."
+                // OR "The 28th is the 29th, and 29th is the 30th?"
+                // The most common interpretation for "Six Fast Days" in strict sense:
+                // 8, 14, 15, 23, 29, 30.
+                // If 30 is missing, you just miss it.
+                // BUT, many practitioners observe the "End of Month" fast days.
+                // So if month is small, 28 -> 29, 29 -> 30? No, that shifts dates.
+                // Usually: Small month 28 (Eve), 29 (End).
+                // Let's implement strict logic first: Check if [8, 14, 15, 23, 29, 30] includes day.
+                
+                // Correction: In Chinese Lunar Calendar for "Six Fast Days" (六斋日):
+                // Small month: 28th and 29th correspond to 29th and 30th of Large Month?
+                // Reference: "若月小，即改准为二十八日、二十九日" (If month is small, adjust to 28th and 29th).
+                // So for small months, we should check 28 and 29 instead of 29 and 30.
+                
+                // To detect small month in lunar-javascript:
+                // We need to know if the current lunar month has 29 or 30 days.
+                // lunar.getMonthDays() is not a direct method on 'lunar' object usually, it's often static or via month info.
+                // However, we can check if tomorrow is the 1st of next month.
+                
+                const tomorrow = new Date(currentDate);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const nextLunar = Solar.fromDate(tomorrow).getLunar();
+                
+                const isEndOfMonth = nextLunar.getDay() === 1;
+                const daysInMonth = isEndOfMonth ? day : (day < 29 ? 30 : 29); // Rough estimation
+                // Better: 
+                // If today is 29 and tomorrow is 1, month has 29 days.
+                // If today is 30, month has 30 days.
+                
+                let isSmallMonth = false;
+                // If we are at end of month, we can know.
+                // But we need to know at day 28.
+                // Let's use a robust way: Get 1st of next month and subtract 1 day to find last day of current month?
+                // Or just assume standard library has logic.
+                
+                // Implementation for testing:
+                // We will trust strict matching first.
+                // Then add "Small Month Adjustment" logic.
+                
+                let isFastDay = false;
+                let note = '';
+                
+                // Standard
+                if (sixFastDays.includes(day)) {
+                    isFastDay = true;
+                }
+                
+                // Small Month Logic:
+                // We need to know if this month is small.
+                // Let's look ahead.
+                // Find the last day of this lunar month.
+                // We can clone current lunar, iterate until day 1 of next month.
+                // This is slow but accurate for a test script.
+                // Actually, 'lunar-javascript' Lunar object usually has `getDayCount()`? No?
+                // Let's check `lunar.getMonthInChinese()` etc.
+                
+                // Simplest robust check for small month current day context:
+                // If day is 28, check if tomorrow is 1? (29 days total) -> Small Month.
+                // If day is 29, check if tomorrow is 1? (30 days total) -> Big Month.
+                
+                // But we need to know on the 28th.
+                // Let's verify specifically for 28th and 29th.
+                
+                if (day === 28) {
+                    // Check if tomorrow is 1st
+                    const tmr = new Date(currentDate);
+                    tmr.setDate(tmr.getDate() + 1);
+                    const tmrLunar = Solar.fromDate(tmr).getLunar();
+                    if (tmrLunar.getDay() === 1) {
+                         // This is a 29-day month (Small).
+                         // So 28th acts as 29th fast day?
+                         // "若月小，即改准为二十八日、二十九日"
+                         // Yes, 28th becomes Fast Day (replacing 29).
+                         isFastDay = true; 
+                         note = '小月补29';
+                    }
+                }
+                
+                if (day === 29) {
+                    // If month is small (29 days), this is the last day (replacing 30).
+                    // If month is big (30 days), this is standard 29th.
+                    
+                    // Check if tomorrow is 1st
+                    const tmr = new Date(currentDate);
+                    tmr.setDate(tmr.getDate() + 1);
+                    const tmrLunar = Solar.fromDate(tmr).getLunar();
+                    
+                    if (tmrLunar.getDay() === 1) {
+                        // Small month end. This 29th acts as 30th fast day.
+                        // Standard 29 is also a fast day. So it covers both?
+                        // "28, 29" for small month replaces "29, 30".
+                        // So 29 is definitely a fast day.
+                        isFastDay = true;
+                        note = '小月补30';
+                    } else {
+                        // Big month. Standard 29.
+                        isFastDay = true;
+                    }
+                }
+
+                if (isFastDay) {
+                    fastDayCount++;
+                    html += `<tr>
+                        <td>${currentDate.toISOString().split('T')[0]}</td>
+                        <td>${lunar.toString()}</td>
+                        <td>${lunar.getWeekInChinese()}</td>
+                        <td class="pass">是 (初${day})</td>
+                        <td>${note}</td>
+                    </tr>`;
+                }
+
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            html += '</table>';
+            html += `<p>Total Fast Days found in 2026: <strong>${fastDayCount}</strong></p>`;
+            
+            document.getElementById('results').innerHTML = html;
+        }
+
+        // Wait for library to load
+        setTimeout(runTests, 1000);
+    </script>
+</body>
+</html>

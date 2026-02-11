@@ -1,0 +1,2440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-512.png">
+  <title>佛历</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- 引入 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+  // Zen Diet Logic
+  // recipeData loaded from recipe_data.js
+
+  var COLOR_MAP = {
+      white: { bg: 'bg-slate-100', text: 'text-slate-600', dot: 'bg-slate-400', label: '入肺·白' },
+      yellow: { bg: 'bg-amber-100', text: 'text-amber-700', dot: 'bg-amber-400', label: '入脾·黄' },
+      red: { bg: 'bg-rose-100', text: 'text-rose-700', dot: 'bg-rose-400', label: '入心·红' },
+      green: { bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500', label: '入肝·绿' },
+      black: { bg: 'bg-stone-200', text: 'text-stone-700', dot: 'bg-stone-800', label: '入肾·黑' }
+  };
+
+</script>
+  <script src="https://unpkg.com/lunar-javascript/lunar.js"></script>
+<!-- i18n Definitions -->
+  <!-- i18n Definitions -->
+  <script src="i18n.js"></script>
+  <!-- Load Recipe Data -->
+  <script src="recipe_data.js"></script>
+  <script src="diet_logic.js"></script>
+  <script src="video_data.js"></script>
+  <script src="audio_data.js"></script>
+  <!-- Load Search Data Lazily -->
+  <!-- <script src="search_data.js"></script> -->
+  <!-- Load AI Chat -->
+  <script src="ai_chat.js"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Serif SC", serif; }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-[#f8c390] via-[#f9dba0] to-[#fbf2d3] bg-fixed text-[#4a3b32] pb-24 selection:bg-[#b35c1e] selection:text-white min-h-screen">
+
+<header class="flex justify-between items-center px-4 py-3 bg-white/30 backdrop-blur-xl sticky top-0 z-30 shadow-sm border-b border-white/30 transition-all duration-300">
+  <button onclick="toggleSettings()" class="w-9 h-9 flex justify-center items-center text-[#8B4513] text-lg active:scale-90 transition-transform hover:bg-white/40 rounded-full border border-white/20 shadow-sm">
+    ⚙️
+  </button>
+  <div id="app-title" class="text-lg font-bold tracking-wide text-[#5c4033] drop-shadow-sm">燃燈佛曆</div>
+  <a href="add_event.html" class="w-9 h-9 flex justify-center items-center text-[#8B4513] text-2xl leading-none no-underline active:scale-90 transition-transform bg-white/40 rounded-full shadow-sm hover:bg-white/60 border border-white/20">
+    +
+  </a>
+</header>
+
+<main class="px-4 py-1 max-w-md mx-auto">
+  <section id="tab-calendar" class="tab-content block pt-2">
+    
+    <!-- Calendar Card -->
+    <div class="bg-gradient-to-br from-white/60 to-[#f8c390]/20 backdrop-blur-2xl rounded-3xl p-4 mb-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 relative overflow-hidden">
+      <!-- Decorative Element -->
+      <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#f8c390]/20 rounded-full blur-2xl pointer-events-none"></div>
+      
+      <!-- Header with Month Switcher -->
+      <div class="flex justify-between items-center mb-4 px-1 relative z-10">
+        <button onclick="changeMonth(-1)" class="p-2.5 hover:bg-white/50 rounded-full text-[#8B4513] transition-all active:scale-90 shadow-sm border border-white/40 bg-white/20">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+        </button>
+        <div id="calendar-header" class="text-xl font-serif font-bold text-[#5c4033] tracking-wide drop-shadow-sm"></div>
+        <button onclick="changeMonth(1)" class="p-2.5 hover:bg-white/50 rounded-full text-[#8B4513] transition-all active:scale-90 shadow-sm border border-white/40 bg-white/20">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+        </button>
+      </div>
+      
+      <!-- Weekday Headers -->
+      <div id="weekday-header" class="grid grid-cols-7 gap-1 mb-3 text-center text-xs text-[#8B4513] font-bold tracking-wider opacity-80">
+        <!-- Populated by JS -->
+      </div>
+      
+      <!-- Calendar Grid -->
+      <div id="calendar-grid" class="grid grid-cols-7 gap-2"></div>
+    </div>
+
+    <!-- Day Info Card -->
+    <div class="bg-white/40 backdrop-blur-2xl rounded-3xl p-6 mb-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 transition-all duration-300" id="day-info-card">
+      <div class="text-[#8B4513] text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-[#8B4513] shadow-sm"></span>
+        今日訊息
+      </div>
+      <div id="day-detail" class="text-[#5c4033]">
+        <!-- Default content will be set by JS -->
+      </div>
+    </div>
+
+    <!-- Daily Tip Card -->
+    <div class="bg-white/40 backdrop-blur-2xl rounded-3xl p-6 mb-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40">
+      <div class="text-[#8B4513] text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
+         <span class="w-2 h-2 rounded-full bg-[#8B4513] shadow-sm"></span>
+         今日修行提示
+      </div>
+      <div class="text-[#5c4033] text-sm leading-relaxed font-serif font-medium opacity-90">居士道者，當為如下之做，一者護法，二者持菩薩戒，三者隨善知識學，四至十三者為普賢願望！善知識，如是之作者，能為福報種，做佛門因！吾說是人乃佛坐下大居士道者！</div>
+    </div>
+
+  </section>
+
+  <section id="tab-search" class="tab-content hidden h-full flex flex-col">
+    <!-- Search Header -->
+    <div class="sticky top-0 z-10 bg-gradient-to-b from-white/40 to-white/20 backdrop-blur-md pb-4 pt-2 border-b border-white/20">
+        <div class="relative px-2">
+            <input type="text" id="search-input" placeholder="搜索開示、佛經..." 
+                   class="w-full bg-white/60 backdrop-blur-sm rounded-2xl border border-white/50 px-10 py-3 text-[#5c4033] placeholder-stone-400 focus:outline-none focus:border-[#8B4513]/50 focus:ring-2 focus:ring-[#8B4513]/20 shadow-inner transition-all"
+                   oninput="performSearch(this.value)">
+            <div class="absolute left-5 top-3.5 text-[#8B4513]/50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <button onclick="clearSearch()" id="search-clear" class="absolute right-5 top-3.5 text-[#8B4513]/50 hidden hover:text-[#8B4513] transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Filters -->
+        <div class="flex gap-2 mt-3 overflow-x-auto pb-1 no-scrollbar px-2" id="search-filters">
+            <button onclick="filterSearch('all')" class="filter-btn active px-4 py-1.5 rounded-full text-xs font-bold border border-[#8B4513] bg-[#8B4513] text-white shadow-sm whitespace-nowrap transition-all active:scale-95" data-filter="all" data-i18n="filter_all">全部</button>
+            <button onclick="filterSearch('teaching')" class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold border border-white/50 bg-white/40 text-[#5c4033] backdrop-blur-sm whitespace-nowrap hover:bg-white/60 hover:border-[#8B4513]/30 transition-all active:scale-95" data-filter="teaching" data-i18n="filter_teaching">文字開示</button>
+            <button onclick="filterSearch('sutra')" class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold border border-white/50 bg-white/40 text-[#5c4033] backdrop-blur-sm whitespace-nowrap hover:bg-white/60 hover:border-[#8B4513]/30 transition-all active:scale-95" data-filter="sutra" data-i18n="filter_sutra">佛經</button>
+            <button onclick="filterSearch('search_result')" class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold border border-white/50 bg-white/40 text-[#5c4033] backdrop-blur-sm whitespace-nowrap hover:bg-white/60 hover:border-[#8B4513]/30 transition-all active:scale-95" data-filter="search_result" data-i18n="filter_result">更多結果</button>
+        </div>
+    </div>
+
+    <!-- Results List -->
+    <div id="search-results" class="flex-1 overflow-y-auto space-y-3 pb-20 pt-2">
+        <!-- Populated by JS -->
+    </div>
+  </section>
+
+  <section id="tab-dharma" class="tab-content hidden px-1">
+    
+    <div class="space-y-4 pb-20 pt-2">
+        <!-- 1. Sutras (Moved to top) -->
+        <div class="group">
+            <div onclick="toggleDharmaSection('sutras')" class="relative overflow-hidden bg-white/40 backdrop-blur-xl rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 flex items-center gap-4 transition-all active:scale-95 cursor-pointer z-10 hover:bg-white/50">
+                <div class="w-12 h-12 rounded-full bg-rose-100/80 backdrop-blur-sm text-rose-600 flex items-center justify-center text-xl shadow-inner ring-4 ring-white/50">
+                    📜
+                </div>
+                <div class="flex-1">
+                    <div class="font-bold text-[#5c4033] text-lg" data-i18n="dharma_sutras">佛經閱覽</div>
+                    <div class="text-xs text-[#8B4513]/60" data-i18n="dharma_sutras_sub">深入經藏，智慧如海</div>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-white/50 flex items-center justify-center text-[#8B4513]/40 group-hover:bg-rose-50 group-hover:text-rose-500 transition-colors">
+                    <svg id="icon-sutras" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-300">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div id="content-sutras" class="hidden mt-2 mx-2 bg-white/30 backdrop-blur-md rounded-xl border border-white/30 overflow-hidden shadow-inner">
+                <div id="sutras-list" class="max-h-[60vh] overflow-y-auto p-2">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Text Teachings (Accordion) -->
+        <div class="group">
+            <div onclick="toggleDharmaSection('text-teachings')" class="relative overflow-hidden bg-white/40 backdrop-blur-xl rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 flex items-center gap-4 transition-all active:scale-95 cursor-pointer z-10 hover:bg-white/50">
+                <!-- Icon -->
+                <div class="w-12 h-12 rounded-full bg-amber-100/80 backdrop-blur-sm text-amber-600 flex items-center justify-center text-xl shadow-inner ring-4 ring-white/50">
+                    📖
+                </div>
+                <!-- Text -->
+                <div class="flex-1">
+                    <div class="font-bold text-[#5c4033] text-lg" data-i18n="dharma_text">文字開示</div>
+                    <div class="text-xs text-[#8B4513]/60" data-i18n="dharma_text_sub">佛陀開示集</div>
+                </div>
+                <!-- Chevron -->
+                <div class="w-8 h-8 rounded-full bg-white/50 flex items-center justify-center text-[#8B4513]/40 group-hover:bg-amber-50 group-hover:text-amber-500 transition-colors">
+                    <svg id="icon-text-teachings" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-300">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div id="content-text-teachings" class="hidden mt-2 mx-2 bg-white/30 backdrop-blur-md rounded-xl border border-white/30 overflow-hidden shadow-inner">
+                <div id="text-teachings-list" class="max-h-[60vh] overflow-y-auto p-2">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Audio Teachings (Accordion) -->
+        <div class="group">
+            <div onclick="toggleDharmaSection('audio')" class="relative overflow-hidden bg-white/40 backdrop-blur-xl rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 flex items-center gap-4 transition-all active:scale-95 cursor-pointer z-10 hover:bg-white/50">
+                <!-- Icon -->
+                <div class="w-12 h-12 rounded-full bg-purple-100/80 backdrop-blur-sm text-purple-600 flex items-center justify-center text-xl shadow-inner ring-4 ring-white/50">
+                    🎧
+                </div>
+                <!-- Text -->
+                <div class="flex-1">
+                    <div class="font-bold text-[#5c4033] text-lg">音频開示</div>
+                    <div class="text-xs text-[#8B4513]/60">聆听法音</div>
+                </div>
+                <!-- Chevron -->
+                <div class="w-8 h-8 rounded-full bg-white/50 flex items-center justify-center text-[#8B4513]/40 group-hover:bg-purple-50 group-hover:text-purple-500 transition-colors">
+                    <svg id="icon-audio" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-300">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div id="content-audio" class="hidden mt-2 mx-2 bg-white/30 backdrop-blur-md rounded-xl border border-white/30 overflow-hidden shadow-inner">
+                <div id="audio-list" class="max-h-[60vh] overflow-y-auto p-2 space-y-2">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Video Teachings -->
+        <div class="group">
+            <div onclick="toggleDharmaSection('video')" class="relative overflow-hidden bg-white/40 backdrop-blur-xl rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 flex items-center gap-4 transition-all active:scale-95 cursor-pointer z-10 hover:bg-white/50">
+                <div class="w-12 h-12 rounded-full bg-blue-100/80 backdrop-blur-sm text-blue-600 flex items-center justify-center text-xl shadow-inner ring-4 ring-white/50">
+                    🎥
+                </div>
+                <div class="flex-1">
+                    <div class="font-bold text-[#5c4033] text-lg" data-i18n="dharma_video">影片開示</div>
+                    <div class="text-xs text-[#8B4513]/60" data-i18n="dharma_video_sub">法會與講座視頻</div>
+                </div>
+                 <div class="w-8 h-8 rounded-full bg-white/50 flex items-center justify-center text-[#8B4513]/40 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                    <svg id="icon-video" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-300">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div id="content-video" class="hidden mt-2 mx-2 bg-white/30 backdrop-blur-md rounded-xl border border-white/30 overflow-hidden shadow-inner">
+                <div id="video-list" class="max-h-[60vh] overflow-y-auto p-2">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Masters -->
+        <div class="group">
+            <div onclick="toggleDharmaSection('masters')" class="relative overflow-hidden bg-white/40 backdrop-blur-xl rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 flex items-center gap-4 transition-all active:scale-95 cursor-pointer z-10 hover:bg-white/50">
+                <div class="w-12 h-12 rounded-full bg-purple-100/80 backdrop-blur-sm text-purple-600 flex items-center justify-center text-xl shadow-inner ring-4 ring-white/50">
+                    👤
+                </div>
+                <div class="flex-1">
+                    <div class="font-bold text-[#5c4033] text-lg" data-i18n="dharma_master">祖師大德</div>
+                    <div class="text-xs text-[#8B4513]/60" data-i18n="dharma_master_sub">歷代高僧行誼</div>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-white/50 flex items-center justify-center text-[#8B4513]/40 group-hover:bg-purple-50 group-hover:text-purple-500 transition-colors">
+                    <svg id="icon-masters" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 transition-transform duration-300">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div id="content-masters" class="hidden mt-2 mx-2 bg-white/30 backdrop-blur-md rounded-xl border border-white/30 overflow-hidden shadow-inner">
+                <div id="masters-list" class="max-h-[60vh] overflow-y-auto p-2">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Sutras (Moved to top) -->
+        <!-- Removed from here -->
+
+    </div>
+  </section>
+
+  <section id="tab-chant" class="tab-content hidden h-full flex flex-col">
+    <!-- Mode Switcher -->
+    <div class="px-4 pt-2 pb-4">
+        <div class="flex p-1 bg-orange-100/30 backdrop-blur-sm border border-white/40 rounded-xl mx-1 shadow-inner">
+            <button onclick="switchChantMode('counter')" id="btn-mode-counter" class="flex-1 py-2 rounded-lg text-sm font-bold shadow-sm bg-white text-[#b35c1e] transition-all duration-200" data-i18n="chant_counter">念佛計數</button>
+            <button onclick="switchChantMode('meditation')" id="btn-mode-meditation" class="flex-1 py-2 rounded-lg text-sm font-bold text-[#8B4513]/60 hover:text-[#b35c1e] hover:bg-white/40 transition-all duration-200" data-i18n="chant_timer">打坐計時</button>
+        </div>
+    </div>
+
+    <!-- Mode: Counter -->
+    <div id="mode-counter" class="flex-1 overflow-y-auto px-1 pb-20 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div class="bg-white/40 backdrop-blur-xl rounded-3xl p-5 mb-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40">
+            <div class="text-[#8B4513] text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#8B4513]"></span>
+                <span data-i18n="today_homework">今日功課</span>
+            </div>
+            
+            <!-- Counter Card -->
+            <div class="bg-white/30 rounded-2xl p-6 text-center border border-white/40 shadow-inner relative overflow-hidden backdrop-blur-sm">
+                <div class="absolute top-0 left-0 w-full h-1 bg-[#8B4513]/20"></div>
+                <div class="text-[#8B4513]/70 text-sm mb-2 font-serif font-bold" data-i18n="chant_target">南無阿彌陀佛</div>
+                <div id="counter-display" class="text-6xl font-bold text-[#5c4033] font-serif my-6 tracking-widest tabular-nums drop-shadow-sm">0</div>
+                <div class="flex justify-center gap-6 mt-8 items-center">
+                    <button onclick="updateCounter(-1)" class="w-12 h-12 flex items-center justify-center rounded-full bg-white/40 text-[#8B4513]/60 active:scale-95 transition-all hover:bg-white/60 border border-white/50 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" />
+                        </svg>
+                    </button>
+                    <button onclick="updateCounter(1)" class="w-24 h-24 flex items-center justify-center rounded-full bg-gradient-to-br from-[#f8c390] to-[#eeb075] text-[#5c4033] shadow-[0_10px_20px_rgba(248,195,144,0.4)] active:scale-90 transition-all hover:shadow-[0_15px_30px_rgba(248,195,144,0.5)] border-4 border-white/30 ring-4 ring-[#f8c390]/20">
+                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-10 h-10">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                    </button>
+                     <button onclick="saveCounterRecord()" class="w-12 h-12 flex items-center justify-center rounded-full bg-emerald-100/50 text-emerald-600 active:scale-95 transition-all hover:bg-emerald-100/80 border border-emerald-100 shadow-sm" title="保存記錄">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="mt-6 text-xs text-[#8B4513]/50 font-medium" data-i18n="chant_count_today">點擊綠色按鈕保存並歸零</div>
+            </div>
+        </div>
+        
+        <div class="bg-white/40 backdrop-blur-xl rounded-3xl p-5 mb-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40">
+            <div class="flex items-center justify-between mb-2">
+                 <div class="text-[#8B4513] text-xs font-bold uppercase tracking-wider" data-i18n="history_label">歷史記錄</div>
+                 <div class="text-[10px] text-[#8B4513]/50 font-medium">最近7天</div>
+            </div>
+            <div id="counter-history" class="space-y-2">
+                <!-- JS will populate -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Mode: Meditation -->
+    <div id="mode-meditation" class="hidden flex-1 overflow-y-auto px-1 pb-20 animate-in fade-in slide-in-from-bottom-2 duration-300">
+         <div class="bg-white/40 backdrop-blur-xl rounded-3xl p-6 mb-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 flex flex-col items-center">
+            <div class="text-[#8B4513] text-xs font-bold uppercase tracking-wider mb-8 flex items-center gap-2 self-start">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#8B4513]"></span>
+                <span data-i18n="meditation_mode">禪坐計時</span>
+            </div>
+            
+            <!-- Timer Circle -->
+            <div class="relative w-64 h-64 flex items-center justify-center mb-10">
+                <!-- Decorative Ring -->
+                <div class="absolute inset-0 rounded-full border-[6px] border-white/30 shadow-inner"></div>
+                <!-- Progress Ring (SVG) -->
+                <svg class="absolute inset-0 w-full h-full -rotate-90 transform drop-shadow-md" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="6" />
+                    <circle id="timer-progress" cx="50" cy="50" r="46" fill="none" stroke="#f8c390" stroke-width="6" stroke-dasharray="289" stroke-dashoffset="0" stroke-linecap="round" class="transition-all duration-1000 ease-linear" />
+                </svg>
+                
+                <!-- Time Display -->
+                <div class="flex flex-col items-center z-10">
+                    <div id="timer-display" class="text-6xl font-light text-[#5c4033] font-mono tabular-nums tracking-tight drop-shadow-sm">15:00</div>
+                    <div id="timer-status" class="text-xs text-[#8B4513]/60 mt-3 font-bold tracking-[0.2em] uppercase" data-i18n="meditation_status_ready">準備開始</div>
+                </div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="flex items-center justify-center gap-8 mb-6">
+                <button onclick="resetMeditation()" class="w-14 h-14 flex items-center justify-center rounded-full bg-white/40 text-[#8B4513]/40 hover:bg-white/60 hover:text-[#8B4513]/60 transition-all border border-white/50 shadow-sm" title="重置">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                
+                <button onclick="toggleMeditation()" id="btn-timer-toggle" class="w-24 h-24 flex items-center justify-center rounded-full bg-gradient-to-br from-[#f8c390] to-[#eeb075] text-[#5c4033] shadow-[0_10px_30px_rgba(248,195,144,0.4)] hover:shadow-[0_15px_40px_rgba(248,195,144,0.5)] transition-all active:scale-95 border-4 border-white/30 ring-4 ring-[#f8c390]/20">
+                    <!-- Play Icon -->
+                    <svg id="icon-play" xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                    </svg>
+                    <!-- Pause Icon (Hidden) -->
+                    <svg id="icon-pause" xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 hidden" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                
+                <!-- Save Button -->
+                 <button onclick="manualSaveMeditation()" class="w-14 h-14 flex items-center justify-center rounded-full bg-emerald-100/50 text-emerald-600 hover:bg-emerald-100/80 transition-all border border-emerald-100 shadow-sm" title="保存記錄">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Alert Settings & Sound -->
+            <div class="flex items-center justify-center gap-4 w-full mb-2 bg-white/30 p-3 rounded-2xl border border-white/30 backdrop-blur-sm">
+                <div class="flex items-center gap-2">
+                    <label class="text-xs text-[#8B4513]/70 font-bold">響鈴時間</label>
+                    <input type="time" id="meditation-alert-input" onchange="meditationAlertPlayed=false" class="w-24 text-center py-1.5 rounded-lg border border-white/50 bg-white/60 text-[#8B4513] text-sm font-bold focus:outline-none focus:border-[#f8c390] shadow-inner">
+                </div>
+                
+                <!-- Sound Toggle -->
+                <button onclick="toggleSound()" id="btn-sound" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/60 text-[#8B4513]/60 hover:bg-white/80 transition-colors relative border border-white/50 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                    <!-- Strike through for mute -->
+                    <div id="sound-off-line" class="absolute w-full h-0.5 bg-[#8B4513]/60 rotate-45 hidden"></div>
+                </button>
+            </div>
+         </div>
+         
+         <!-- Meditation History -->
+        <div class="bg-white/40 backdrop-blur-xl rounded-3xl p-5 mb-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40">
+            <div class="flex items-center justify-between mb-2">
+                 <div class="text-[#8B4513] text-xs font-bold uppercase tracking-wider" data-i18n="history_label">打坐記錄</div>
+                 <div class="text-[10px] text-[#8B4513]/50 font-medium">最近7天</div>
+            </div>
+            <div id="meditation-history" class="space-y-2">
+                 <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+  </section>
+
+    <!-- Mode: Zen Diet (Vegetarian) -->
+    <div id="tab-diet" class="tab-content hidden flex-1 overflow-y-auto px-1 pb-20 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        
+        <!-- Loading Overlay (Global for Diet Tab) -->
+        <div id="diet-loading" class="hidden absolute inset-0 z-20 bg-white/40 backdrop-blur-md flex flex-col items-center justify-center pt-20">
+             <div class="bg-white/80 p-4 rounded-full shadow-lg mb-3 animate-bounce border border-white/60">
+                <svg class="h-6 w-6 text-green-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+             </div>
+             <span class="text-xs font-bold text-green-800 bg-white/80 px-4 py-1.5 rounded-full shadow-sm border border-green-100 backdrop-blur-sm" data-i18n="diet_loading">正在尋味...</span>
+        </div>
+
+        <!-- Recipes Container -->
+        <div id="diet-container" class="space-y-4 pt-1">
+            <!-- Content will be injected here -->
+        </div>
+
+    </div>
+</main>
+
+<!-- AdMob Banner Placeholder -->
+<div id="ad-banner-container" class="fixed bottom-[56px] left-0 right-0 z-30 flex justify-center items-center bg-white/30 backdrop-blur-sm border-t border-white/20" style="height: 50px;">
+    <div class="w-[320px] h-[50px] bg-black/5 rounded flex items-center justify-center text-xs text-[#8B4513]/40 border border-white/10">
+        AdMob Banner (320x50)
+    </div>
+</div>
+
+<!-- Bottom Navigation (Floating Glass) -->
+<nav class="fixed bottom-6 left-6 right-6 flex bg-white/60 backdrop-blur-2xl border border-white/50 rounded-full z-40 shadow-[0_8px_32px_rgba(0,0,0,0.1)] h-[64px] items-center justify-around px-2 ring-1 ring-white/40 transition-all duration-300">
+  <button id="btn-tab-calendar" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#8B4513] font-bold transition-all active:scale-90" onclick="switchTab('calendar', this)">
+    <span class="text-2xl drop-shadow-sm">🗓️</span>
+    <span class="text-[10px]" data-i18n="tab_calendar">日曆</span>
+  </button>
+  <button id="btn-tab-search" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#8B4513]/60 hover:text-[#8B4513] transition-all active:scale-90" onclick="switchTab('search', this)">
+    <span class="text-2xl drop-shadow-sm opacity-80">🔍</span>
+    <span class="text-[10px]" data-i18n="tab_search">搜索</span>
+  </button>
+  <button id="btn-tab-dharma" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#8B4513]/60 hover:text-[#8B4513] transition-all active:scale-90" onclick="switchTab('dharma', this)">
+    <span class="text-2xl drop-shadow-sm opacity-80">☸️</span>
+    <span class="text-[10px]" data-i18n="tab_dharma">佛法</span>
+  </button>
+  <button id="btn-tab-diet" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#8B4513]/60 hover:text-[#8B4513] transition-all active:scale-90" onclick="switchTab('diet', this)">
+    <span class="text-2xl drop-shadow-sm opacity-80">🥗</span>
+    <span class="text-[10px]" data-i18n="tab_diet">素斋</span>
+  </button>
+  <button id="btn-tab-chant" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#8B4513]/60 hover:text-[#8B4513] transition-all active:scale-90" onclick="switchTab('chant', this)">
+    <span class="text-2xl drop-shadow-sm opacity-80">📿</span>
+    <span class="text-[10px]" data-i18n="tab_chant">功課</span>
+  </button>
+</nav>
+
+<!-- Settings Modal (Glassmorphism) -->
+<div id="settings-modal" class="fixed inset-0 z-50 hidden" style="display: none;">
+    <div class="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity" onclick="toggleSettings()"></div>
+    <div class="absolute top-20 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-2xl p-6 rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)] w-80 border border-white/60 animate-in fade-in slide-in-from-bottom-8 duration-300 ring-1 ring-white/50">
+        <div class="flex justify-between items-center mb-6 border-b border-[#8B4513]/10 pb-3">
+            <span class="font-bold text-[#5c4033] flex items-center gap-2 text-lg" data-i18n="settings">
+                ⚙️ 設置
+            </span>
+            <button onclick="toggleSettings()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#8B4513]/10 text-[#8B4513]/60 transition-colors">✕</button>
+        </div>
+        
+        <div class="space-y-6">
+             <!-- Language Selector -->
+             <div>
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-xs text-[#8B4513]/80 font-bold uppercase tracking-wider" data-i18n="language_label">语言 / Language</span>
+                </div>
+                <div class="flex gap-2">
+                    <button id="btn-lang-cn" onclick="setLanguage('zh-CN')" class="flex-1 py-2 rounded-xl border border-white/50 bg-white/40 text-sm text-[#5c4033] font-medium hover:bg-[#f8c390]/30 hover:border-[#f8c390] hover:text-[#8B4513] transition-all active:scale-95 shadow-sm">简体</button>
+                    <button id="btn-lang-tw" onclick="setLanguage('zh-TW')" class="flex-1 py-2 rounded-xl border border-white/50 bg-white/40 text-sm text-[#5c4033] font-medium hover:bg-[#f8c390]/30 hover:border-[#f8c390] hover:text-[#8B4513] transition-all active:scale-95 shadow-sm">繁體</button>
+                    <button id="btn-lang-en" onclick="setLanguage('en')" class="flex-1 py-2 rounded-xl border border-white/50 bg-white/40 text-sm text-[#5c4033] font-medium hover:bg-[#f8c390]/30 hover:border-[#f8c390] hover:text-[#8B4513] transition-all active:scale-95 shadow-sm">En</button>
+                </div>
+            </div>
+
+            <hr class="border-[#8B4513]/10">
+
+             <!-- Buddhist Era Selector -->
+             <div>
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-xs text-[#8B4513]/80 font-bold uppercase tracking-wider" data-i18n="era_label">佛历计算 / Era</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="setEraOffset(543)" id="btn-era-543" class="flex-1 py-2 rounded-xl border border-white/50 bg-white/40 text-xs font-medium text-[#5c4033] hover:bg-[#f8c390]/30 hover:border-[#f8c390] hover:text-[#8B4513] transition-all active:scale-95 shadow-sm">+543 (泰)</button>
+                    <button onclick="setEraOffset(544)" id="btn-era-544" class="flex-1 py-2 rounded-xl border border-white/50 bg-white/40 text-xs font-medium text-[#5c4033] hover:bg-[#f8c390]/30 hover:border-[#f8c390] hover:text-[#8B4513] transition-all active:scale-95 shadow-sm">+544 (中)</button>
+                </div>
+            </div>
+
+            <hr class="border-[#8B4513]/10">
+
+            <div>
+                <div class="flex justify-between text-xs text-[#8B4513]/80 font-bold uppercase tracking-wider mb-3">
+                    <span>字體大小</span>
+                    <span id="font-size-label" class="text-[#8B4513]">18px</span>
+                </div>
+                <input type="range" id="font-size-slider" min="14" max="32" step="1" value="18" 
+                       class="w-full h-2 bg-[#8B4513]/20 rounded-lg appearance-none cursor-pointer accent-[#8B4513]"
+                       oninput="updateFontSize(this.value)">
+                <div class="flex justify-between text-[10px] text-[#8B4513]/50 mt-1 font-medium">
+                    <span>A</span>
+                    <span>A</span>
+                </div>
+            </div>
+            
+            <div class="p-3 bg-white/40 rounded-xl border border-white/50 text-[#5c4033] text-justify leading-relaxed transition-all duration-200 text-xs shadow-inner" id="settings-preview-text">
+                預覽文字 Preview Text.<br>此設置僅影響佛經與開示的閱讀頁面。
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+  // Settings Logic
+  function toggleSettings() {
+      const modal = document.getElementById('settings-modal');
+      if (modal.style.display === 'none' || modal.style.display === '') {
+          modal.style.display = 'block';
+          // Initialize slider value
+          const currentSize = localStorage.getItem('reader_font_size') || 18;
+          document.getElementById('font-size-slider').value = currentSize;
+          updateFontSize(currentSize, false);
+          
+          // Initialize Era Buttons
+          updateEraButtons();
+          // Initialize Language Buttons
+          updateLanguageButtons();
+      } else {
+          modal.style.display = 'none';
+      }
+  }
+
+  function setEraOffset(offset) {
+      localStorage.setItem('buddhist_era_offset', offset);
+      updateEraButtons();
+      // Re-render calendar to reflect change
+      renderCalendar();
+      // Re-render header year if needed
+      updateAppHeader();
+  }
+
+  function updateEraButtons() {
+      const offset = parseInt(localStorage.getItem('buddhist_era_offset') || 544);
+      const btn543 = document.getElementById('btn-era-543');
+      const btn544 = document.getElementById('btn-era-544');
+      
+      const baseClass = "flex-1 py-2 rounded-xl border border-white/50 bg-white/40 text-xs font-medium text-[#5c4033] hover:bg-[#f8c390]/30 hover:border-[#f8c390] hover:text-[#8B4513] transition-all active:scale-95 shadow-sm";
+      const activeClass = "flex-1 py-2 rounded-xl border border-[#f8c390] bg-[#f8c390] text-xs font-bold text-[#5c4033] transition-all active:scale-95 shadow-md ring-1 ring-[#f8c390]/50";
+
+      if(offset === 543) {
+          btn543.className = activeClass;
+          btn544.className = baseClass;
+      } else {
+          btn544.className = activeClass;
+          btn543.className = baseClass;
+      }
+  }
+
+  function updateLanguageButtons() {
+      const lang = localStorage.getItem('app_language') || 'zh-TW';
+      const btnCN = document.getElementById('btn-lang-cn');
+      const btnTW = document.getElementById('btn-lang-tw');
+      const btnEN = document.getElementById('btn-lang-en');
+      
+      const baseClass = "flex-1 py-2 rounded-xl border border-white/50 bg-white/40 text-sm text-[#5c4033] font-medium hover:bg-[#f8c390]/30 hover:border-[#f8c390] hover:text-[#8B4513] transition-all active:scale-95 shadow-sm";
+      const activeClass = "flex-1 py-2 rounded-xl border border-[#f8c390] bg-[#f8c390] text-sm text-[#5c4033] font-bold transition-all active:scale-95 shadow-md ring-1 ring-[#f8c390]/50";
+
+      // Reset all
+      if(btnCN) btnCN.className = baseClass;
+      if(btnTW) btnTW.className = baseClass;
+      if(btnEN) btnEN.className = baseClass;
+
+      // Set Active
+      if(lang === 'zh-CN' && btnCN) btnCN.className = activeClass;
+      if(lang === 'zh-TW' && btnTW) btnTW.className = activeClass;
+      if(lang === 'en' && btnEN) btnEN.className = activeClass;
+  }
+
+  function updateAppHeader() {
+      const offset = parseInt(localStorage.getItem('buddhist_era_offset') || 544);
+      const year = currentYear + offset;
+      const appTitle = document.getElementById('app-title');
+      if (appTitle) {
+          appTitle.innerText = `${t('app_title')} ${year} 年`;
+      }
+  }
+
+  function updateFontSize(val, save=true) {
+      // Update label
+      document.getElementById('font-size-label').innerText = val + 'px';
+      // Update preview
+      const preview = document.getElementById('settings-preview-text');
+      preview.style.fontSize = val + 'px';
+      
+      // Save
+      if(save) {
+          localStorage.setItem('reader_font_size', val);
+      }
+  }
+  
+  // Initialize
+  document.addEventListener('DOMContentLoaded', () => {
+      // Apply Language
+      const lang = localStorage.getItem('app_language') || 'zh-TW';
+      // Initial render for static text is handled by updateDOMWithLanguage inside setLanguage if we called it, 
+      // but to avoid reload loop, we just do a pass here.
+      // Actually, simplest is to just call a render function.
+      
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+         const key = el.getAttribute('data-i18n');
+         el.innerText = t(key);
+      });
+      
+      // Update placeholders
+      const searchInput = document.getElementById('search-input');
+      if(searchInput) searchInput.placeholder = t('search_placeholder');
+
+      const savedSize = localStorage.getItem('reader_font_size');
+      if(savedSize) {
+          // Just ensure it's saved, visual update happens when modal opens
+      }
+      
+      // Initialize Search Tab with Suggestions
+      if(document.getElementById('search-results')) {
+          document.getElementById('search-results').innerHTML = renderSuggestions();
+      }
+  });
+
+  // 维护的佛日 / 斋日表
+  // 节日数据来源: Mingyue Temple 佛誕表
+  const buddhistFestivals = {
+    '01-01': '彌勒菩薩聖誕',
+    '01-09': '帝釋天尊聖誕',
+    '01-17': '百丈懷海禪師紀念日',
+    '02-08': '釋迦牟尼佛出家日',
+    '02-09': '慧能大師聖誕',
+    '02-15': '釋迦牟尼佛涅槃',
+    '02-19': '觀世音菩薩聖誕',
+    '02-21': '普賢菩薩聖誕',
+    '03-16': '準提王菩薩誕',
+    '04-04': '文殊菩薩聖誕',
+    '04-08': '釋迦牟尼佛寶誕',
+    '05-13': '伽藍菩薩聖誕',
+    '06-03': '韋馱菩薩聖誕',
+    '06-19': '觀世音菩薩成道日',
+    '07-13': '大勢至菩薩聖誕',
+    '07-15': '盂蘭盆節',
+    '07-16': '諦深佛再道日',
+    '07-29': '虛雲老和尚誕辰',
+    '07-30': '地藏王菩薩聖誕',
+    '08-20': '鳩摩羅什三藏紀念日',
+    '08-22': '燃燈古佛聖誕',
+    '09-19': '觀世音菩薩出家日',
+    '09-30': '藥師佛聖誕',
+    '10-03': '道宣律師紀念日',
+    '10-05': '達摩祖師聖誕',
+    '10-11': '憨山德清大師紀念日',
+    '11-17': '阿彌陀佛聖誕',
+    '11-18': '諦深佛聖誕',
+    '12-08': '釋迦牟尼佛成道日',
+    '12-17': '紫柏真可尊者紀念日'
+  };
+
+  // Global Festivals Dictionary (CN, TW, JP, SEA, NA, EU)
+  const SOLAR_FESTIVALS = {
+      // Global / Western
+      '01-01': ['元旦 (全球)', '中華民國開國紀念日 (台灣)'],
+      '02-14': ['情人節 (歐美)'],
+      '03-08': ['婦女節 (國際)'],
+      '04-01': ['愚人節 (歐美)'],
+      '05-01': ['勞動節 (國際)'],
+      '10-31': ['萬聖節 (北美/歐洲)'],
+      '12-24': ['平安夜 (全球)'],
+      '12-25': ['聖誕節 (全球)'],
+      '12-26': ['節禮日 (歐洲/英聯邦)'],
+      '12-31': ['跨年 (全球)'],
+
+      // China (CN)
+      '03-12': ['植樹節 (中國/台灣)'],
+      '05-04': ['青年節 (中國)'],
+      '06-01': ['兒童節 (中國)'],
+      '07-01': ['建黨節 (中國)', '香港特區成立紀念日'],
+      '08-01': ['建軍節 (中國)'],
+      '09-10': ['教師節 (中國)'],
+      '10-01': ['國慶節 (中國)'],
+      '12-13': ['國家公祭日 (中國)'],
+      '12-20': ['澳門特區成立紀念日'],
+
+      // Taiwan (TW)
+      '02-28': ['和平紀念日 (台灣)'],
+      '03-29': ['青年節 (台灣)'],
+      '04-04': ['兒童節 (台灣/香港)'],
+      '08-08': ['父親節 (台灣)'],
+      '09-03': ['軍人節 (台灣)'],
+      '09-28': ['教師節 (台灣)'],
+      '10-10': ['國慶日 (台灣)'],
+      '10-25': ['光復節 (台灣)'],
+      '11-12': ['國父誕辰 (台灣)'],
+
+      // Europe (Expanded)
+      '01-06': ['主顯節 (歐洲多國)'],
+      '04-25': ['解放日 (義大利)', '自由日 (葡萄牙)'],
+      '04-27': ['國王日 (荷蘭)'],
+      '04-30': ['沃普爾吉斯之夜 (瑞典/芬蘭/德國)'],
+      '05-08': ['二戰勝利日 (法國/捷克/斯洛伐克)'],
+      '05-17': ['憲法日 (挪威)'],
+      '06-02': ['共和國日 (義大利)'],
+      '06-05': ['憲法日 (丹麥)'],
+      '06-06': ['國慶日 (瑞典)'],
+      '06-23': ['國慶日 (盧森堡)'],
+      '07-14': ['巴士底日 (法國)'],
+      '07-21': ['國慶日 (比利時)'],
+      '08-01': ['國慶日 (瑞士)'],
+      '08-15': ['聖母升天節 (歐洲多國)'],
+      '10-03': ['統一日 (德國)'],
+      '10-12': ['國慶日 (西班牙)'],
+      '10-26': ['國慶日 (奧地利)'],
+      '10-28': ['國慶日 (捷克)', 'Oxi Day (希臘)'],
+      '11-01': ['諸聖節 (歐洲多國)'],
+      '11-11': ['停戰紀念日 (法國/比利時)', '獨立日 (波蘭)'],
+      '12-06': ['獨立日 (芬蘭)', '憲法日 (西班牙)'],
+      '12-08': ['聖母無原罪日 (義大利/西班牙/奧地利)'],
+      '12-13': ['聖盧西亞節 (瑞典/挪威)'],
+
+      // Japan (JP)
+      '01-11': ['成人之日 (日本)'], // Note: Often 2nd Mon, strictly this is legacy fixed
+      '02-11': ['建國紀念之日 (日本)'],
+      '02-23': ['天皇誕生日 (日本)'],
+      '04-29': ['昭和之日 (日本)'],
+      '05-03': ['憲法紀念日 (日本)'],
+      '05-04': ['綠之日 (日本)'],
+      '05-05': ['兒童之日 (日本)'],
+      '11-03': ['文化之日 (日本)'],
+      '11-23': ['勤勞感謝之日 (日本)'],
+
+      // North America (NA)
+      '07-01': ['加拿大國慶 (北美)'],
+      '07-04': ['獨立紀念日 (美國)'],
+      '11-11': ['退伍軍人節 (北美)'],
+
+      // Europe (EU) - Major fixed & National
+      '01-06': ['主顯節 (歐洲/瑞典/西班牙)'],
+      '04-25': ['解放日 (意大利/葡萄牙)'],
+      '05-08': ['二戰勝利日 (法國/捷克/斯洛伐克)'],
+      '05-17': ['憲法日 (挪威)'],
+      '06-02': ['共和國日 (意大利)'],
+      '06-05': ['憲法日 (丹麥)'],
+      '06-06': ['國慶日 (瑞典)'],
+      '06-23': ['國慶日 (盧森堡)'],
+      '07-14': ['巴士底日 (法國)'],
+      '07-21': ['國慶日 (比利時)'],
+      '08-01': ['國慶日 (瑞士)'],
+      '08-15': ['聖母升天節 (歐洲)'],
+      '09-27': ['法語社區節 (比利時)'],
+      '10-03': ['統一日 (德國)'],
+      '10-12': ['國慶日 (西班牙)'],
+      '10-26': ['國慶日 (奧地利)'],
+      '10-28': ['參戰紀念日 (希臘/捷克)'],
+      '11-01': ['諸聖節 (歐洲)'],
+      '11-11': ['停戰日 (法國/比利時)', '獨立日 (波蘭)'],
+      '11-15': ['德語區節 (比利時)'],
+      '12-06': ['芬蘭獨立日 (芬蘭)'],
+
+      // Southeast Asia (SEA)
+      '04-13': ['宋干節 (泰國/東南亞)'], // Usually 13-15
+      '04-30': ['南方解放日 (越南)'],
+      '08-09': ['國慶日 (新加坡)'],
+      '08-17': ['獨立日 (印尼)'],
+      '08-31': ['國慶日 (馬來西亞)'],
+      '09-02': ['國慶日 (越南)'],
+      '12-05': ['父親節 (泰國)'],
+      '12-10': ['憲法日 (泰國)'],
+  };
+
+  const today = new Date();
+  let currentMonth = today.getMonth();
+  let currentYear = today.getFullYear();
+
+  // Helper: Get Lunar Text
+  function getLunarText(year, month, day) {
+    // 检查库是否加载
+    if (typeof Solar === 'undefined') {
+        console.error("Lunar library not loaded");
+        return "加載失敗";
+    }
+    const solar = Solar.fromYmd(year, month, day);
+    const lunar = solar.getLunar();
+    // Convert simplified month/day to traditional if needed, 
+    // but library usually outputs simplified. Simple mapping for key chars:
+    // 腊->臘, 冬->冬, 正->正.
+    // Let's rely on string replacement for common ones if strictly needed.
+    // For now, keep library output but prefix with Traditional '農曆'.
+    const monthText = lunar.getMonthInChinese() + '月';
+    const dayText = lunar.getDayInChinese();
+    return `農曆 ${monthText}${dayText}`;
+  }
+
+  // Helper: Get Buddhist Info (Festivals + Fast Days)
+  function getBuddhistInfo(year, month, day) {
+    if (typeof Solar === 'undefined') return null;
+    const solar = Solar.fromYmd(year, month, day);
+    const lunar = solar.getLunar();
+    
+    const lMonth = lunar.getMonth();
+    const lDay = lunar.getDay();
+    const lunarKey = String(lMonth).padStart(2, '0') + '-' + String(lDay).padStart(2, '0');
+    
+    const markers = []; // ['十', '六', '朔', '月']
+    let festivalKey = buddhistFestivals[lunarKey] || null;
+    let festival = festivalKey ? t(festivalKey) : null;
+
+    // 1. Ten Fast Days (十斋日): 1, 8, 14, 15, 18, 23, 24, 28, 29, 30
+    const tenFastDays = [1, 8, 14, 15, 18, 23, 24, 28, 29, 30];
+    if (tenFastDays.includes(lDay)) {
+        markers.push('十');
+    }
+
+    // 2. Six Fast Days (六斋日)
+    if ([8, 14, 15, 23].includes(lDay)) markers.push('六');
+    else if (lDay === 29) markers.push('六'); 
+    else if (lDay === 30) markers.push('六'); 
+    else if (lDay === 28) {
+         try {
+            if (lunar.next(2).getDay() === 1) {
+                markers.push('六');
+            }
+         } catch(e) {}
+    }
+
+    // 3. ShuoWang (朔望): 1, 15
+    if (lDay === 1 || lDay === 15) {
+        markers.push('朔');
+    }
+
+    // 4. Month Fast (月斋): Month 1, 5, 9
+    if ([1, 5, 9].includes(lMonth)) {
+        markers.push('月');
+    }
+
+    // 5. User Events
+    // Simple check for single-day events or start-dates for now. 
+    // Ideally should handle ranges, but for this task, let's match startDate.
+    // Format: YYYY-MM-DD
+    const dateKey = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const allEvents = JSON.parse(localStorage.getItem('buddhist_calendar_events') || '[]');
+    // Filter events for this day
+    const dayEvents = allEvents.filter(e => {
+        // Simple equality for start date. 
+        // If you want range support: e.startDate <= dateKey && e.endDate >= dateKey
+        return e.startDate === dateKey; 
+    });
+    
+    // Construct Fast Days Text
+    let fastDaysText = [];
+    let fastDayDescriptions = [];
+
+    if (markers.includes('十')) {
+        fastDaysText.push(t('fast_day_ten'));
+        fastDayDescriptions.push(t('desc_ten_fast'));
+    }
+    
+    if (markers.includes('六')) {
+        fastDaysText.push(t('fast_day_six'));
+        
+        // Detailed Logic for Six Fast Days Description
+        if (lDay === 8) {
+            fastDayDescriptions.push(t('desc_six_fast_8'));
+        } else if (lDay === 14) {
+            fastDayDescriptions.push(t('desc_six_fast_14'));
+        } else if (lDay === 15) {
+            fastDayDescriptions.push(t('desc_six_fast_15'));
+        } else if (lDay === 23) {
+            fastDayDescriptions.push(t('desc_six_fast_23'));
+        } else if (lDay === 29) {
+            let isSmallMonthEnd = false;
+            try { if (lunar.next(1).getDay() === 1) isSmallMonthEnd = true; } catch(e){}
+            
+            if (isSmallMonthEnd) {
+                fastDayDescriptions.push(t('desc_six_fast_29_end'));
+            } else {
+                fastDayDescriptions.push(t('desc_six_fast_29'));
+            }
+        } else if (lDay === 30) {
+            fastDayDescriptions.push(t('desc_six_fast_30'));
+        } else if (lDay === 28) {
+             // Handle small month end (28th as end)
+             try {
+                if (lunar.next(2).getDay() === 1) {
+                     // Treated as 29th equivalent in small month
+                     fastDayDescriptions.push(t('desc_six_fast_28_small'));
+                }
+             } catch(e) {}
+        }
+    }
+    
+    if (markers.includes('朔')) fastDaysText.push(t('fast_day_shuo'));
+    if (markers.includes('月')) fastDaysText.push(t('fast_day_month'));
+    
+    const typeText = fastDaysText.length > 0 ? fastDaysText.join(' · ') : '';
+    const descriptionText = fastDayDescriptions.length > 0 ? fastDayDescriptions.join('<br>') : '';
+
+    const ganZhi = `${lunar.getYearInGanZhi()} ${lunar.getYearShengXiao()}年 ${lunar.getMonthInGanZhi()}月 ${lunar.getDayInGanZhi()}日`;
+
+    return {
+        festival: festival,
+        ganZhi: ganZhi,
+        markers: markers, // Array of chars
+        title: festival ? festival : '',
+        typeText: typeText,
+        description: descriptionText,
+        tags: [],
+        jieqi: lunar.getJieQi(), // Add Solar Term
+        events: dayEvents
+    };
+  }
+
+  // Helper: Render Event Card HTML
+  function renderEventCard(e) {
+    return `
+    <div class="mt-3 p-3 bg-blue-50/50 rounded-xl border border-blue-100 shadow-sm relative group">
+        <div class="flex justify-between items-start pr-8">
+            <div class="font-bold text-blue-800 text-base">${e.title}</div>
+            <div class="text-[10px] text-blue-400 bg-blue-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">${e.isAllDay ? '全天' : e.startDate.slice(5)}</div>
+        </div>
+        ${e.description ? `<div class="text-sm text-blue-600/80 mt-1 leading-relaxed">${e.description}</div>` : ''}
+        
+        <!-- Edit Button -->
+        <a href="add_event.html?id=${e.id}" class="absolute top-3 right-3 text-blue-400 hover:text-blue-600 p-1 rounded-full hover:bg-blue-100 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+            </svg>
+        </a>
+    </div>
+    `;
+  }
+
+  // Search Logic
+  let currentFilter = 'all';
+  let searchTimeout = null;
+  let isSearchDataLoading = false;
+
+  function loadSearchData() {
+    if (typeof SEARCH_DATA !== 'undefined') return Promise.resolve();
+    if (isSearchDataLoading) return new Promise(resolve => {
+        const check = setInterval(() => {
+            if (typeof SEARCH_DATA !== 'undefined') {
+                clearInterval(check);
+                resolve();
+            }
+        }, 100);
+    });
+
+    isSearchDataLoading = true;
+    return new Promise((resolve, reject) => {
+         const script = document.createElement('script');
+         script.src = 'search_data.js?v=4';
+         script.onload = () => {
+            isSearchDataLoading = false;
+            resolve();
+        };
+        script.onerror = () => {
+            isSearchDataLoading = false;
+            reject();
+        };
+        document.head.appendChild(script);
+    });
+  }
+
+  const SUGGESTION_TERMS = [
+      "佛法末世", "因缘果报", "业", "皈依", 
+      "戒", "禅定", "供养", "方便", 
+      "随缘", "心法", "功德", "须弥山", 
+      "染污", "智慧", "慈悲", "往生"
+  ];
+
+  function renderSuggestions() {
+      const chips = SUGGESTION_TERMS.map(term => 
+        `<button onclick="searchForTerm('${term}')" class="px-3 py-1.5 bg-white border border-stone-200 rounded-full text-xs font-bold text-[#5c4033] shadow-sm active:bg-[#b35c1e] active:text-white transition-colors hover:border-[#b35c1e]">${term}</button>`
+      ).join('');
+
+      return `
+        <div class="mt-4 px-2 animate-in fade-in duration-300">
+            <div class="flex items-center gap-2 mb-4 text-[#8c7853] font-bold">
+                <span class="text-lg">💡</span>
+                <span>名詞釋疑</span>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                ${chips}
+            </div>
+        </div>
+      `;
+  }
+
+  function searchForTerm(term) {
+      const input = document.getElementById('search-input');
+      input.value = term;
+      performSearch(term);
+  }
+
+  function performSearch(query) {
+      clearTimeout(searchTimeout);
+      const clearBtn = document.getElementById('search-clear');
+      
+      if (!query) {
+          clearBtn.classList.add('hidden');
+          document.getElementById('search-results').innerHTML = renderSuggestions();
+          return;
+      }
+      
+      clearBtn.classList.remove('hidden');
+
+      // Debounce
+      searchTimeout = setTimeout(() => {
+          if (typeof SEARCH_DATA === 'undefined') {
+              // Lazy Load
+              document.getElementById('search-results').innerHTML = `
+                <div class="flex flex-col items-center justify-center py-20 text-[#8B4513]/40 gap-3">
+                    <svg class="animate-spin h-8 w-8 text-[#8B4513]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-sm">正在載入搜索數據庫...</span>
+                </div>
+              `;
+
+              loadSearchData().then(() => {
+                 performSearch(query);
+              }).catch(() => {
+                 document.getElementById('search-results').innerHTML = '<div class="text-center text-red-500 mt-10">數據加載失敗，請檢查網絡</div>';
+              });
+              return;
+          }
+
+          const results = SEARCH_DATA.filter(item => {
+              // Filter by category
+              if (currentFilter !== 'all' && item.category !== currentFilter) return false;
+              
+              // Filter by query (case insensitive)
+              const q = query.toLowerCase();
+              const titleMatch = (item.title || "").toLowerCase().includes(q);
+              
+              // Extract text content if it's an object/wrapped
+              let contentStr = "";
+              if (typeof item.content === 'string') contentStr = item.content;
+              else if (item.content && item.content.value) contentStr = item.content.value;
+              
+              const contentMatch = contentStr.toLowerCase().includes(q);
+              
+              return titleMatch || contentMatch;
+          });
+
+          renderSearchResults(results, query);
+      }, 300);
+  }
+
+  function renderSearchResults(results, query) {
+      const container = document.getElementById('search-results');
+      if (results.length === 0) {
+          container.innerHTML = `
+            <div class="text-center text-stone-400 mt-10">
+                <div class="text-4xl mb-2 opacity-50">😕</div>
+                <p class="text-sm">未找到相關結果</p>
+            </div>
+          `;
+          return;
+      }
+
+      let html = '';
+      results.forEach(item => {
+          // Highlight match in title
+          const title = highlightMatch(item.title, query);
+          
+          // Generate snippet
+          let snippet = "";
+          let contentStr = "";
+          if (typeof item.content === 'string') contentStr = item.content;
+          else if (item.content && item.content.value) contentStr = item.content.value;
+
+          if (contentStr) {
+              const idx = contentStr.toLowerCase().indexOf(query.toLowerCase());
+              if (idx !== -1) {
+                  const start = Math.max(0, idx - 20);
+                  const end = Math.min(contentStr.length, idx + 60);
+                  snippet = (start > 0 ? "..." : "") + contentStr.substring(start, end) + (end < contentStr.length ? "..." : "");
+                  snippet = highlightMatch(snippet, query);
+              } else {
+                  snippet = contentStr.substring(0, 80) + "...";
+              }
+          }
+
+          // Icon based on category
+          let icon = '📄';
+          let catLabel = '文檔';
+          let colorClass = 'text-stone-500';
+          
+          if (item.category === 'sutra') { icon = '📖'; catLabel = '佛經'; colorClass = 'text-amber-700'; }
+          else if (item.category === 'master') { icon = '👤'; catLabel = '祖師'; colorClass = 'text-purple-700'; }
+          else if (item.category === 'teaching') { icon = '🎓'; catLabel = '開示'; colorClass = 'text-blue-700'; }
+          else if (item.category === 'search_result') { icon = '🔍'; catLabel = '資料'; colorClass = 'text-purple-700'; }
+
+          html += `
+            <div onclick="openReader('${item.id}')" class="bg-white/40 backdrop-blur-md rounded-2xl p-4 shadow-sm border border-white/50 ring-1 ring-white/30 active:scale-[0.98] transition-all cursor-pointer hover:shadow-lg group">
+                <div class="flex items-start gap-3">
+                    <div class="mt-1 text-xl drop-shadow-sm group-hover:scale-110 transition-transform">${icon}</div>
+                    <div class="flex-1 overflow-hidden">
+                        <div class="font-bold text-[#5c4033] text-sm truncate mb-1 group-hover:text-[#b35c1e] transition-colors">${title}</div>
+                        <div class="text-xs text-stone-400 mb-2 flex items-center gap-2">
+                            <span class="${colorClass} bg-white/50 px-2 py-0.5 rounded-md border border-white/40 shadow-sm backdrop-blur-sm">${catLabel}</span>
+                            ${item.type === 'docx' ? '<span class="text-blue-500 font-bold">DOCX</span>' : ''}
+                        </div>
+                        <div class="text-xs text-stone-600 leading-relaxed line-clamp-2 font-serif opacity-80 group-hover:opacity-100 transition-opacity">${snippet}</div>
+                    </div>
+                </div>
+            </div>
+          `;
+      });
+      container.innerHTML = html;
+  }
+
+  function highlightMatch(text, query) {
+      if (!query || !text) return text;
+      const regex = new RegExp(`(${query})`, 'gi');
+      return text.replace(regex, '<span class="bg-yellow-200/80 text-stone-900 font-bold rounded-sm px-0.5">$1</span>');
+  }
+
+  function clearSearch() {
+      document.getElementById('search-input').value = '';
+      performSearch('');
+  }
+
+  function filterSearch(filter) {
+      currentFilter = filter;
+      // Update buttons
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+          if (btn.dataset.filter === filter) {
+              // Active: Gradient + Shadow
+              btn.className = 'filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap bg-gradient-to-r from-[#b35c1e] to-[#d68c45] text-white shadow-md border-transparent transform scale-105';
+          } else {
+              // Inactive: Glass
+              btn.className = 'filter-btn px-4 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap bg-white/40 text-stone-600 border border-white/50 hover:bg-white/60 hover:text-stone-800';
+          }
+      });
+      // Rerun search
+      performSearch(document.getElementById('search-input').value);
+  }
+
+  function openReader(id) {
+      // Navigate to reader with ID
+      // If we are in local file system, we might need to handle the path carefully
+      // But reader.html expects ?file=...
+      // We can pass the ID as the file param, and update reader.html to look it up in SEARCH_DATA
+      
+      let url = `reader.html?file=${encodeURIComponent(id)}`;
+      
+      // Check if we are coming from Search Tab
+      const searchTab = document.getElementById('tab-search');
+      const isSearchActive = searchTab && !searchTab.classList.contains('hidden');
+      
+      if (isSearchActive) {
+          url += '&from=search';
+          // Preserve search query
+          const searchInput = document.getElementById('search-input');
+          if (searchInput && searchInput.value.trim()) {
+              url += `&query=${encodeURIComponent(searchInput.value.trim())}`;
+          }
+      } else {
+          // Assume Dharma tab if not search
+          url += '&from=dharma';
+      }
+      
+      window.location.href = url;
+  }
+
+  // Render Calendar Logic
+  function renderCalendar() {
+    const header = document.getElementById('calendar-header');
+    const grid = document.getElementById('calendar-grid');
+    const weekdayHeader = document.getElementById('weekday-header');
+
+    grid.innerHTML = '';
+    
+    // Render Weekday Header
+    if(weekdayHeader) {
+        weekdayHeader.innerHTML = '';
+        const weekDays = t('weekdays');
+        weekDays.forEach(d => {
+            const el = document.createElement('div');
+            el.innerText = d;
+            weekdayHeader.appendChild(el);
+        });
+    }
+
+    header.innerText = `${currentYear} 年 ${currentMonth + 1} 月`;
+    
+    // Update App Header Title (Buddhist Year)
+    // Buddhist Year = Gregorian Year + Offset
+    const offset = parseInt(localStorage.getItem('buddhist_era_offset') || 544);
+    const buddhistYear = currentYear + offset;
+    const appTitle = document.getElementById('app-title');
+    if (appTitle) {
+        appTitle.innerText = `${t('app_title')} ${buddhistYear} 年`;
+    }
+
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay(); // 0 is Sunday
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+    // Empty cells for days before the 1st
+    for (let i = 0; i < firstDay; i++) {
+      grid.appendChild(document.createElement('div'));
+    }
+
+    // Days
+    for (let d = 1; d <= daysInMonth; d++) {
+      const cell = document.createElement('div');
+      
+      // Styling: Glassmorphism
+      cell.className = 'relative flex flex-col items-center justify-start min-h-[85px] py-2 rounded-xl cursor-pointer transition-all duration-300 active:scale-95 hover:shadow-lg hover:-translate-y-1 select-none border border-white/40 bg-white/40 backdrop-blur-md shadow-sm ring-1 ring-white/20 group';
+      
+      // Highlight Today
+      const isToday = d === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
+      if (isToday) {
+        cell.classList.remove('bg-white/40', 'border-white/40');
+        // Buddhist Orange Gradient for Today
+        cell.classList.add('bg-gradient-to-br', 'from-[#f8c390]', 'to-[#f9dba0]', 'border-[#b35c1e]/50', 'shadow-md', 'font-bold', 'text-[#5c4033]', 'ring-1', 'ring-[#b35c1e]/40');
+      } else {
+        cell.classList.add('text-stone-700', 'hover:bg-white/60');
+      }
+
+      // 1. Top Row: Markers Left | Day Number | Markers Right
+      const topRow = document.createElement('div');
+      topRow.className = 'w-full flex justify-between items-start px-1 mb-0.5';
+      
+      const leftMarkers = document.createElement('div');
+      leftMarkers.className = 'flex flex-col gap-0.5 text-[8px] leading-none';
+      
+      const rightMarkers = document.createElement('div');
+      rightMarkers.className = 'flex flex-col gap-0.5 text-[8px] leading-none';
+      
+      // Get Info
+      const info = getBuddhistInfo(currentYear, currentMonth + 1, d);
+      
+      // Populate Markers
+      if (info && info.markers) {
+          info.markers.forEach(m => {
+              const badge = document.createElement('div');
+              badge.innerText = m;
+              // Styling based on marker type
+              if (m === '月' || m === '朔') {
+                  badge.className = 'w-3.5 h-3.5 flex items-center justify-center bg-stone-200/80 backdrop-blur-sm text-stone-600 rounded-md shadow-sm border border-stone-300/50';
+                  leftMarkers.appendChild(badge);
+              } else {
+                  // '十', '六'
+                  badge.className = 'w-3.5 h-3.5 flex items-center justify-center bg-gradient-to-br from-[#b35c1e] to-[#d68c45] text-white rounded-full shadow-sm opacity-90 border border-[#b35c1e]/20';
+                  rightMarkers.appendChild(badge);
+              }
+          });
+      }
+
+      // Day Number (Center)
+      const num = document.createElement('div');
+      num.innerText = d;
+      
+      // Check Global Festivals for Date Coloring
+      const globalFests = getGlobalFestivals(currentYear, currentMonth + 1, d);
+      const hasGlobalFest = globalFests.length > 0;
+      
+      if (isToday) {
+          num.className = 'text-lg leading-none mx-auto font-serif drop-shadow-sm';
+      } else if (hasGlobalFest) {
+          num.className = 'text-lg leading-none font-bold mx-auto font-serif text-indigo-600 drop-shadow-sm';
+      } else {
+          num.className = 'text-lg leading-none font-medium mx-auto font-serif opacity-90 group-hover:opacity-100 transition-opacity';
+      }
+      
+      topRow.appendChild(leftMarkers);
+      topRow.appendChild(num);
+      topRow.appendChild(rightMarkers);
+      cell.appendChild(topRow);
+
+      // 2. Middle Row: Solar Term OR Lunar Text (Center)
+      // Container
+      const midRow = document.createElement('div');
+      midRow.className = 'flex items-center justify-center gap-1 mb-1 w-full relative';
+
+      // Lunar Text or Solar Term
+      const lunarText = getLunarText(currentYear, currentMonth + 1, d);
+      let displayText = lunarText.replace('農曆 ', '').replace(/.*月/, '');
+      
+      const lunarDiv = document.createElement('div');
+      
+      // Logic: If Jieqi exists, show Jieqi instead of Lunar Day
+      if (info && info.jieqi) {
+          displayText = info.jieqi;
+          lunarDiv.className = 'text-[10px] text-[#b35c1e] font-bold'; // Highlight Solar Term
+      } else {
+          lunarDiv.className = 'text-[10px] text-stone-500/80 font-medium';
+      }
+      
+      lunarDiv.innerText = displayText;
+
+      if (info && info.festival) {
+          lunarDiv.className = 'text-[10px] text-[#b35c1e] font-bold'; // Highlight if festival
+          if (!isToday) {
+              cell.classList.add('border-[#f8c390]/50', 'bg-orange-50/40'); // Warm tint for festivals
+          }
+      }
+      
+      midRow.appendChild(lunarDiv);
+      
+      cell.appendChild(midRow);
+      
+      // 3. Bottom Row: Festival + Event
+      const bottomContainer = document.createElement('div');
+      bottomContainer.className = 'w-full flex flex-col gap-0.5 mt-auto px-1';
+
+      // Festival Text (Bottom)
+      if (info && info.festival) {
+          const festDiv = document.createElement('div');
+          festDiv.innerText = info.festival;
+          // Truncate logic: truncate w-full block
+          festDiv.className = 'text-[8px] text-[#b35c1e] leading-tight text-center w-full truncate font-bold opacity-90';
+          bottomContainer.appendChild(festDiv);
+      }
+
+      // Event Marker (Blue)
+      if (info && info.events && info.events.length > 0) {
+          const eventDiv = document.createElement('div');
+          eventDiv.innerText = info.events[0].title; // Show first event title
+          // Glassy blue styling
+          eventDiv.className = 'text-[8px] text-blue-700 bg-blue-50/60 backdrop-blur-sm border border-blue-100 rounded-md px-1 py-0.5 w-full truncate text-center shadow-sm';
+          bottomContainer.appendChild(eventDiv);
+      }
+
+      cell.appendChild(bottomContainer);
+      
+
+      // Click Handler
+      cell.onclick = function () {
+        // Update Day Info Section
+        renderDayInfo(currentYear, currentMonth + 1, d);
+        
+        // Scroll to info card
+        document.getElementById('day-info-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+
+      grid.appendChild(cell);
+    }
+  }
+
+  // Helper: Get Nth Weekday of Month
+  function getNthWeekday(year, month, weekday, n) {
+      const date = new Date(year, month - 1, 1);
+      let count = 0;
+      while (date.getMonth() === month - 1) {
+          if (date.getDay() === weekday) {
+              count++;
+              if (count === n) return date.getDate();
+          }
+          date.setDate(date.getDate() + 1);
+      }
+      return null;
+  }
+
+  // Helper: Get Easter Date (Meeus/Jones/Butcher's Algorithm)
+  function getEaster(year) {
+      const f = Math.floor;
+      const G = year % 19;
+      const C = f(year / 100);
+      const H = (C - f(C / 4) - f((8 * C + 13) / 25) + 19 * G + 15) % 30;
+      const I = H - f(H / 28) * (1 - f(29 / (H + 1)) * f((21 - G) / 11));
+      const J = (year + f(year / 4) + I + 2 - C + f(C / 4)) % 7;
+      const L = I - J;
+      const month = 3 + f((L + 40) / 44);
+      const day = L + 28 - 31 * f(month / 4);
+      return { month, day };
+  }
+
+  // Helper: Get Global Festivals
+  function getGlobalFestivals(year, month, day) {
+      const key = String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+      let list = SOLAR_FESTIVALS[key] ? [...SOLAR_FESTIVALS[key]] : [];
+
+      // Variable Holidays
+      // Mother's Day: May 2nd Sun
+      if (month === 5 && day === getNthWeekday(year, 5, 0, 2)) list.push('母親節 (國際)');
+      // Father's Day: Jun 3rd Sun
+      if (month === 6 && day === getNthWeekday(year, 6, 0, 3)) list.push('父親節 (國際)');
+      // US Thanksgiving: Nov 4th Thu
+      if (month === 11 && day === getNthWeekday(year, 11, 4, 4)) list.push('感恩節 (北美)');
+      // US Labor Day: Sep 1st Mon
+      if (month === 9 && day === getNthWeekday(year, 9, 1, 1)) list.push('勞動節 (北美)');
+      
+      // Japan Happy Mondays
+      if (month === 1 && day === getNthWeekday(year, 1, 1, 2)) list.push('成人之日 (日本)');
+      if (month === 7 && day === getNthWeekday(year, 7, 1, 3)) list.push('海之日 (日本)');
+      if (month === 9 && day === getNthWeekday(year, 9, 1, 3)) list.push('敬老之日 (日本)');
+      if (month === 10 && day === getNthWeekday(year, 10, 1, 2)) list.push('體育之日 (日本)');
+
+      // European Variable Holidays (Easter Based)
+      const easter = getEaster(year);
+      const checkDate = new Date(year, month - 1, day);
+      const easterDate = new Date(year, easter.month - 1, easter.day);
+      
+      // Calculate difference in days
+      const diffTime = checkDate.getTime() - easterDate.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === -2) list.push('耶穌受難日 (歐洲)');
+      if (diffDays === 0) list.push('復活節 (歐洲)');
+      if (diffDays === 1) list.push('復活節星期一 (歐洲)');
+      if (diffDays === 39) list.push('耶穌升天節 (歐洲)');
+      if (diffDays === 49) list.push('聖靈降臨節 (歐洲)');
+      if (diffDays === 50) list.push('聖靈降臨週一 (歐洲)');
+      if (diffDays === 60) list.push('基督聖體聖血節 (歐洲)');
+
+      // Sweden: Midsummer (Sat between June 20-26)
+      if (month === 6 && day >= 20 && day <= 26 && checkDate.getDay() === 6) {
+          list.push('仲夏節 (瑞典)');
+      }
+      // Sweden: All Saints (Sat between Oct 31-Nov 6)
+      if (month === 10 && day === 31 && checkDate.getDay() === 6) list.push('萬聖節 (瑞典)'); // Rare case 10/31 is Sat
+      if (month === 11 && day <= 6 && checkDate.getDay() === 6) list.push('萬聖節 (瑞典)');
+
+      // Lunar / Traditional Chinese Festivals
+      try {
+        if (typeof Solar !== 'undefined') {
+            const solar = Solar.fromYmd(year, month, day);
+            const lunar = solar.getLunar();
+            const lm = Math.abs(lunar.getMonth());
+            const ld = lunar.getDay();
+            const jq = lunar.getJieQi();
+            
+            if (lm === 1 && ld === 1) list.push('春節 (中國)');
+            if (lm === 1 && ld === 15) list.push('元宵節 (中國)');
+            if (lm === 5 && ld === 5) list.push('端午節 (中國)');
+            if (lm === 7 && ld === 7) list.push('七夕節 (中國)');
+            if (lm === 7 && ld === 15) list.push('中元節 (中國)');
+            if (lm === 8 && ld === 15) list.push('中秋節 (中國)');
+            if (lm === 9 && ld === 9) list.push('重陽節 (中國)');
+            if (lm === 12 && ld === 8) list.push('臘八節 (中國)');
+            
+            // Qingming (Solar Term)
+            if (jq === '清明') list.push('清明節 (中國)');
+        }
+      } catch (e) {
+        console.error('Lunar fest calc error', e);
+      }
+
+      return list;
+  }
+
+  // Render Day Info (Replaces Modal)
+  function renderDayInfo(year, month, day) {
+      const today = new Date();
+      // Reset time for accurate comparison
+      const isToday = (year === today.getFullYear() && month === (today.getMonth() + 1) && day === today.getDate());
+      
+      // Title
+      const titleText = isToday ? '今日信息' : '當日信息'; 
+
+      const solar = Solar.fromYmd(year, month, day);
+      const lunar = solar.getLunar();
+      
+      // Buddhist Info
+      const info = getBuddhistInfo(year, month, day);
+      
+      // Helper to format Buddhist info card
+      let infoHtml = '';
+      if (info && (info.title || info.typeText)) {
+          infoHtml = `
+               <div class="mt-4 p-4 bg-orange-50/60 backdrop-blur-md rounded-2xl border border-orange-100/50 shadow-sm ring-1 ring-orange-100/30">
+                 <div class="font-bold text-[#b35c1e] mb-1 flex items-center gap-2">
+                     <span class="text-lg">🕯️</span>
+                     <div>
+                        ${info.title ? info.title : t('today_fast_title')} 
+                        <span class="block text-xs font-normal opacity-80 mt-0.5 text-[#b35c1e]/70">${info.typeText}</span>
+                     </div>
+                 </div>
+                 <div class="text-xs text-[#8c6b4a] mt-2 text-justify leading-relaxed font-serif">${info.description ? info.description : (info.tags.length > 0 ? t('recommendation_prefix') + info.tags.join('、') : t('default_recommendation'))}</div>
+               </div>`;
+      } else {
+          // Only show 'No special info' if there are no global festivals either (logic handled below)
+          infoHtml = `<div class="mt-4 text-stone-400 text-sm hidden" id="no-info-placeholder">${t('today_no_special')}</div>`;
+      }
+
+      // Global Festivals
+      const globalFestivals = getGlobalFestivals(year, month, day);
+      let globalFestHtml = '';
+      if (globalFestivals.length > 0) {
+          globalFestHtml = `
+               <div class="mt-3 p-4 bg-indigo-50/60 backdrop-blur-md rounded-2xl border border-indigo-100/50 shadow-sm ring-1 ring-indigo-100/30">
+                 <div class="font-bold text-indigo-800 mb-2 flex items-center gap-2 text-sm">
+                     <span class="text-lg">🌍</span>
+                     <span>世界節日</span>
+                 </div>
+                 <div class="flex flex-wrap gap-2">
+                     ${globalFestivals.map(f => `<span class="px-2.5 py-1 bg-white/80 border border-indigo-200 text-indigo-700 text-xs rounded-lg font-bold shadow-sm backdrop-blur-sm">${f}</span>`).join('')}
+                 </div>
+               </div>`;
+      }
+
+      // If both are empty, show placeholder
+      if (!infoHtml.includes('bg-orange-50') && globalFestivals.length === 0) {
+           infoHtml = `<div class="mt-4 text-stone-400 text-sm text-center py-4 bg-white/20 rounded-xl border border-white/30 backdrop-blur-sm">${t('today_no_special')}</div>`;
+      } else if (infoHtml.includes('hidden')) {
+           infoHtml = ''; // Clear hidden placeholder if we have global festivals
+      }
+
+      // Append Global Festivals
+      if (globalFestHtml) {
+          infoHtml += globalFestHtml;
+      }
+
+      if (info && info.events && info.events.length > 0) {
+          infoHtml += info.events.map(e => renderEventCard(e)).join('');
+      }
+  
+      // Almanac Data Preparation
+      const jieqi = lunar.getJieQi();
+      const yiList = lunar.getDayYi();
+      const jiList = lunar.getDayJi();
+      const yiStr = yiList.length > 0 ? yiList.slice(0, 10).join('、') + (yiList.length > 10 ? '...' : '') : '諸事不宜';
+      const jiStr = jiList.length > 0 ? jiList.slice(0, 10).join('、') + (jiList.length > 10 ? '...' : '') : '諸事不忌';
+      
+      // WuXing Logic
+      let wuxingStr = '';
+      try {
+          const gan = lunar.getDayGan();
+          const zhi = lunar.getDayZhi();
+          const wxGan = {'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'};
+          const wxZhi = {'子':'水','丑':'土','寅':'木','卯':'木','辰':'土','巳':'火','午':'火','未':'土','申':'金','酉':'金','戌':'土','亥':'水'};
+          if(wxGan[gan] && wxZhi[zhi]) {
+              wuxingStr = `天干[${gan}]屬${wxGan[gan]} · 地支[${zhi}]屬${wxZhi[zhi]}`;
+          }
+      } catch(e) {}
+  
+      // Construct Main HTML
+      const html = `
+        <div class="flex items-center justify-between mb-2">
+            <div class="text-[#a67c52] text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#a67c52]"></span>
+              ${titleText}
+            </div>
+            <div class="text-sm font-bold text-[#5c4033] font-serif">${year}年 ${month}月 ${day}日</div>
+        </div>
+        
+        <!-- Lunar Header (Compact) -->
+      <div class="flex items-center gap-2 mb-1 pb-1 border-b border-[#b35c1e]/10 font-serif text-[#5c4033] flex-wrap text-sm">
+           <span class="font-bold text-lg">${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}</span>
+           <span class="text-xs opacity-80 flex gap-2 items-center ml-2">
+              <span>${lunar.getYearInGanZhi()}年 [${lunar.getYearShengXiao()}]</span>
+              <span>•</span>
+              <span>${lunar.getMonthInGanZhi()}月</span>
+              <span>•</span>
+              <span>${lunar.getDayInGanZhi()}日</span>
+           </span>
+           ${jieqi ? `<span class="ml-auto px-3 py-0.5 bg-gradient-to-r from-[#b35c1e] to-[#d68c45] text-white text-[10px] rounded-full font-bold shadow-sm">${jieqi}</span>` : ''}
+      </div>
+
+      <!-- Yi / Ji (Prominent Glass) -->
+        <div class="grid grid-cols-1 gap-3 mb-4 font-serif mt-3">
+             <!-- Yi -->
+             <div class="bg-emerald-50/60 backdrop-blur-md rounded-2xl p-4 border border-emerald-100/50 shadow-sm ring-1 ring-emerald-100/30">
+                 <div class="flex items-center gap-2 mb-2">
+                     <div class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-emerald-200">宜</div>
+                     <span class="text-emerald-800 font-bold text-base">今日所宜</span>
+                 </div>
+                 <div class="text-sm text-stone-700 leading-relaxed pl-10 opacity-90">${yiStr}</div>
+             </div>
+             
+             <!-- Ji -->
+             <div class="bg-rose-50/60 backdrop-blur-md rounded-2xl p-4 border border-rose-100/50 shadow-sm ring-1 ring-rose-100/30">
+                  <div class="flex items-center gap-2 mb-2">
+                     <div class="w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-rose-200">忌</div>
+                     <span class="text-rose-800 font-bold text-base">今日所忌</span>
+                 </div>
+                 <div class="text-sm text-stone-700 leading-relaxed pl-10 opacity-90">${jiStr}</div>
+             </div>
+        </div>
+        
+        ${wuxingStr ? `
+           <div class="pt-2 border-t border-[#b35c1e]/10 text-center mb-2">
+              <div class="text-[10px] text-[#8c7853] mb-0.5 opacity-70">今日五行</div>
+              <div class="text-xs font-bold text-[#5c4033] tracking-wide">${wuxingStr}</div>
+           </div>
+        ` : ''}
+  
+        <!-- Buddhist Info -->
+        ${infoHtml}
+      `;
+  
+      const card = document.getElementById('day-info-card');
+      if(card) {
+           card.innerHTML = html;
+      }
+  }
+
+  // Show TongSheng Modal - REMOVED
+  function showTongSheng(year, month, day) {
+     // Legacy stub removed, calling renderDayInfo instead
+     renderDayInfo(year, month, day);
+  }
+
+  // Change Month Logic
+  function changeMonth(offset) {
+    currentMonth += offset;
+    if (currentMonth > 11) {
+      currentMonth = 0;
+      currentYear++;
+    } else if (currentMonth < 0) {
+      currentMonth = 11;
+      currentYear--;
+    }
+    renderCalendar();
+  }
+
+  // Switch Tab Logic
+  function switchTab(tabId, btn) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(el => {
+      el.classList.add('hidden');
+      el.classList.remove('block');
+    });
+    
+    // Deactivate all nav buttons
+    document.querySelectorAll('nav button').forEach(el => {
+      el.classList.remove('text-[#b35c1e]', 'font-bold');
+      el.classList.add('text-stone-500');
+    });
+
+    // Show target tab
+    const target = document.getElementById('tab-' + tabId);
+    if(target) {
+        target.classList.remove('hidden');
+        target.classList.add('block');
+    }
+    
+    // Activate button
+    if(!btn) {
+        btn = document.getElementById('btn-tab-' + tabId);
+    }
+    
+    if(btn) {
+        btn.classList.remove('text-stone-500');
+        btn.classList.add('text-[#b35c1e]', 'font-bold');
+    }
+
+    // Special logic for Diet tab
+    if (tabId === 'diet') {
+        fetchZenMeal(false);
+    }
+  }
+
+  // Counter Logic
+  let count = 0;
+  const todayKey = new Date().toISOString().split('T')[0];
+  const storageKey = 'buddhist_counter';
+  const historyKey = 'buddhist_counter_history';
+
+  function initCounter() {
+    const data = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    if (data[todayKey]) {
+        count = data[todayKey];
+    } else {
+        count = 0;
+    }
+    updateDisplay();
+    updateHistory();
+  }
+  
+  function updateCounter(change) {
+    count += change;
+    if (count < 0) count = 0;
+    
+    // Save temp
+    const data = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    data[todayKey] = count;
+    localStorage.setItem(storageKey, JSON.stringify(data));
+    
+    updateDisplay();
+  }
+  
+  function saveCounterRecord() {
+      if (count === 0) return;
+      if(!confirm('確定要保存記錄並歸零嗎？')) return;
+      
+      // Create Record
+      const record = {
+          id: Date.now(),
+          timestamp: new Date().toISOString(),
+          count: count
+      };
+
+      // Save to History
+      const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+      history.unshift(record); // Add to top
+      localStorage.setItem(historyKey, JSON.stringify(history));
+
+      // Reset Current
+      count = 0;
+      updateCounter(0); 
+      
+      updateHistory();
+  }
+  
+  function updateDisplay() {
+      const el = document.getElementById('counter-display');
+      if(el) el.innerText = count.toLocaleString();
+  }
+  
+  function updateHistory() {
+      const historyEl = document.getElementById('counter-history');
+      if(!historyEl) return;
+      
+      const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+      
+      if (history.length === 0) {
+          historyEl.innerHTML = '<div class="text-center text-stone-400 py-4 text-xs">暫無記錄</div>';
+          return;
+      }
+
+      let html = '<div class="space-y-2 max-h-40 overflow-y-auto pr-1">';
+      history.forEach(rec => {
+          const date = new Date(rec.timestamp);
+          const dateStr = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
+          const timeStr = `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+          
+          html += `
+            <div class="flex items-center justify-between text-xs py-2 border-b border-stone-100 last:border-0">
+                <div class="text-stone-500">
+                    <span class="font-medium mr-1">${dateStr}</span>
+                    <span class="text-stone-400">${timeStr}</span>
+                </div>
+                <div class="text-[#b35c1e] font-bold tabular-nums">${rec.count.toLocaleString()}</div>
+            </div>
+          `;
+      });
+      html += '</div>';
+      
+      historyEl.innerHTML = html;
+  }
+
+  // Meditation Logic
+  let meditationState = 'idle'; // idle, running, paused
+  let meditationStartTime = null;
+  let meditationElapsedTime = 0; // seconds accumulated before current run
+  let meditationInterval = null;
+  let meditationSoundEnabled = true;
+  let meditationAlertPlayed = false;
+
+  function switchChantMode(mode) {
+      const btnCounter = document.getElementById('btn-mode-counter');
+      const btnMeditation = document.getElementById('btn-mode-meditation');
+      const viewCounter = document.getElementById('mode-counter');
+      const viewMeditation = document.getElementById('mode-meditation');
+
+      if (mode === 'counter') {
+          btnCounter.classList.add('bg-white', 'text-[#b35c1e]', 'shadow-sm');
+          btnCounter.classList.remove('text-stone-500');
+          btnMeditation.classList.remove('bg-white', 'text-[#b35c1e]', 'shadow-sm');
+          btnMeditation.classList.add('text-stone-500');
+          
+          viewCounter.classList.remove('hidden');
+          viewMeditation.classList.add('hidden');
+          updateHistory(); // Refresh history
+      } else {
+          btnMeditation.classList.add('bg-white', 'text-[#b35c1e]', 'shadow-sm');
+          btnMeditation.classList.remove('text-stone-500');
+          btnCounter.classList.remove('bg-white', 'text-[#b35c1e]', 'shadow-sm');
+          btnCounter.classList.add('text-stone-500');
+          
+          viewMeditation.classList.remove('hidden');
+          viewCounter.classList.add('hidden');
+      }
+  }
+
+  function updateTimerDisplay() {
+      // Calculate total seconds
+      let totalSeconds = meditationElapsedTime;
+      if (meditationState === 'running' && meditationStartTime) {
+          totalSeconds += Math.floor((Date.now() - meditationStartTime) / 1000);
+      }
+
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+      
+      let timeStr = '';
+      if (h > 0) {
+           timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      } else {
+           timeStr = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      }
+      
+      const display = document.getElementById('timer-display');
+      if(display) display.innerText = timeStr;
+          
+      // Update Circle Progress (1 hour loop)
+      const circle = document.getElementById('timer-progress');
+      if (circle) {
+          const circumference = 2 * Math.PI * 46; 
+          // 3600 seconds = 1 full circle
+          let progress = (totalSeconds % 3600) / 3600;
+          
+          circle.style.strokeDashoffset = circumference * (1 - progress);
+      }
+      
+      checkMeditationAlert(totalSeconds);
+  }
+  
+  function checkMeditationAlert(totalSeconds) {
+      if (meditationAlertPlayed) return;
+      
+      const alertInput = document.getElementById('meditation-alert-input');
+      if (!alertInput || !alertInput.value) return;
+      
+      const [targetH, targetM] = alertInput.value.split(':').map(Number);
+      const now = new Date();
+      
+      if (now.getHours() === targetH && now.getMinutes() === targetM) {
+          playBellSound();
+          meditationAlertPlayed = true;
+      }
+  }
+
+  function playBellSound() {
+      if (!meditationSoundEnabled) return;
+       try {
+           const AudioContext = window.AudioContext || window.webkitAudioContext;
+           if (AudioContext) {
+               const ctx = new AudioContext();
+               const osc = ctx.createOscillator();
+               const gain = ctx.createGain();
+               osc.connect(gain);
+               gain.connect(ctx.destination);
+               osc.type = 'sine';
+               osc.frequency.setValueAtTime(440, ctx.currentTime);
+               gain.gain.setValueAtTime(0.1, ctx.currentTime);
+               gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 1.5);
+               osc.start();
+               osc.stop(ctx.currentTime + 1.5);
+           }
+       } catch(e) {
+           console.log("Audio play failed", e);
+       }
+  }
+
+  function toggleMeditation() {
+      const btn = document.getElementById('btn-timer-toggle');
+      const iconPlay = document.getElementById('icon-play');
+      const iconPause = document.getElementById('icon-pause');
+      const status = document.getElementById('timer-status');
+
+      if (meditationState === 'running') {
+          // Pause
+          clearInterval(meditationInterval);
+          meditationState = 'paused';
+          
+          if (meditationStartTime) {
+              meditationElapsedTime += Math.floor((Date.now() - meditationStartTime) / 1000);
+          }
+          meditationStartTime = null;
+
+          iconPlay.classList.remove('hidden');
+          iconPause.classList.add('hidden');
+          btn.classList.remove('bg-[#b35c1e]');
+          btn.classList.add('bg-amber-500');
+          status.innerText = "已暫停";
+      } else {
+          // Start
+          meditationState = 'running';
+          meditationStartTime = Date.now();
+          
+          iconPlay.classList.add('hidden');
+          iconPause.classList.remove('hidden');
+          btn.classList.add('bg-[#b35c1e]');
+          btn.classList.remove('bg-amber-500');
+          status.innerText = "禪修中...";
+          
+          updateTimerDisplay();
+
+          meditationInterval = setInterval(() => {
+              updateTimerDisplay();
+          }, 1000);
+      }
+  }
+
+  function resetMeditation() {
+      clearInterval(meditationInterval);
+      
+      meditationState = 'idle';
+      meditationStartTime = null;
+      meditationElapsedTime = 0;
+      meditationAlertPlayed = false;
+      
+      updateTimerDisplay(); 
+      
+      const btn = document.getElementById('btn-timer-toggle');
+      if(btn) {
+          btn.classList.add('bg-[#b35c1e]');
+          btn.classList.remove('bg-amber-500');
+      }
+      
+      const iconPlay = document.getElementById('icon-play');
+      if(iconPlay) iconPlay.classList.remove('hidden');
+      
+      const iconPause = document.getElementById('icon-pause');
+      if(iconPause) iconPause.classList.add('hidden');
+      
+      const status = document.getElementById('timer-status');
+      if(status) status.innerText = "準備開始";
+      
+      // Reset progress circle
+      const circle = document.getElementById('timer-progress');
+      if (circle) {
+           const circumference = 2 * Math.PI * 46;
+           circle.style.strokeDashoffset = circumference;
+      }
+  }
+
+  function toggleSound() {
+      meditationSoundEnabled = !meditationSoundEnabled;
+      const line = document.getElementById('sound-off-line');
+      if (meditationSoundEnabled) {
+          line.classList.add('hidden');
+      } else {
+          line.classList.remove('hidden');
+      }
+  }
+
+  function manualSaveMeditation() {
+      // Calculate total seconds
+      let totalSeconds = meditationElapsedTime;
+      if (meditationState === 'running' && meditationStartTime) {
+          totalSeconds += Math.floor((Date.now() - meditationStartTime) / 1000);
+      }
+      
+      if (totalSeconds < 60) {
+          alert('打坐時間不足 1 分鐘，不予記錄。');
+          return;
+      }
+      
+      if(!confirm('確定要保存此次禪修記錄並歸零嗎？')) return;
+      
+      const minutes = Math.floor(totalSeconds / 60);
+      
+      // Save Session Record
+      const record = {
+          id: Date.now(),
+          timestamp: new Date().toISOString(),
+          duration: totalSeconds, // Store seconds for precision if needed
+          minutes: minutes
+      };
+      
+      const history = JSON.parse(localStorage.getItem('meditation_session_history') || '[]');
+      history.unshift(record);
+      localStorage.setItem('meditation_session_history', JSON.stringify(history));
+      
+      // Also update daily total for statistics if needed (optional, but good for backward compat)
+      const dailyHistory = JSON.parse(localStorage.getItem('meditation_history') || '{}');
+      const k = new Date().toISOString().split('T')[0];
+      dailyHistory[k] = (dailyHistory[k] || 0) + minutes;
+      localStorage.setItem('meditation_history', JSON.stringify(dailyHistory));
+      
+      resetMeditation();
+      renderMeditationHistory();
+  }
+
+  function renderMeditationHistory() {
+      const historyEl = document.getElementById('meditation-history');
+      if(!historyEl) return;
+      
+      const history = JSON.parse(localStorage.getItem('meditation_session_history') || '[]');
+      
+      if (history.length === 0) {
+          historyEl.innerHTML = '<div class="text-center text-stone-400 py-6 text-xs bg-white/20 rounded-xl border border-white/30 backdrop-blur-sm">暫無記錄</div>';
+          return;
+      }
+      
+      let html = '<div class="space-y-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">';
+      history.forEach(rec => {
+          const date = new Date(rec.timestamp);
+          const dateStr = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
+          const timeStr = `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+          const durationStr = rec.minutes < 1 ? '<1 分' : `${rec.minutes} 分`;
+          
+          html += `
+            <div class="flex items-center justify-between text-xs py-2 px-3 bg-white/40 border border-white/50 rounded-lg backdrop-blur-sm hover:bg-white/60 transition-colors">
+                <div class="flex items-center gap-2">
+                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-sm"></div>
+                    <div class="text-stone-600">
+                        <span class="font-bold mr-1 text-[#5c4033]">${dateStr}</span>
+                        <span class="text-stone-400 font-mono text-[10px]">${timeStr}</span>
+                    </div>
+                </div>
+                <div class="text-[#b35c1e] font-bold tabular-nums bg-[#b35c1e]/10 px-2 py-0.5 rounded-md border border-[#b35c1e]/20">${durationStr}</div>
+            </div>
+          `;
+      });
+      html += '</div>';
+      
+      historyEl.innerHTML = html;
+  }
+
+  // Dharma Logic
+  function toggleDharmaSection(id) {
+      const content = document.getElementById('content-' + id);
+      const icon = document.getElementById('icon-' + id);
+      if(content.classList.contains('hidden')) {
+          content.classList.remove('hidden');
+          icon.classList.add('rotate-180');
+      } else {
+          content.classList.add('hidden');
+          icon.classList.remove('rotate-180');
+      }
+  }
+  
+  // Navigation Helper with Animation
+  function navToReader(e, url) {
+      e.preventDefault();
+      const el = e.currentTarget;
+      
+      // Micro-animation: Scale down and Flash
+      el.classList.add('scale-95', 'ring-2', 'ring-[#b35c1e]/30', 'bg-[#b35c1e]/10');
+      
+      // Wait for animation to be perceived (150ms)
+      setTimeout(() => {
+          window.location.href = url;
+      }, 150);
+  }
+
+  function renderAudioList() {
+      const list = document.getElementById('audio-list');
+      if(!list || typeof audioData === 'undefined') return;
+
+      list.innerHTML = audioData.map((audio, idx) => `
+          <div onclick="openAudioModal(${idx})" class="mb-2 bg-white/40 backdrop-blur-md rounded-2xl p-3 shadow-sm border border-white/50 ring-1 ring-white/30 flex items-center gap-3 active:scale-[0.98] transition-all cursor-pointer hover:shadow-lg group">
+              <div class="w-10 h-10 rounded-full bg-stone-100/80 backdrop-blur-sm flex items-center justify-center text-[#b35c1e] shrink-0 group-hover:bg-[#b35c1e] group-hover:text-white transition-colors shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                      <path fill-rule="evenodd" d="M19.952 1.651a.75.75 0 01.298.599V16.303a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.393-4.89l1.891-.54V6.111l-11.25 3.214v11.389a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.393-4.89l1.891-.54V4.508a.75.75 0 01.956-.708l12-3.429a.75.75 0 01.8.28z" clip-rule="evenodd" />
+                  </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                  <div class="font-bold text-[#5c4033] text-sm truncate group-hover:text-[#b35c1e] transition-colors">${audio.title}</div>
+                  <div class="text-xs text-stone-500 mt-0.5 opacity-80">MP3/WAV Audio</div>
+              </div>
+              <div class="text-stone-400/80">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
+                  </svg>
+              </div>
+          </div>
+      `).join('');
+  }
+
+  function openAudioModal(index) {
+      const modal = document.getElementById('audio-modal');
+      const titleEl = document.getElementById('audio-modal-title');
+      const audioEl = document.getElementById('audio-player');
+      
+      if(!modal || !audioData[index]) return;
+      
+      const audio = audioData[index];
+      
+      // Set content
+      if(titleEl) titleEl.innerText = audio.title;
+      if(audioEl) {
+          audioEl.src = audio.url;
+          audioEl.play().catch(e => console.log('Auto-play prevented:', e));
+      }
+      
+      // Show Modal
+      modal.classList.remove('hidden');
+  }
+
+  function closeAudioModal() {
+      const modal = document.getElementById('audio-modal');
+      const audioEl = document.getElementById('audio-player');
+      
+      if(modal) modal.classList.add('hidden');
+      if(audioEl) {
+          audioEl.pause();
+          audioEl.currentTime = 0;
+          audioEl.src = ''; 
+      }
+  }
+
+  function renderVideoList() {
+      const list = document.getElementById('video-list');
+      if(!list || typeof videoData === 'undefined') return;
+
+      list.innerHTML = videoData.map((video, idx) => `
+          <div onclick="openVideoModal(${idx})" class="mb-2 bg-white/40 backdrop-blur-md rounded-2xl p-3 shadow-sm border border-white/50 ring-1 ring-white/30 flex items-center gap-3 active:scale-[0.98] transition-all cursor-pointer hover:shadow-lg group">
+              <div class="relative w-24 aspect-video bg-stone-100 rounded-lg overflow-hidden shrink-0 shadow-inner">
+                  <div class="absolute inset-0 flex items-center justify-center text-red-500 bg-black/5 group-hover:bg-black/10 transition-colors">
+                      <span class="text-xl drop-shadow-sm">▶️</span>
+                  </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="font-bold text-[#5c4033] text-sm line-clamp-2 group-hover:text-red-600 transition-colors" title="${video.title}">${video.title}</div>
+                <div class="text-xs text-stone-500 mt-1 flex items-center gap-2 opacity-80">
+                    <span>YouTube</span>
+                    ${video.duration ? `<span>•</span><span>${video.duration}</span>` : ''}
+                </div>
+            </div>
+              <div class="text-stone-400/80">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
+                  </svg>
+              </div>
+          </div>
+      `).join('');
+  }
+
+  function openVideoModal(index) {
+      const modal = document.getElementById('video-modal');
+      const container = document.getElementById('video-modal-container');
+      const warning = document.getElementById('video-modal-warning');
+      const fallbackBtn = document.getElementById('video-fallback-btn');
+      
+      if(!modal || !container) return;
+      
+      // Show Modal
+      modal.classList.remove('hidden');
+      
+      // Get Video Data
+    const video = videoData[index];
+    // Use direct video ID format (no playlist parameters)
+    // Ensure we strip any potential parameters just in case
+    const cleanId = video.videoId ? video.videoId.split('&')[0] : '';
+    const src = `https://www.youtube.com/embed/${cleanId}`;
+    
+    container.innerHTML = `<iframe width="100%" height="100%" src="${src}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full h-full rounded-xl shadow-2xl"></iframe>`;
+    
+    // Update Fallback Button
+                if (fallbackBtn && video) {
+                    if (video.videoId) {
+                        fallbackBtn.href = `https://www.youtube.com/watch?v=${cleanId}`;
+                    } else {
+                        // Fallback if no videoId (should not happen based on data)
+                        fallbackBtn.href = '#';
+                    }
+                    fallbackBtn.classList.remove('hidden');
+                }
+
+      // Check Network
+      if(warning) {
+          warning.classList.add('hidden');
+          const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+          if (connection && connection.type && connection.type !== 'wifi' && connection.type !== 'ethernet' && connection.type !== 'none' && connection.type !== 'unknown') {
+               warning.classList.remove('hidden');
+          }
+      }
+  }
+
+  function closeVideoModal() {
+      const modal = document.getElementById('video-modal');
+      const container = document.getElementById('video-modal-container');
+      
+      if(modal) modal.classList.add('hidden');
+      if(container) container.innerHTML = ''; // Stop video
+  }
+
+  function renderDharma() {
+      const list = document.getElementById('text-teachings-list');
+      if(!list) return;
+      
+      const files = [
+        { name: '佛制戒律', file: '諦深大師_文字開示_佛制戒律.txt' },
+        { name: '文字開示 第一頁', file: '諦深大師_文字開示_第一頁.txt' },
+        { name: '文字開示 第二頁', file: '諦深大師_文字開示_第二頁.txt' },
+        { name: '文字開示 第三頁', file: '諦深大師_文字開示_第三頁.txt' },
+        { name: '文字開示 第四頁', file: '諦深大師_文字開示_第四頁.txt' },
+        { name: '文字開示 第五頁', file: '諦深大師_文字開示_第五頁.txt' },
+        { name: '文字開示 第六頁', file: '諦深大師_文字開示_第六頁.txt' },
+        { name: '文字開示 第七頁', file: '諦深大師_文字開示_第七頁.txt' },
+        { name: '文字開示 第八頁', file: '諦深大師_文字開示_第八頁.txt' },
+        { name: '文字開示 第九頁', file: '諦深大師_文字開示_第九頁.txt' },
+        { name: '文字開示 第十頁', file: '諦深大師_文字開示_第十頁.txt' },
+        { name: '文字開示 第十一頁', file: '諦深大師_文字開示_第十一頁.txt' },
+        { name: '文字開示 第十二頁', file: '諦深大師_文字開示_第十二頁.txt' },
+        { name: '文字開示 第十三頁', file: '諦深大師_文字開示_第十三頁.txt' },
+        { name: '文字開示 第十四頁', file: '諦深大師_文字開示_第十四頁.txt' },
+        { name: '文字開示 第十五頁', file: '諦深大師_文字開示_第十五頁.txt' },
+        { name: '文字開示 第十六頁', file: '諦深大師_文字開示_第十六頁.txt' },
+        { name: '文字開示 第十七頁', file: '諦深大師_文字開示_第十七頁.txt' },
+        { name: '文字開示 第十八頁', file: '諦深大師_文字開示_第十八頁.txt' },
+        { name: '文字開示 第十九頁', file: '諦深大師_文字開示_第十九頁.txt' },
+        { name: '文字開示 第二十頁', file: '諦深大師_文字開示_第二十頁.txt' },
+        { name: '文字開示 第二十一頁', file: '諦深大師_文字開示_第二十一頁.txt' }
+      ];
+
+      list.innerHTML = files.map(f => `
+        <a href="reader.html?file=${encodeURIComponent(f.file)}&title=${encodeURIComponent(f.name)}&from=sutras" 
+           onclick="navToReader(event, this.href)"
+           class="block px-4 py-3 mb-2 bg-white/40 backdrop-blur-sm hover:bg-white/60 hover:shadow-lg hover:-translate-y-0.5 hover:border-[#b35c1e]/30 transition-all duration-300 flex justify-between items-center group rounded-xl border border-white/50 active:scale-[0.98]">
+            <span class="text-base font-bold text-[#5c4033] group-hover:text-[#b35c1e] transition-colors">${f.name}</span>
+            <div class="w-6 h-6 rounded-full bg-white/50 flex items-center justify-center text-stone-400 group-hover:text-[#b35c1e] group-hover:bg-[#b35c1e]/10 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+            </div>
+        </a>
+      `).join('');
+  }
+
+  function renderSutras() {
+      const list = document.getElementById('sutras-list');
+      if(!list) return;
+
+      const files = [
+        { name: '大佛頂首楞嚴經', file: '佛经/大佛顶首楞严经.txt' },
+        { name: '地藏菩薩本願經', file: '佛经/地藏菩萨本愿经.txt' },
+        { name: '大方廣圓覺修多羅了義經', file: '佛经/大方广圆觉修多罗了义经.txt' },
+        { name: '普賢菩薩行願品', file: '佛经/普贤菩萨行愿品.txt' },
+        { name: '觀世音菩薩普門品', file: '佛经/观世音菩萨普门品.txt' },
+        { name: '金剛般若波羅蜜經', file: '佛经/金刚般若波罗蜜经.txt' }
+      ];
+
+      list.innerHTML = files.map(f => `
+        <a href="reader.html?file=${encodeURIComponent(f.file)}&title=${encodeURIComponent(f.name)}" 
+           onclick="navToReader(event, this.href)"
+           class="block px-4 py-3 mb-2 bg-white/40 backdrop-blur-sm hover:bg-white/60 hover:shadow-lg hover:-translate-y-0.5 hover:border-[#b35c1e]/30 transition-all duration-300 flex justify-between items-center group rounded-xl border border-white/50 active:scale-[0.98]">
+            <span class="text-base font-bold text-[#5c4033] group-hover:text-[#b35c1e] transition-colors">${f.name}</span>
+            <div class="w-6 h-6 rounded-full bg-white/50 flex items-center justify-center text-stone-400 group-hover:text-[#b35c1e] group-hover:bg-[#b35c1e]/10 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+            </div>
+        </a>
+      `).join('');
+  }
+
+  function renderMasters() {
+      const list = document.getElementById('masters-list');
+      if(!list) return;
+
+      const files = [
+        { name: '影尘回忆录上', file: '祖师大德/影尘回忆录上.txt' },
+        { name: '影尘回忆录下', file: '祖师大德/影尘回忆录下.txt' },
+        { name: '虚云老和尚年谱', file: '祖师大德/虚云老和尚年谱.txt' }
+      ];
+
+      list.innerHTML = files.map(f => `
+        <a href="reader.html?file=${encodeURIComponent(f.file)}&title=${encodeURIComponent(f.name)}" 
+           onclick="navToReader(event, this.href)"
+           class="block px-4 py-3 mb-2 bg-white/40 backdrop-blur-sm hover:bg-white/60 hover:shadow-lg hover:-translate-y-0.5 hover:border-[#b35c1e]/30 transition-all duration-300 flex justify-between items-center group rounded-xl border border-white/50 active:scale-[0.98]">
+            <span class="text-base font-bold text-[#5c4033] group-hover:text-[#b35c1e] transition-colors">${f.name}</span>
+            <div class="w-6 h-6 rounded-full bg-white/50 flex items-center justify-center text-stone-400 group-hover:text-[#b35c1e] group-hover:bg-[#b35c1e]/10 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+            </div>
+        </a>
+      `).join('');
+  }
+
+  // Initialization
+  renderCalendar();
+  initCounter();
+  renderMeditationHistory();
+  renderDharma();
+  renderVideoList();
+  renderAudioList();
+  renderSutras();
+  renderMasters();
+  
+  // Set default today info
+  (function initToday() {
+    renderDayInfo(today.getFullYear(), today.getMonth() + 1, today.getDate());
+  })();
+
+  // Check if returning from reader (Dharma Sutras or Search)
+  function checkDharmaState() {
+      const dharmaState = localStorage.getItem('dharma_tab_state');
+      const hash = window.location.hash;
+      
+      if (hash === '#search') {
+          setTimeout(() => {
+              switchTab('search');
+              try {
+                history.replaceState(null, null, window.location.pathname + window.location.search);
+              } catch(e) {}
+          }, 100);
+          return;
+      }
+
+      if (dharmaState === 'sutras' || hash === '#dharma_sutras') {
+          // Delay slightly to ensure DOM is ready and override default state
+          setTimeout(() => {
+              switchTab('dharma');
+              // Expand Sutras section
+              const content = document.getElementById('content-sutras');
+              const icon = document.getElementById('icon-sutras');
+              if (content && content.classList.contains('hidden')) {
+                  content.classList.remove('hidden');
+                  if(icon) icon.classList.add('rotate-180');
+              }
+              // Scroll to sutras section if needed, or just let it be at top
+              if (content) {
+                  // Optional: content.scrollIntoView({ behavior: 'smooth' });
+              }
+
+              // Clear state
+              localStorage.removeItem('dharma_tab_state');
+              if (hash === '#dharma_sutras') {
+                  try {
+                    history.replaceState(null, null, window.location.pathname + window.location.search);
+                  } catch(e) {
+                    // Ignore if file:// protocol restricts history API
+                  }
+              }
+          }, 100);
+      }
+  }
+
+  // Handle page show (includes back/forward cache)
+  window.addEventListener('pageshow', checkDharmaState);
+  // Also run on initial load just in case
+  checkDharmaState();
+
+  // Initialize i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (key) el.innerText = t(key);
+  });
+
+</script>
+<!-- Video Modal -->
+<!-- Audio Modal -->
+<div id="audio-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-stone-900/90 backdrop-blur-sm transition-opacity" onclick="closeAudioModal()"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <!-- Header -->
+                <div class="bg-[#f7f5f2] px-4 py-3 border-b border-[#ede9e3] flex justify-between items-center">
+                    <h3 class="text-base font-bold text-[#5c4033] truncate pr-4" id="audio-modal-title">Audio Title</h3>
+                    <button type="button" class="text-stone-400 hover:text-stone-600 focus:outline-none" onclick="closeAudioModal()">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <!-- Content -->
+                <div class="p-6 flex flex-col items-center gap-6">
+                    <div class="w-24 h-24 bg-[#f7f5f2] rounded-full flex items-center justify-center text-[#b35c1e] shadow-inner">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-12 h-12">
+                            <path fill-rule="evenodd" d="M19.952 1.651a.75.75 0 01.298.599V16.303a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.393-4.89l1.891-.54V6.111l-11.25 3.214v11.389a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.393-4.89l1.891-.54V4.508a.75.75 0 01.956-.708l12-3.429a.75.75 0 01.8.28z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <audio id="audio-player" controls class="w-full h-12 rounded-lg bg-[#f7f5f2] text-[#b35c1e]">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Video Modal -->
+    <div id="video-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-stone-900/90 backdrop-blur-sm transition-opacity" onclick="closeVideoModal()"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                <!-- Modal Panel -->
+                <div class="relative transform overflow-hidden rounded-2xl bg-black shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl aspect-video w-full">
+                    
+                    <!-- Close Button -->
+                    <button type="button" class="absolute top-4 right-4 z-20 text-white/70 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2 transition-colors" onclick="closeVideoModal()">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    <!-- Video Container -->
+                    <div id="video-modal-container" class="w-full h-full bg-black flex items-center justify-center">
+                        <!-- IFrame will be injected here -->
+                    </div>
+                    
+                    <!-- Network Warning -->
+                    <div id="video-modal-warning" class="absolute bottom-4 left-4 right-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 rounded shadow-lg hidden z-20 flex justify-between items-center text-sm">
+                        <div class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                            <span>当前为移动网络，请注意流量消耗</span>
+                        </div>
+                        <button onclick="this.parentElement.classList.add('hidden')" class="text-yellow-700 hover:text-yellow-900 font-bold px-2">✕</button>
+                    </div>
+
+                    <!-- External Link Fallback -->
+                    <a id="video-fallback-btn" href="#" target="_blank" class="hidden absolute bottom-4 right-4 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full backdrop-blur-md text-sm font-medium transition-colors flex items-center gap-2">
+                        <span>在 YouTube 观看</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+      // Service Worker Registration
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(registration => {
+              console.log('SW registered:', registration);
+            })
+            .catch(error => {
+              console.log('SW registration failed:', error);
+            });
+        });
+      }
+    </script>
+</body>
+</html>

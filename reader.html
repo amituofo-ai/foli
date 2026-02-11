@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>閱讀開示</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Serif SC", serif; }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    /* Custom scrollbar for better reading experience */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #dcd6cc; border-radius: 3px; }
+    
+    /* Highlight & Minimap */
+    .highlight-match { background-color: #fde047; color: #5c4033; font-weight: bold; border-radius: 2px; padding: 0 1px; box-shadow: 0 0 0 1px #fde047; scroll-margin-top: 100px; }
+    #minimap { position: fixed; right: 4px; top: 64px; bottom: 10px; width: 6px; z-index: 40; pointer-events: none; }
+    .minimap-marker { position: absolute; left: 0; right: 0; height: 2px; background-color: #ca8a04; border-radius: 1px; opacity: 0.8; }
+  </style>
+  <!-- Load pre-bundled data if available (for offline mode) -->
+  <script src="i18n.js?v=2"></script>
+  <script src="sutras_data.js?v=2"></script>
+  <!-- <script src="search_data.js?v=3"></script> -->
+  <script src="ai_chat.js?v=3"></script>
+</head>
+<body class="bg-gradient-to-br from-[#f8c390] via-[#f9dba0] to-[#fbf2d3] bg-fixed text-[#2e2e2e] min-h-screen flex flex-col selection:bg-[#b35c1e] selection:text-white">
+
+<header class="flex justify-between items-center px-4 py-3 bg-white/30 backdrop-blur-xl sticky top-0 z-30 shadow-sm text-[#5c4033] border-b border-white/30 transition-all duration-300">
+  <button onclick="goBack()" class="w-9 h-9 flex justify-center items-center text-[#8B4513] text-xl active:scale-90 transition-transform hover:bg-white/40 rounded-full border border-white/20 shadow-sm">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+    </svg>
+  </button>
+  <div id="header-title" class="text-lg font-bold tracking-wide truncate max-w-[55%] drop-shadow-sm" data-i18n="reader_title">文字開示</div>
+  <div class="flex gap-2">
+      <button onclick="toggleBookmarks()" class="w-9 h-9 flex justify-center items-center text-[#8B4513] text-lg active:scale-90 transition-transform hover:bg-white/40 rounded-full border border-white/20 shadow-sm">
+        🔖
+      </button>
+      <button onclick="toggleSettings()" class="w-9 h-9 flex justify-center items-center text-[#8B4513] text-lg active:scale-90 transition-transform hover:bg-white/40 rounded-full border border-white/20 shadow-sm">
+        ⚙️
+      </button>
+  </div>
+</header>
+
+<main class="flex-1 p-4 max-w-md mx-auto w-full relative">
+    <div id="minimap"></div>
+    <div id="content-container" class="bg-white/40 backdrop-blur-2xl min-h-[calc(100vh-100px)] p-6 rounded-3xl shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 transition-all duration-300">
+        <div id="article-title" class="text-2xl font-bold text-[#5c4033] mb-6 text-center leading-snug font-serif pt-2 border-b border-[#8B4513]/10 pb-4 drop-shadow-sm"></div>
+        <div id="article-content" class="text-lg text-[#4a3b32] leading-loose text-justify font-serif whitespace-pre-wrap tracking-wide" style="font-size: 18px;">
+            <div class="flex flex-col items-center justify-center py-20 text-[#8B4513]/40 gap-3">
+                <svg class="animate-spin h-8 w-8 text-[#8B4513]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span data-i18n="loading">正在載入文章...</span>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Bookmarks Modal -->
+<div id="bookmarks-modal" class="fixed inset-0 z-50 hidden" style="display: none;">
+    <div class="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity" onclick="toggleBookmarks()"></div>
+    <div class="absolute top-14 right-16 bg-white/80 backdrop-blur-2xl p-5 rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)] w-80 border border-white/60 animate-in fade-in slide-in-from-top-4 duration-200 ring-1 ring-white/50">
+        <div class="flex justify-between items-center mb-4 border-b border-[#8B4513]/10 pb-2">
+            <span class="font-bold text-[#5c4033] flex items-center gap-2">
+                🔖 書籤管理 (<span id="bookmark-count">0</span>/3)
+            </span>
+            <button onclick="toggleBookmarks()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#8B4513]/10 text-[#8B4513]/60 transition-colors">✕</button>
+        </div>
+        
+        <div class="space-y-3">
+            <div id="bookmarks-list" class="space-y-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                <!-- Bookmarks will be injected here -->
+            </div>
+
+            <button id="add-bookmark-btn" onclick="addBookmark()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#f8c390] to-[#f9dba0] text-[#5c4033] font-bold shadow-sm border border-white/50 hover:shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span>➕ 添加當前進度</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settings-modal" class="fixed inset-0 z-50 hidden" style="display: none;">
+    <div class="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity" onclick="toggleSettings()"></div>
+    <div class="absolute top-14 right-4 bg-white/80 backdrop-blur-2xl p-5 rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)] w-72 border border-white/60 animate-in fade-in slide-in-from-top-4 duration-200 ring-1 ring-white/50">
+        <div class="flex justify-between items-center mb-4 border-b border-[#8B4513]/10 pb-2">
+            <span class="font-bold text-[#5c4033] flex items-center gap-2" data-i18n="reader_settings">
+                ⚙️ 閱讀設置
+            </span>
+            <button onclick="toggleSettings()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#8B4513]/10 text-[#8B4513]/60 transition-colors">✕</button>
+        </div>
+        
+        <div class="space-y-4">
+             <!-- Language Selector -->
+             <div>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs text-[#8B4513]/80 font-bold uppercase tracking-wider" data-i18n="language_label">语言 / Language</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="setLanguage('zh-CN')" class="flex-1 py-1.5 rounded-xl border border-white/50 bg-white/40 text-xs font-medium text-[#5c4033] hover:bg-[#f8c390]/30 hover:border-[#f8c390] hover:text-[#8B4513] transition-all active:scale-95 shadow-sm">简体</button>
+                    <button onclick="setLanguage('zh-TW')" class="flex-1 py-1.5 rounded-xl border border-white/50 bg-white/40 text-xs font-medium text-[#5c4033] hover:bg-[#f8c390]/30 hover:border-[#f8c390] hover:text-[#8B4513] transition-all active:scale-95 shadow-sm">繁體</button>
+                    <button onclick="setLanguage('en')" class="flex-1 py-1.5 rounded-xl border border-white/50 bg-white/40 text-xs font-medium text-[#5c4033] hover:bg-[#f8c390]/30 hover:border-[#f8c390] hover:text-[#8B4513] transition-all active:scale-95 shadow-sm">En</button>
+                </div>
+            </div>
+
+            <hr class="border-[#8B4513]/10">
+
+            <div>
+                <div class="flex justify-between text-xs text-[#8B4513]/80 font-bold uppercase tracking-wider mb-2">
+                    <span data-i18n="font_size_label">字體大小</span>
+                    <span id="font-size-label" class="text-[#8B4513]">18px</span>
+                </div>
+                <input type="range" id="font-size-slider" min="14" max="32" step="1" value="18" 
+                       class="w-full h-2 bg-[#8B4513]/20 rounded-lg appearance-none cursor-pointer accent-[#8B4513]"
+                       oninput="updateFontSize(this.value)">
+                <div class="flex justify-between text-[10px] text-[#8B4513]/50 mt-1">
+                    <span>A</span>
+                    <span>A</span>
+                </div>
+            </div>
+            
+            <div class="p-3 bg-white/40 rounded-xl border border-white/50 text-[#5c4033] text-justify leading-relaxed transition-all duration-200 text-xs shadow-inner" id="settings-preview-text" data-i18n="preview_text">
+                預覽文字 Preview Text.<br>此設置僅影響佛經與開示的閱讀頁面。
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+  // Bookmark Logic
+  function toggleBookmarks() {
+      const modal = document.getElementById('bookmarks-modal');
+      const settingsModal = document.getElementById('settings-modal');
+      
+      if (modal.style.display === 'none' || modal.style.display === '') {
+          // Close settings if open
+          if(settingsModal) settingsModal.style.display = 'none';
+          
+          modal.style.display = 'block';
+          renderBookmarks();
+      } else {
+          modal.style.display = 'none';
+      }
+  }
+
+  function getBookmarkKey() {
+      const urlParams = new URLSearchParams(window.location.search);
+      // Use file name as key, fallback to title if file is missing (unlikely)
+      return 'foli_bookmark_' + (urlParams.get('file') || 'unknown');
+  }
+
+  function getBookmarks() {
+      const key = getBookmarkKey();
+      try {
+          return JSON.parse(localStorage.getItem(key) || '[]');
+      } catch (e) {
+          return [];
+      }
+  }
+
+  function renderBookmarks() {
+      const bookmarks = getBookmarks();
+      const list = document.getElementById('bookmarks-list');
+      const countEl = document.getElementById('bookmark-count');
+      const addBtn = document.getElementById('add-bookmark-btn');
+      
+      countEl.innerText = bookmarks.length;
+      addBtn.disabled = bookmarks.length >= 3;
+      
+      if (bookmarks.length === 0) {
+          list.innerHTML = '<div class="text-center text-[#8B4513]/50 text-sm py-4">暫無書籤<br>No Bookmarks</div>';
+          return;
+      }
+
+      list.innerHTML = bookmarks.map((b, index) => `
+          <div class="p-3 bg-white/40 rounded-xl border border-white/50 flex justify-between items-center group hover:bg-white/60 transition-all">
+              <div class="flex-1 cursor-pointer" onclick="jumpToBookmark(${b.percent})">
+                  <div class="text-xs text-[#8B4513]/60 mb-0.5">${new Date(b.timestamp).toLocaleString()}</div>
+                  <div class="text-sm text-[#5c4033] font-medium truncate w-48">${b.preview || '書籤 ' + (index + 1)}</div>
+                  <div class="text-[10px] text-[#8B4513]/40">進度: ${(b.percent * 100).toFixed(1)}%</div>
+              </div>
+              <button onclick="deleteBookmark(${index})" class="p-2 text-[#8B4513]/40 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                  🗑️
+              </button>
+          </div>
+      `).join('');
+  }
+
+  function addBookmark() {
+      const bookmarks = getBookmarks();
+      if (bookmarks.length >= 3) {
+          alert('最多只能添加 3 個書籤\nMax 3 bookmarks allowed.');
+          return;
+      }
+
+      // Calculate scroll percentage
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollTop = window.scrollY;
+      const percent = docHeight > 0 ? scrollTop / docHeight : 0;
+
+      // Get preview text (approximate)
+      // Try to find the visible element or just take a snippet from where we are?
+      // Simple approach: Just use "進度 X%" as title, or try to grab text.
+      // Let's try to grab the first text node in viewport.
+      let preview = '書籤';
+      // This is a bit complex to do perfectly, so we'll just use "Progress X%" or user input?
+      // User input is better but slower. Let's auto-generate.
+      preview = `閱讀進度 ${(percent * 100).toFixed(0)}%`;
+
+      const newBookmark = {
+          id: Date.now(),
+          timestamp: Date.now(),
+          percent: percent,
+          preview: preview
+      };
+
+      bookmarks.unshift(newBookmark); // Add to top
+      localStorage.setItem(getBookmarkKey(), JSON.stringify(bookmarks));
+      renderBookmarks();
+  }
+
+  function deleteBookmark(index) {
+      if(!confirm('確定刪除此書籤嗎？')) return;
+      const bookmarks = getBookmarks();
+      bookmarks.splice(index, 1);
+      localStorage.setItem(getBookmarkKey(), JSON.stringify(bookmarks));
+      renderBookmarks();
+  }
+
+  function jumpToBookmark(percent) {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const target = percent * docHeight;
+      window.scrollTo({
+          top: target,
+          behavior: 'smooth'
+      });
+      // Close modal on mobile automatically? Maybe keep open.
+      // Let's close it for better experience.
+      toggleBookmarks();
+  }
+
+  // Settings Logic
+  function toggleSettings() {
+      const modal = document.getElementById('settings-modal');
+      const bookmarksModal = document.getElementById('bookmarks-modal');
+      
+      if (modal.style.display === 'none' || modal.style.display === '') {
+          // Close bookmarks if open
+          if(bookmarksModal) bookmarksModal.style.display = 'none';
+
+          modal.style.display = 'block';
+          // Initialize slider value
+          const currentSize = localStorage.getItem('reader_font_size') || 18;
+          document.getElementById('font-size-slider').value = currentSize;
+          updateFontSize(currentSize, false); // Don't save on open, just reflect
+      } else {
+          modal.style.display = 'none';
+      }
+  }
+
+  function updateFontSize(val, save=true) {
+      // Update label
+      document.getElementById('font-size-label').innerText = val + 'px';
+      
+      // Update preview in modal
+      const preview = document.getElementById('settings-preview-text');
+      if(preview) preview.style.fontSize = val + 'px';
+      
+      // Update Actual Content Live!
+      const content = document.getElementById('article-content');
+      if(content) content.style.fontSize = val + 'px';
+
+      // Save
+      if(save) {
+          localStorage.setItem('reader_font_size', val);
+      }
+  }
+
+  // Go Back Logic
+  function goBack() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const from = urlParams.get('from');
+      
+      if (from === 'search') {
+          // Return to search tab
+          window.location.href = 'index.html#search';
+      } else {
+          // Default to Dharma persistence
+          localStorage.setItem('dharma_tab_state', 'sutras');
+          window.location.href = 'index.html#dharma_sutras';
+      }
+  }
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', () => {
+      // Apply Language
+      document.title = t('reader_title');
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+         const key = el.getAttribute('data-i18n');
+         el.innerHTML = t(key); // Use innerHTML to support <br> in preview_text
+      });
+
+      const savedSize = localStorage.getItem('reader_font_size');
+      if(savedSize) {
+          const content = document.getElementById('article-content');
+          if(content) content.style.fontSize = savedSize + 'px';
+      }
+  });
+
+  // Get params
+  const urlParams = new URLSearchParams(window.location.search);
+  const fileName = urlParams.get('file');
+  const title = urlParams.get('title');
+
+  // Set Title
+  if (title) {
+      const headerTitle = document.getElementById('header-title');
+      headerTitle.innerText = title;
+      // Remove data-i18n to prevent overwriting by i18n script on DOMContentLoaded
+      headerTitle.removeAttribute('data-i18n');
+      
+      document.getElementById('article-title').innerText = title;
+  }
+
+  // Helper: Escape HTML
+  function escapeHtml(text) {
+      if (!text) return "";
+      return text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+  }
+
+  // Helper: Highlight Text and Generate Minimap
+  function renderContentWithHighlight(text) {
+      const contentDiv = document.getElementById('article-content');
+      const minimap = document.getElementById('minimap');
+      const query = urlParams.get('query');
+      
+      minimap.innerHTML = ''; // Clear minimap
+
+      if (!query || !query.trim()) {
+          contentDiv.innerText = text;
+          return;
+      }
+      
+      const q = query.trim();
+      const safeText = escapeHtml(text);
+      
+      // Case insensitive replacement
+      // Note: This simple regex replacement on HTML-escaped text might break if query contains special chars that were escaped.
+      // Ideally, we search on raw text, identify indices, and construct HTML.
+      // But for simple keywords (usually Chinese or simple English), regex on escaped text is mostly fine unless searching for '&', '<', etc.
+      // Let's stick to simple regex for now as it's robust enough for normal text.
+      
+      try {
+          const regex = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+          const highlightedHtml = safeText.replace(regex, '<span class="highlight-match">$1</span>');
+          contentDiv.innerHTML = highlightedHtml;
+          
+          // Generate Minimap after rendering
+          requestAnimationFrame(() => {
+             const matches = contentDiv.querySelectorAll('.highlight-match');
+             const containerHeight = contentDiv.scrollHeight;
+             // We use the article-content height for relative calculation
+             
+             if (matches.length > 0 && containerHeight > 0) {
+                 const fragment = document.createDocumentFragment();
+                 matches.forEach(match => {
+                     // Calculate relative position
+                     // match.offsetTop is relative to offsetParent (contentDiv)
+                     const top = match.offsetTop;
+                     const percent = (top / containerHeight) * 100;
+                     
+                     const marker = document.createElement('div');
+                     marker.className = 'minimap-marker';
+                     marker.style.top = `${percent}%`;
+                     fragment.appendChild(marker);
+                 });
+                 minimap.appendChild(fragment);
+
+                 // Scroll to first match
+                 setTimeout(() => {
+                     matches[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                 }, 300);
+             }
+          });
+      } catch(e) {
+          console.error("Highlight error", e);
+          contentDiv.innerText = text;
+      }
+  }
+
+  // Helper: Lazy Load Search Data
+  let isSearchDataLoading = false;
+  function loadSearchData() {
+    if (typeof SEARCH_DATA !== 'undefined') return Promise.resolve();
+    if (isSearchDataLoading) return new Promise(resolve => {
+        const check = setInterval(() => {
+            if (typeof SEARCH_DATA !== 'undefined') {
+                clearInterval(check);
+                resolve();
+            }
+        }, 100);
+    });
+
+    isSearchDataLoading = true;
+    return new Promise((resolve, reject) => {
+         const script = document.createElement('script');
+         script.src = 'search_data.js?v=4';
+         script.onload = () => {
+            isSearchDataLoading = false;
+            resolve();
+        };
+        script.onerror = () => {
+            isSearchDataLoading = false;
+            reject();
+        };
+        document.head.appendChild(script);
+    });
+  }
+
+  function tryLoadFromSearchData(fName) {
+      if (typeof SEARCH_DATA === 'undefined') return false;
+      const decodedName = decodeURIComponent(fName);
+      const basename = fName.split('/').pop();
+      
+      const found = SEARCH_DATA.find(item => item.id === decodedName || item.id === basename || item.title === decodedName || item.title === basename);
+      
+      if (found) {
+          let data = found.content;
+          if (typeof data === 'object' && data.value) data = data.value;
+          
+          renderContentWithHighlight(data);
+          
+          if (!title) {
+              const hTitle = document.getElementById('header-title');
+              hTitle.innerText = found.title;
+              hTitle.removeAttribute('data-i18n');
+          }
+          document.getElementById('article-title').innerText = found.title;
+          
+          const savedSize = localStorage.getItem('reader_font_size');
+          if(savedSize) document.getElementById('article-content').style.fontSize = savedSize + 'px';
+          
+          return true;
+      }
+      return false;
+  }
+
+  function tryLoadFromSutrasData(fName) {
+      if (typeof SUTRAS_DATA === 'undefined') return false;
+      const basename = fName.split('/').pop();
+      const decodedName = decodeURIComponent(basename);
+      
+      let data = null;
+      if (SUTRAS_DATA[decodedName]) data = SUTRAS_DATA[decodedName];
+      else if (SUTRAS_DATA[basename]) data = SUTRAS_DATA[basename];
+
+      if (data) {
+          if (typeof data === 'object' && data.value) data = data.value;
+          renderContentWithHighlight(data);
+          return true;
+      }
+      return false;
+  }
+
+  // Load Content
+  if (fileName) {
+      (async () => {
+          // 1. Try Memory Data (Fastest check if already loaded)
+          if (tryLoadFromSearchData(fileName)) return;
+          if (tryLoadFromSutrasData(fileName)) return;
+
+          // 2. Try Network Fetch
+          try {
+              const response = await fetch(fileName);
+              if (!response.ok) throw new Error('Network response was not ok');
+              const text = await response.text();
+              renderContentWithHighlight(text);
+          } catch (error) {
+              console.warn('Fetch failed, attempting offline fallback...', error);
+              
+              // 3. Offline Fallback: Lazy Load Big Data
+              document.getElementById('article-content').innerHTML = `
+                <div class="flex flex-col items-center justify-center py-20 text-[#8B4513]/40 gap-3">
+                    <svg class="animate-spin h-8 w-8 text-[#8B4513]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-sm">正在嘗試離線加載 (25MB)...</span>
+                </div>
+              `;
+
+              try {
+                  await loadSearchData();
+                  if (tryLoadFromSearchData(fileName)) return;
+                  throw new Error('Not found in offline database');
+              } catch (offlineError) {
+                   console.error('Offline load failed:', offlineError);
+                   document.getElementById('article-content').innerHTML = `
+                    <div class="p-4 bg-red-50 text-red-600 rounded-xl text-center border border-red-100">
+                        <div class="font-bold mb-2">載入失敗</div>
+                        <div class="text-sm opacity-80">無法加載內容。請檢查網絡連接。</div>
+                        <div class="text-xs mt-2 text-stone-400">${fileName}</div>
+                    </div>
+                `;
+              }
+          }
+      })();
+  } else {
+      document.getElementById('article-content').innerText = "未指定文章檔案。";
+  }
+</script>
+
+</body>
+</html>
