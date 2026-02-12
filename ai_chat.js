@@ -278,7 +278,7 @@ function removeMessage(id) {
 
 async function callGeminiFlash(prompt) {
     // Use Vercel Serverless Function to hide API Key and avoid CORS
-    const URL = '/api/get-gemini';
+    const URL = '/api/chat';
     
     // Manage History (Last 5 turns to keep context window small but useful)
     // We only send the system prompt + current context + user message for this simple implementation
