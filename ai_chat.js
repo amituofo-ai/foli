@@ -272,21 +272,16 @@ function removeMessage(id) {
 }
 
 async function callGeminiFlash(prompt) {
-    const API_KEY = GEMINI_API_KEY; // Global from index.html
-    const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+    // Use Vercel Serverless Function to hide API Key and avoid CORS
+    const URL = '/api/chat';
     
     // Manage History (Last 5 turns to keep context window small but useful)
     // We only send the system prompt + current context + user message for this simple implementation
-    // Ideally we should keep history, but for "What day is today" simple queries, one-shot with context is often enough.
-    // However, user might ask follow-ups. Let's keep a small history buffer in memory.
     
     const historyPayload = chatHistory.map(msg => ({
         role: msg.role === 'ai' ? 'model' : 'user',
         parts: [{ text: msg.text }]
     }));
-    
-    // Add current user message to history payload (but not to chatHistory state yet to avoid duplication if we manage it outside)
-    // Actually, let's just construct the payload freshly.
     
     const payload = {
         system_instruction: {
@@ -308,19 +303,19 @@ async function callGeminiFlash(prompt) {
     });
 
     if (!response.ok) {
-        throw new Error(`Gemini API Error: ${response.statusText}`);
+        let errorMessage = response.statusText;
+        try {
+            const errorData = await response.json();
+            if (errorData.details) errorMessage = errorData.details;
+        } catch(e) {}
+        throw new Error(`Gemini API Error: ${errorMessage}`);
     }
 
     const data = await response.json();
     const text = data.candidates[0].content.parts[0].text;
     
     // Update History
-    chatHistory.push({ role: 'user', text: prompt.split('USER_QUESTION:')[1].trim() }); // Store just the question, not the full context dump to save tokens? 
-    // Actually, better to not store the huge context in history, just the question. 
-    // But Gemini is stateless. If I don't send context again, it won't know.
-    // Strategy: Always append the FRESH context to the *latest* user message. 
-    // History only contains previous Q&A.
-    
+    chatHistory.push({ role: 'user', text: prompt.split('USER_QUESTION:')[1].trim() }); 
     chatHistory.push({ role: 'ai', text: text });
     
     return text;
