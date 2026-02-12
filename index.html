@@ -1381,7 +1381,7 @@
         }
 
         renderDayInfo(currentYear, currentMonth + 1, d);
-        document.getElementById('day-info-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // document.getElementById('day-info-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
       };
 
       grid.appendChild(cell);
@@ -1510,7 +1510,8 @@
                  <div class="text-sm font-bold text-[#5c4033] font-serif">${year}年 ${month}月 ${day}日</div>
              </div>
              <div class="p-4 bg-stone-50 text-stone-600 text-sm rounded-xl text-center">
-                 正在加載農曆數據...<br>如長時間無反應，請檢查網絡。
+                 正在加載農曆數據...<br>
+                 <span class="text-xs opacity-70">如長時間無反應，請<a href="javascript:location.reload()" class="underline">刷新頁面</a></span>
              </div>
            `;
            const el = document.getElementById('day-info-content');
@@ -1521,140 +1522,148 @@
            return;
       }
 
-      const solar = Solar.fromYmd(year, month, day);
-      const lunar = solar.getLunar();
-      
-      // Buddhist Info
-      const info = getBuddhistInfo(year, month, day);
-      
-      // Helper to format Buddhist info card
-      let infoHtml = '';
-      if (info && (info.title || info.typeText)) {
-          infoHtml = `
-               <div class="mt-4 p-4 bg-orange-50/60 backdrop-blur-md rounded-2xl border border-orange-100/50 shadow-sm ring-1 ring-orange-100/30">
-                 <div class="font-bold text-[#b35c1e] mb-1 flex items-center gap-2">
-                     <span class="text-lg">🕯️</span>
-                     <div>
-                        ${info.title ? info.title : t('today_fast_title')} 
-                        <span class="block text-xs font-normal opacity-80 mt-0.5 text-[#b35c1e]/70">${info.typeText}</span>
-                     </div>
-                 </div>
-                 <div class="text-xs text-[#8c6b4a] mt-2 text-justify leading-relaxed font-serif">${info.description ? info.description : (info.tags.length > 0 ? t('recommendation_prefix') + info.tags.join('、') : t('default_recommendation'))}</div>
-               </div>`;
-      } else {
-          // Only show 'No special info' if there are no global festivals either (logic handled below)
-          infoHtml = `<div class="mt-4 text-stone-400 text-sm hidden" id="no-info-placeholder">${t('today_no_special')}</div>`;
-      }
-
-      // Global Festivals
-      const globalFestivals = getGlobalFestivals(year, month, day);
-      let globalFestHtml = '';
-      if (globalFestivals.length > 0) {
-          globalFestHtml = `
-               <div class="mt-3 p-4 bg-indigo-50/60 backdrop-blur-md rounded-2xl border border-indigo-100/50 shadow-sm ring-1 ring-indigo-100/30">
-                 <div class="font-bold text-indigo-800 mb-2 flex items-center gap-2 text-sm">
-                     <span class="text-lg">🌍</span>
-                     <span>世界節日</span>
-                 </div>
-                 <div class="flex flex-wrap gap-2">
-                     ${globalFestivals.map(f => `<span class="px-2.5 py-1 bg-white/80 border border-indigo-200 text-indigo-700 text-xs rounded-lg font-bold shadow-sm backdrop-blur-sm">${f}</span>`).join('')}
-                 </div>
-               </div>`;
-      }
-
-      // If both are empty, show placeholder
-      if (!infoHtml.includes('bg-orange-50') && globalFestivals.length === 0) {
-           infoHtml = `<div class="mt-4 text-stone-400 text-sm text-center py-4 bg-white/20 rounded-xl border border-white/30 backdrop-blur-sm">${t('today_no_special')}</div>`;
-      } else if (infoHtml.includes('hidden')) {
-           infoHtml = ''; // Clear hidden placeholder if we have global festivals
-      }
-
-      // Append Global Festivals
-      if (globalFestHtml) {
-          infoHtml += globalFestHtml;
-      }
-
-      if (info && info.events && info.events.length > 0) {
-          infoHtml += info.events.map(e => renderEventCard(e)).join('');
-      }
-  
-      // Almanac Data Preparation
-      const jieqi = lunar.getJieQi();
-      const yiList = lunar.getDayYi();
-      const jiList = lunar.getDayJi();
-      const yiStr = yiList.length > 0 ? yiList.slice(0, 10).join('、') + (yiList.length > 10 ? '...' : '') : '諸事不宜';
-      const jiStr = jiList.length > 0 ? jiList.slice(0, 10).join('、') + (jiList.length > 10 ? '...' : '') : '諸事不忌';
-      
-      // WuXing Logic
-      let wuxingStr = '';
       try {
-          const gan = lunar.getDayGan();
-          const zhi = lunar.getDayZhi();
-          const wxGan = {'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'};
-          const wxZhi = {'子':'水','丑':'土','寅':'木','卯':'木','辰':'土','巳':'火','午':'火','未':'土','申':'金','酉':'金','戌':'土','亥':'水'};
-          if(wxGan[gan] && wxZhi[zhi]) {
-              wuxingStr = `天干[${gan}]屬${wxGan[gan]} · 地支[${zhi}]屬${wxZhi[zhi]}`;
+          const solar = Solar.fromYmd(year, month, day);
+          const lunar = solar.getLunar();
+          
+          // Buddhist Info
+          const info = getBuddhistInfo(year, month, day);
+          
+          // Helper to format Buddhist info card
+          let infoHtml = '';
+          if (info && (info.title || info.typeText)) {
+              infoHtml = `
+                   <div class="mt-4 p-4 bg-orange-50/60 backdrop-blur-md rounded-2xl border border-orange-100/50 shadow-sm ring-1 ring-orange-100/30">
+                     <div class="font-bold text-[#b35c1e] mb-1 flex items-center gap-2">
+                         <span class="text-lg">🕯️</span>
+                         <div>
+                            ${info.title ? info.title : t('today_fast_title')} 
+                            <span class="block text-xs font-normal opacity-80 mt-0.5 text-[#b35c1e]/70">${info.typeText}</span>
+                         </div>
+                     </div>
+                     <div class="text-xs text-[#8c6b4a] mt-2 text-justify leading-relaxed font-serif">${info.description ? info.description : (info.tags.length > 0 ? t('recommendation_prefix') + info.tags.join('、') : t('default_recommendation'))}</div>
+                   </div>`;
+          } else {
+              // Only show 'No special info' if there are no global festivals either (logic handled below)
+              infoHtml = `<div class="mt-4 text-stone-400 text-sm hidden" id="no-info-placeholder">${t('today_no_special')}</div>`;
           }
-      } catch(e) {}
-  
-      // Construct Main HTML
-      const html = `
-        <div class="flex items-center justify-between mb-2">
-            <div class="text-[#a67c52] text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#a67c52]"></span>
-              ${titleText}
+    
+          // Global Festivals
+          const globalFestivals = getGlobalFestivals(year, month, day);
+          let globalFestHtml = '';
+          if (globalFestivals.length > 0) {
+              globalFestHtml = `
+                   <div class="mt-3 p-4 bg-indigo-50/60 backdrop-blur-md rounded-2xl border border-indigo-100/50 shadow-sm ring-1 ring-indigo-100/30">
+                     <div class="font-bold text-indigo-800 mb-2 flex items-center gap-2 text-sm">
+                         <span class="text-lg">🌍</span>
+                         <span>世界節日</span>
+                     </div>
+                     <div class="flex flex-wrap gap-2">
+                         ${globalFestivals.map(f => `<span class="px-2.5 py-1 bg-white/80 border border-indigo-200 text-indigo-700 text-xs rounded-lg font-bold shadow-sm backdrop-blur-sm">${f}</span>`).join('')}
+                     </div>
+                   </div>`;
+          }
+    
+          // If both are empty, show placeholder
+          if (!infoHtml.includes('bg-orange-50') && globalFestivals.length === 0) {
+               infoHtml = `<div class="mt-4 text-stone-400 text-sm text-center py-4 bg-white/20 rounded-xl border border-white/30 backdrop-blur-sm">${t('today_no_special')}</div>`;
+          } else if (infoHtml.includes('hidden')) {
+               infoHtml = ''; // Clear hidden placeholder if we have global festivals
+          }
+    
+          // Append Global Festivals
+          if (globalFestHtml) {
+              infoHtml += globalFestHtml;
+          }
+    
+          if (info && info.events && info.events.length > 0) {
+              infoHtml += info.events.map(e => renderEventCard(e)).join('');
+          }
+      
+          // Almanac Data Preparation
+          const jieqi = lunar.getJieQi();
+          const yiList = lunar.getDayYi();
+          const jiList = lunar.getDayJi();
+          const yiStr = yiList.length > 0 ? yiList.slice(0, 10).join('、') + (yiList.length > 10 ? '...' : '') : '諸事不宜';
+          const jiStr = jiList.length > 0 ? jiList.slice(0, 10).join('、') + (jiList.length > 10 ? '...' : '') : '諸事不忌';
+          
+          // WuXing Logic
+          let wuxingStr = '';
+          try {
+              const gan = lunar.getDayGan();
+              const zhi = lunar.getDayZhi();
+              const wxGan = {'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'};
+              const wxZhi = {'子':'水','丑':'土','寅':'木','卯':'木','辰':'土','巳':'火','午':'火','未':'土','申':'金','酉':'金','戌':'土','亥':'水'};
+              if(wxGan[gan] && wxZhi[zhi]) {
+                  wuxingStr = `天干[${gan}]屬${wxGan[gan]} · 地支[${zhi}]屬${wxZhi[zhi]}`;
+              }
+          } catch(e) {}
+      
+          // Construct Main HTML
+          const html = `
+            <div class="flex items-center justify-between mb-2">
+                <div class="text-[#a67c52] text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#a67c52]"></span>
+                  ${titleText}
+                </div>
+                <div class="text-sm font-bold text-[#5c4033] font-serif">${year}年 ${month}月 ${day}日</div>
             </div>
-            <div class="text-sm font-bold text-[#5c4033] font-serif">${year}年 ${month}月 ${day}日</div>
-        </div>
-        
-        <!-- Lunar Header (Compact) -->
-      <div class="flex items-center gap-2 mb-1 pb-1 border-b border-[#b35c1e]/10 font-serif text-[#5c4033] flex-wrap text-sm">
-           <span class="font-bold text-lg">${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}</span>
-           <span class="text-xs opacity-80 flex gap-2 items-center ml-2">
-              <span>${lunar.getYearInGanZhi()}年 [${lunar.getYearShengXiao()}]</span>
-              <span>•</span>
-              <span>${lunar.getMonthInGanZhi()}月</span>
-              <span>•</span>
-              <span>${lunar.getDayInGanZhi()}日</span>
-           </span>
-           ${jieqi ? `<span class="ml-auto px-3 py-0.5 bg-gradient-to-r from-[#b35c1e] to-[#d68c45] text-white text-[10px] rounded-full font-bold shadow-sm">${jieqi}</span>` : ''}
-      </div>
-
-      <!-- Yi / Ji (Prominent Glass) -->
-        <div class="grid grid-cols-1 gap-3 mb-4 font-serif mt-3">
-             <!-- Yi -->
-             <div class="bg-emerald-50/60 backdrop-blur-md rounded-2xl p-4 border border-emerald-100/50 shadow-sm ring-1 ring-emerald-100/30">
-                 <div class="flex items-center gap-2 mb-2">
-                     <div class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-emerald-200">宜</div>
-                     <span class="text-emerald-800 font-bold text-base">今日所宜</span>
+            
+            <!-- Lunar Header (Compact) -->
+          <div class="flex items-center gap-2 mb-1 pb-1 border-b border-[#b35c1e]/10 font-serif text-[#5c4033] flex-wrap text-sm">
+               <span class="font-bold text-lg">${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}</span>
+               <span class="text-xs opacity-80 flex gap-2 items-center ml-2">
+                  <span>${lunar.getYearInGanZhi()}年 [${lunar.getYearShengXiao()}]</span>
+                  <span>•</span>
+                  <span>${lunar.getMonthInGanZhi()}月</span>
+                  <span>•</span>
+                  <span>${lunar.getDayInGanZhi()}日</span>
+               </span>
+               ${jieqi ? `<span class="ml-auto px-3 py-0.5 bg-gradient-to-r from-[#b35c1e] to-[#d68c45] text-white text-[10px] rounded-full font-bold shadow-sm">${jieqi}</span>` : ''}
+          </div>
+    
+          <!-- Yi / Ji (Prominent Glass) -->
+            <div class="grid grid-cols-1 gap-3 mb-4 font-serif mt-3">
+                 <!-- Yi -->
+                 <div class="bg-emerald-50/60 backdrop-blur-md rounded-2xl p-4 border border-emerald-100/50 shadow-sm ring-1 ring-emerald-100/30">
+                     <div class="flex items-center gap-2 mb-2">
+                         <div class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-emerald-200">宜</div>
+                         <span class="text-emerald-800 font-bold text-base">今日所宜</span>
+                     </div>
+                     <div class="text-sm text-stone-700 leading-relaxed pl-10 opacity-90">${yiStr}</div>
                  </div>
-                 <div class="text-sm text-stone-700 leading-relaxed pl-10 opacity-90">${yiStr}</div>
-             </div>
-             
-             <!-- Ji -->
-             <div class="bg-rose-50/60 backdrop-blur-md rounded-2xl p-4 border border-rose-100/50 shadow-sm ring-1 ring-rose-100/30">
-                  <div class="flex items-center gap-2 mb-2">
-                     <div class="w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-rose-200">忌</div>
-                     <span class="text-rose-800 font-bold text-base">今日所忌</span>
+                 
+                 <!-- Ji -->
+                 <div class="bg-rose-50/60 backdrop-blur-md rounded-2xl p-4 border border-rose-100/50 shadow-sm ring-1 ring-rose-100/30">
+                      <div class="flex items-center gap-2 mb-2">
+                         <div class="w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-rose-200">忌</div>
+                         <span class="text-rose-800 font-bold text-base">今日所忌</span>
+                     </div>
+                     <div class="text-sm text-stone-700 leading-relaxed pl-10 opacity-90">${jiStr}</div>
                  </div>
-                 <div class="text-sm text-stone-700 leading-relaxed pl-10 opacity-90">${jiStr}</div>
-             </div>
-        </div>
-        
-        ${wuxingStr ? `
-           <div class="pt-2 border-t border-[#b35c1e]/10 text-center mb-2">
-              <div class="text-[10px] text-[#8c7853] mb-0.5 opacity-70">今日五行</div>
-              <div class="text-xs font-bold text-[#5c4033] tracking-wide">${wuxingStr}</div>
-           </div>
-        ` : ''}
-  
-        <!-- Buddhist Info -->
-        ${infoHtml}
-      `;
-  
-      const card = document.getElementById('day-info-card');
-      if(card) {
-           card.innerHTML = html;
+            </div>
+            
+            ${wuxingStr ? `
+               <div class="pt-2 border-t border-[#b35c1e]/10 text-center mb-2">
+                  <div class="text-[10px] text-[#8c7853] mb-0.5 opacity-70">今日五行</div>
+                  <div class="text-xs font-bold text-[#5c4033] tracking-wide">${wuxingStr}</div>
+               </div>
+            ` : ''}
+      
+            <!-- Buddhist Info -->
+            ${infoHtml}
+          `;
+      
+          const card = document.getElementById('day-info-card');
+          if(card) {
+               card.innerHTML = html;
+          }
+      } catch (e) {
+          console.error('Render Day Info Error', e);
+          const card = document.getElementById('day-info-card');
+          if(card) {
+               card.innerHTML = `<div class="p-4 text-center text-red-500 text-sm">數據加載錯誤: ${e.message}<br><span class="text-xs text-stone-500">請刷新頁面重試</span></div>`;
+          }
       }
   }
 
