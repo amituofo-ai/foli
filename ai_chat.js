@@ -296,6 +296,8 @@ async function callGeminiFlash(prompt) {
             }]
         }]
     };
+    
+    console.log("Sending Payload to Backend:", JSON.stringify(payload, null, 2));
 
     const response = await fetch(URL, {
         method: 'POST',

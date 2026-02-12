@@ -31,9 +31,16 @@ export default async function handler(req, res) {
     console.log('Proxying to Gemini 2.5...');
 
     // Ensure strict body structure (only contents)
+    if (!req.body || !req.body.contents) {
+      console.error('Invalid Request Body:', req.body);
+      return res.status(400).json({ error: 'Invalid Request Body', details: 'Missing contents array' });
+    }
+
     const geminiBody = {
       contents: req.body.contents
     };
+    
+    console.log('Sending body to Gemini:', JSON.stringify(geminiBody).substring(0, 200) + '...');
 
     // 3. Fetch
     const response = await fetch(url, {
