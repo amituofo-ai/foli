@@ -195,6 +195,9 @@ async function handleUserSend() {
         // Build Prompt
         const context = getLunarContext();
         const fullPrompt = `
+SYSTEM_INSTRUCTION:
+${AI_SYSTEM_PROMPT}
+
 CONTEXT_DATA:
 ${context}
 
