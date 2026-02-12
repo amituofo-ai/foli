@@ -25,10 +25,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 2. Simple URL Construction (gemini-1.5-flash)
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey;
+    // 2. Simple URL Construction (gemini-2.5-flash)
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey;
     
-    console.log('Proxying to Gemini...');
+    console.log('Proxying to Gemini 2.5...');
+
+    // Ensure strict body structure (only contents)
+    const geminiBody = {
+      contents: req.body.contents
+    };
 
     // 3. Fetch
     const response = await fetch(url, {
@@ -36,7 +41,7 @@ export default async function handler(req, res) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(req.body), // Forwarding the frontend body directly
+      body: JSON.stringify(geminiBody),
     });
 
     if (!response.ok) {
