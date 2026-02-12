@@ -11,7 +11,7 @@ const ASSETS_TO_CACHE = [
   './recipe_data.js?v=12',
   './diet_logic.js?v=12',
   './video_data.js?v=12',
-  './audio_data.js?v=12',
+  './audio_data_v12.js',
   './ai_chat.js?v=12',
   './video_snippet.js?v=12',
   './search_data.js?v=12'
