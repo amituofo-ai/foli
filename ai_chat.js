@@ -288,17 +288,13 @@ async function callGeminiFlash(prompt) {
         parts: [{ text: msg.text }]
     }));
     
+    // Simple payload structure for debugging
     const payload = {
-        system_instruction: {
-            parts: [{ text: AI_SYSTEM_PROMPT }]
-        },
-        contents: [
-            ...historyPayload, // Previous history
-            {
-                role: "user",
-                parts: [{ text: prompt }]
-            }
-        ]
+        contents: [{
+            parts: [{
+                text: prompt
+            }]
+        }]
     };
 
     const response = await fetch(URL, {
