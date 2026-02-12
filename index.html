@@ -2138,7 +2138,21 @@
       // Set content
       if(titleEl) titleEl.innerText = audio.title;
       if(audioEl) {
+          audioEl.onerror = () => {
+              const err = audioEl.error;
+              let msg = "未知错误";
+              if(err) {
+                  switch(err.code) {
+                      case 1: msg = "用户终止"; break;
+                      case 2: msg = "网络错误"; break;
+                      case 3: msg = "解码错误"; break;
+                      case 4: msg = "源文件无法访问"; break;
+                  }
+              }
+              alert(`无法播放音频: ${msg} (Code ${err ? err.code : '?'})\n请检查网络连接。`);
+          };
           audioEl.src = audio.url;
+          audioEl.load(); // Reset state
           audioEl.play().catch(e => console.log('Auto-play prevented:', e));
       }
       
