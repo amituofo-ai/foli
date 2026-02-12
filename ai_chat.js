@@ -309,10 +309,21 @@ async function callGeminiFlash(prompt) {
 
     if (!response.ok) {
         let errorMessage = response.statusText;
+        
+        // Check if response is HTML (likely 404 from static server)
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('text/html')) {
+            throw new Error('Local Environment Error: Please use "vercel dev" or deploy to Vercel to use AI features.');
+        }
+
         try {
             const errorData = await response.json();
+            console.error("Gemini API Error Data:", errorData);
             if (errorData.details) errorMessage = errorData.details;
-        } catch(e) {}
+            if (errorData.error && errorData.error.message) errorMessage = errorData.error.message;
+        } catch(e) {
+            console.error("Failed to parse error JSON:", e);
+        }
         throw new Error(`Gemini API Error: ${errorMessage}`);
     }
 

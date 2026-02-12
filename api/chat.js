@@ -14,9 +14,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
+    const model = 'gemini-1.5-flash';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    
+    const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,7 +29,20 @@ export default async function handler(req, res) {
     if (!response.ok) {
         const errorText = await response.text();
         console.error('Gemini API Error:', response.status, errorText);
-        return res.status(response.status).json({ error: 'Upstream API Error', details: errorText });
+        // Try to parse error text as JSON for better details
+        let errorDetails = errorText;
+        try {
+            const jsonError = JSON.parse(errorText);
+            if (jsonError.error && jsonError.error.message) {
+                errorDetails = jsonError.error.message;
+            }
+        } catch (e) {}
+        
+        return res.status(response.status).json({ 
+            error: 'Upstream API Error', 
+            details: errorDetails,
+            model: model 
+        });
     }
 
     const data = await response.json();
