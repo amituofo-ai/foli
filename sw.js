@@ -1,20 +1,20 @@
-const CACHE_NAME = 'foli-cache-v12';
+const CACHE_NAME = 'foli-cache-v13';
 const ASSETS_TO_CACHE = [
   './',
-  './index.html?v=12',
-  './reader.html?v=12',
-  './add_event.html?v=12',
-  './manifest.json?v=12',
+  './index.html?v=13',
+  './reader.html?v=13',
+  './add_event.html?v=13',
+  './manifest.json?v=13',
   './icons/icon-512.png',
-  './i18n.js?v=12',
-  './lunar.js?v=12',
-  './recipe_data.js?v=12',
-  './diet_logic.js?v=12',
-  './video_data.js?v=12',
-  './audio_data_v12.js',
-  './ai_chat.js?v=12',
-  './video_snippet.js?v=12',
-  './search_data.js?v=12'
+  './i18n.js?v=13',
+  './lunar.js?v=13',
+  './recipe_data.js?v=13',
+  './diet_logic.js?v=13',
+  './video_data.js?v=13',
+  './audio_data_v13.js',
+  './ai_chat.js?v=13',
+  './video_snippet.js?v=13',
+  './search_data.js?v=13'
 ];
 
 // Install Event: Cache Core Assets
