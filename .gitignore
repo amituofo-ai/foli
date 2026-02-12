@@ -15,14 +15,15 @@ p2_*.txt
 titles_*.txt
 *_clean.txt
 *_found.txt
+*_dates.txt
 
-# Source Data Folders (Raw content)
+# Source Data Folders (Raw content - Do Not Upload)
 佛经/
 搜索结果文字/
 祖师大德/
 素斋/
 
-# Raw Text Files in Root (Content)
+# Raw Text Files in Root (Content - Do Not Upload)
 *.txt
 *.docx
 
@@ -34,7 +35,10 @@ node_modules/
 package-lock.json
 yarn.lock
 
-# Optional: If you want to ignore large generated data files and only commit source text
-# (Currently keeping them so the site works out-of-the-box)
-# search_data.js
-# sutras_data.js
+# Keep these generated files for deployment
+!search_data.js
+!sutras_data.js
+!recipe_data.js
+!video_data.js
+!audio_data.js
+

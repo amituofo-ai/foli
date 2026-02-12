@@ -1,19 +1,20 @@
-const CACHE_NAME = 'foli-cache-v4';
+const CACHE_NAME = 'foli-cache-v12';
 const ASSETS_TO_CACHE = [
   './',
-  './index.html',
-  './manifest.json',
+  './index.html?v=12',
+  './reader.html?v=12',
+  './add_event.html?v=12',
+  './manifest.json?v=12',
   './icons/icon-512.png',
-  './i18n.js',
-  './recipe_data.js',
-  './diet_logic.js',
-  './video_data.js',
-  './audio_data.js',
-  './search_data.js',
-  './sutras_data.js',
-  './ai_chat.js',
-  './reader.html',
-  './add_event.html'
+  './i18n.js?v=12',
+  './lunar.js?v=12',
+  './recipe_data.js?v=12',
+  './diet_logic.js?v=12',
+  './video_data.js?v=12',
+  './audio_data.js?v=12',
+  './ai_chat.js?v=12',
+  './video_snippet.js?v=12',
+  './search_data.js?v=12'
 ];
 
 // Install Event: Cache Core Assets
@@ -52,8 +53,14 @@ self.addEventListener('fetch', (event) => {
   // Skip chrome-extension requests or other non-http schemes
   if (!event.request.url.startsWith('http')) return;
 
+  // Exclude media files (mp3, wav, mp4) from caching to support Range requests and save space
+  const url = new URL(event.request.url);
+  if (url.pathname.match(/\.(mp3|wav|mp4)$/i)) {
+      return; // Let the browser handle it (network only)
+  }
+
   event.respondWith(
-    caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
+    caches.match(event.request).then((cachedResponse) => {
       // 1. Return cached response if found (Cache First)
       if (cachedResponse) {
         return cachedResponse;

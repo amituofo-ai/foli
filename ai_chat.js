@@ -213,7 +213,12 @@ ${msg}
     } catch (error) {
         console.error(error);
         removeMessage(typingId);
-        addMessage('ai', '阿弥陀佛，网络连接似乎不畅，请稍后再试。');
+        // Show specific error message if available
+        let displayMsg = '阿弥陀佛，网络连接似乎不畅，请稍后再试。';
+        if (error.message && error.message.includes('Gemini API Error:')) {
+            displayMsg = `阿弥陀佛，连接出错：${error.message.replace('Gemini API Error:', '')}`;
+        }
+        addMessage('ai', displayMsg);
     } finally {
         input.disabled = false;
         btn.disabled = false;
@@ -272,21 +277,16 @@ function removeMessage(id) {
 }
 
 async function callGeminiFlash(prompt) {
-    const API_KEY = GEMINI_API_KEY; // Global from index.html
-    const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+    // Use Vercel Serverless Function to hide API Key and avoid CORS
+    const URL = '/api/chat';
     
     // Manage History (Last 5 turns to keep context window small but useful)
     // We only send the system prompt + current context + user message for this simple implementation
-    // Ideally we should keep history, but for "What day is today" simple queries, one-shot with context is often enough.
-    // However, user might ask follow-ups. Let's keep a small history buffer in memory.
     
     const historyPayload = chatHistory.map(msg => ({
         role: msg.role === 'ai' ? 'model' : 'user',
         parts: [{ text: msg.text }]
     }));
-    
-    // Add current user message to history payload (but not to chatHistory state yet to avoid duplication if we manage it outside)
-    // Actually, let's just construct the payload freshly.
     
     const payload = {
         system_instruction: {
@@ -308,19 +308,30 @@ async function callGeminiFlash(prompt) {
     });
 
     if (!response.ok) {
-        throw new Error(`Gemini API Error: ${response.statusText}`);
+        let errorMessage = response.statusText;
+        
+        // Check if response is HTML (likely 404 from static server)
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('text/html')) {
+            throw new Error('Local Environment Error: Please use "vercel dev" or deploy to Vercel to use AI features.');
+        }
+
+        try {
+            const errorData = await response.json();
+            console.error("Gemini API Error Data:", errorData);
+            if (errorData.details) errorMessage = errorData.details;
+            if (errorData.error && errorData.error.message) errorMessage = errorData.error.message;
+        } catch(e) {
+            console.error("Failed to parse error JSON:", e);
+        }
+        throw new Error(`Gemini API Error: ${errorMessage}`);
     }
 
     const data = await response.json();
     const text = data.candidates[0].content.parts[0].text;
     
     // Update History
-    chatHistory.push({ role: 'user', text: prompt.split('USER_QUESTION:')[1].trim() }); // Store just the question, not the full context dump to save tokens? 
-    // Actually, better to not store the huge context in history, just the question. 
-    // But Gemini is stateless. If I don't send context again, it won't know.
-    // Strategy: Always append the FRESH context to the *latest* user message. 
-    // History only contains previous Q&A.
-    
+    chatHistory.push({ role: 'user', text: prompt.split('USER_QUESTION:')[1].trim() }); 
     chatHistory.push({ role: 'ai', text: text });
     
     return text;
