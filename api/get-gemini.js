@@ -14,10 +14,18 @@ export default async function handler(req, res) {
   }
 
   try {
+    // 1. Define Model (gemini-1.5-flash)
     const model = 'gemini-1.5-flash';
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     
-    const response = await fetch(url, {
+    // 2. Use URL object for safe parameter handling
+    const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+    const urlObj = new URL(baseUrl);
+    
+    // 3. Append API Key safely using URLSearchParams
+    urlObj.searchParams.append('key', apiKey);
+    
+    // 4. Strict Content-Type setting
+    const response = await fetch(urlObj.toString(), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,7 +36,13 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
         const errorText = await response.text();
-        console.error('Gemini API Error:', response.status, errorText);
+        
+        // 5. Log Masked URL for debugging
+        const maskedUrl = urlObj.toString().replace(apiKey, '***HIDDEN_KEY***');
+        console.error(`[Gemini API Error] Status: ${response.status}`);
+        console.error(`[Gemini API Error] URL: ${maskedUrl}`);
+        console.error(`[Gemini API Error] Body: ${errorText}`);
+
         // Try to parse error text as JSON for better details
         let errorDetails = errorText;
         try {
@@ -41,7 +55,7 @@ export default async function handler(req, res) {
         return res.status(response.status).json({ 
             error: 'Upstream API Error', 
             details: errorDetails,
-            model: model 
+            model: model
         });
     }
 
