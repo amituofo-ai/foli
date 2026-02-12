@@ -1,4 +1,8 @@
-﻿﻿﻿﻿﻿﻿const audioData = [
+﻿﻿﻿﻿﻿﻿﻿const audioData = [
+    {
+        url: "https://res.cloudinary.com/dpfa5zhse/video/upload/v1770656708/20180324-1%E8%B0%9B%E6%B7%B1%E5%A4%A7%E5%B8%88%E5%BC%80%E7%A4%BA_%E6%83%B3%E6%B3%95%E6%80%8E%E4%B9%88%E6%9D%A5%E7%9A%84_%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%92%8C%E4%BA%BA_%E9%98%8E%E7%BD%97%E6%AE%BF_%E6%A2%A6%E6%98%AF%E4%BB%80%E4%B9%88_fglgry.mp3",
+        title: "20180324 师父开示：想法怎么来的、计算机和人、阎罗殿、梦是什么"
+    },
     {
         url: "https://res.cloudinary.com/dpfa5zhse/video/upload/v1770656764/20181105%E5%B8%88%E7%88%B6%E7%A0%B4%E6%96%A5%E9%82%AA%E9%81%93%E5%83%A7_hcbo0k.wav",
         title: "20181105 师父破斥邪道僧"

@@ -213,7 +213,12 @@ ${msg}
     } catch (error) {
         console.error(error);
         removeMessage(typingId);
-        addMessage('ai', '阿弥陀佛，网络连接似乎不畅，请稍后再试。');
+        // Show specific error message if available
+        let displayMsg = '阿弥陀佛，网络连接似乎不畅，请稍后再试。';
+        if (error.message && error.message.includes('Gemini API Error:')) {
+            displayMsg = `阿弥陀佛，连接出错：${error.message.replace('Gemini API Error:', '')}`;
+        }
+        addMessage('ai', displayMsg);
     } finally {
         input.disabled = false;
         btn.disabled = false;
