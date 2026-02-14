@@ -97,6 +97,8 @@ const I18N = {
         info_day: '当日信息',
         video_mobile_warning: '当前为移动网络，请注意流量消耗',
         video_watch_youtube: '在 YouTube 观看',
+        // Common
+        date_day_suffix: '日',
         // Add Event Page
         add_event_title: '添加事件',
         edit_event_title: '编辑事件',
@@ -214,6 +216,8 @@ const I18N = {
         info_day: '當日訊息',
         video_mobile_warning: '當前為移動網絡，請注意流量消耗',
         video_watch_youtube: '在 YouTube 觀看',
+        // Common
+        date_day_suffix: '日',
         // Add Event Page
         add_event_title: '添加事件',
         edit_event_title: '編輯事件',
@@ -338,6 +342,8 @@ const I18N = {
         info_day: 'Day Info',
         video_mobile_warning: 'Using mobile data, watch out for usage',
         video_watch_youtube: 'Watch on YouTube',
+        // Common
+        date_day_suffix: '',
         // Add Event Page
         add_event_title: 'Add Event',
         edit_event_title: 'Edit Event',
