@@ -1913,7 +1913,7 @@
                     <div class="w-full rounded-t-sm ${color} transition-all duration-500 hover:bg-[#b35c1e]" style="height: ${h}%"></div>
                     ${d.day % 5 === 0 ? `<div class="text-[8px] text-[#8B4513]/40 mt-1 absolute -bottom-4 transform -translate-x-1/2 left-1/2">${d.day}</div>` : ''}
                     <div class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-stone-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-lg">
-                        ${d.day}日: ${d.val}
+                        ${d.day}${t('date_day_suffix') || '日'}: ${d.val}
                     </div>
                 </div>
             `;
@@ -1953,7 +1953,7 @@
                     <div class="w-full rounded-t-sm ${color} transition-all duration-500 hover:bg-emerald-600" style="height: ${h}%"></div>
                     ${d.day % 5 === 0 ? `<div class="text-[8px] text-[#8B4513]/40 mt-1 absolute -bottom-4 transform -translate-x-1/2 left-1/2">${d.day}</div>` : ''}
                     <div class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-stone-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-lg">
-                        ${d.day}日: ${d.val} min
+                        ${d.day}${t('date_day_suffix') || '日'}: ${d.val} ${t('unit_min')}
                     </div>
                 </div>
             `;
