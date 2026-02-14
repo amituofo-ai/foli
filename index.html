@@ -21,19 +21,19 @@
   };
 
 </script>
-  <script src="lunar.js?v=17"></script>
+  <script src="lunar.js?v=18"></script>
 <!-- i18n Definitions -->
   <!-- i18n Definitions -->
-  <script src="i18n.js?v=17"></script>
+  <script src="i18n.js?v=18"></script>
   <!-- Load Recipe Data -->
-  <script src="recipe_data.js?v=17"></script>
-  <script src="diet_logic.js?v=17"></script>
-  <script src="video_data.js?v=17"></script>
+  <script src="recipe_data.js?v=18"></script>
+  <script src="diet_logic.js?v=18"></script>
+  <script src="video_data.js?v=18"></script>
   <script src="audio_data_v13.js"></script>
   <!-- Load Search Data Lazily -->
-  <!-- <script src="search_data.js?v=17"></script> -->
+  <!-- <script src="search_data.js?v=18"></script> -->
   <!-- Load AI Chat -->
-  <script src="ai_chat.js?v=17"></script>
+  <script src="ai_chat.js?v=18"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Serif SC", serif; }
     .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
@@ -1588,15 +1588,11 @@
           const globalFestivals = getGlobalFestivals(year, month, day);
           let globalFestHtml = '';
           if (globalFestivals.length > 0) {
+              // Compressed: Single line
               globalFestHtml = `
-                   <div class="mt-3 p-4 bg-indigo-50/60 backdrop-blur-md rounded-2xl border border-indigo-100/50 shadow-sm ring-1 ring-indigo-100/30">
-                     <div class="font-bold text-indigo-800 mb-2 flex items-center gap-2 text-sm">
-                         <span class="text-lg">🌍</span>
-                         <span>世界節日</span>
-                     </div>
-                     <div class="flex flex-wrap gap-2">
-                         ${globalFestivals.map(f => `<span class="px-2.5 py-1 bg-white/80 border border-indigo-200 text-indigo-700 text-xs rounded-lg font-bold shadow-sm backdrop-blur-sm">${f}</span>`).join('')}
-                     </div>
+                   <div class="mt-2 px-3 py-2 bg-indigo-50/60 backdrop-blur-md rounded-xl border border-indigo-100/50 shadow-sm flex items-center gap-2">
+                     <span class="text-lg shrink-0">🌍</span>
+                     <div class="text-xs font-bold text-indigo-800 truncate leading-none pt-0.5">${globalFestivals.join(' · ')}</div>
                    </div>`;
           }
     
@@ -1642,7 +1638,8 @@
                   <span class="w-1.5 h-1.5 rounded-full bg-[#a67c52]"></span>
                   ${titleText}
                 </div>
-                <div class="text-sm font-bold text-[#5c4033] font-serif">${year}年 ${month}月 ${day}日</div>
+                <!-- Replaced Date with WuXing -->
+                <div class="text-[10px] font-bold text-[#8c7853] bg-[#f8c390]/20 px-2 py-1 rounded-lg border border-[#f8c390]/30">${wuxingStr || ''}</div>
             </div>
             
             <!-- Lunar Header (Compact) -->
@@ -1658,33 +1655,21 @@
                ${jieqi ? `<span class="ml-auto px-3 py-0.5 bg-gradient-to-r from-[#b35c1e] to-[#d68c45] text-white text-[10px] rounded-full font-bold shadow-sm">${jieqi}</span>` : ''}
           </div>
     
-          <!-- Yi / Ji (Prominent Glass) -->
-            <div class="grid grid-cols-1 gap-3 mb-4 font-serif mt-3">
-                 <!-- Yi -->
-                 <div class="bg-emerald-50/60 backdrop-blur-md rounded-2xl p-4 border border-emerald-100/50 shadow-sm ring-1 ring-emerald-100/30">
-                     <div class="flex items-center gap-2 mb-2">
-                         <div class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-emerald-200">宜</div>
-                         <span class="text-emerald-800 font-bold text-base">今日所宜</span>
-                     </div>
-                     <div class="text-sm text-stone-700 leading-relaxed pl-10 opacity-90">${yiStr}</div>
-                 </div>
-                 
-                 <!-- Ji -->
-                 <div class="bg-rose-50/60 backdrop-blur-md rounded-2xl p-4 border border-rose-100/50 shadow-sm ring-1 ring-rose-100/30">
-                      <div class="flex items-center gap-2 mb-2">
-                         <div class="w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-rose-200">忌</div>
-                         <span class="text-rose-800 font-bold text-base">今日所忌</span>
-                     </div>
-                     <div class="text-sm text-stone-700 leading-relaxed pl-10 opacity-90">${jiStr}</div>
-                 </div>
+          <!-- Yi / Ji (Merged & Compressed) -->
+            <div class="mt-2 bg-stone-50/60 backdrop-blur-md rounded-xl p-3 border border-stone-100 shadow-sm font-serif">
+                <!-- Yi -->
+                <div class="flex items-start gap-3 mb-2">
+                    <div class="shrink-0 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs shadow-sm">宜</div>
+                    <div class="text-xs text-stone-700 leading-relaxed pt-1">${yiStr}</div>
+                </div>
+                <!-- Divider -->
+                <div class="h-px bg-stone-200 w-full my-2"></div>
+                <!-- Ji -->
+                <div class="flex items-start gap-3">
+                    <div class="shrink-0 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs shadow-sm">忌</div>
+                    <div class="text-xs text-stone-700 leading-relaxed pt-1">${jiStr}</div>
+                </div>
             </div>
-            
-            ${wuxingStr ? `
-               <div class="pt-2 border-t border-[#b35c1e]/10 text-center mb-2">
-                  <div class="text-[10px] text-[#8c7853] mb-0.5 opacity-70">今日五行</div>
-                  <div class="text-xs font-bold text-[#5c4033] tracking-wide">${wuxingStr}</div>
-               </div>
-            ` : ''}
       
             <!-- Buddhist Info -->
             ${infoHtml}
