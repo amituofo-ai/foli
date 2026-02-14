@@ -5,6 +5,7 @@
   <title>添加事件</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="i18n.js?v=19"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Serif TC", serif; }
   </style>
@@ -17,10 +18,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
         </svg>
-        取消
+        <span data-i18n="event_cancel">取消</span>
     </button>
-    <h1 class="text-lg font-bold tracking-wide drop-shadow-sm" id="page-title">新建事件</h1>
-    <button onclick="saveEvent()" class="text-[#8B4513] text-base font-bold opacity-50 transition-all bg-white/40 px-3 py-1 rounded-full border border-white/30 hover:bg-white/60 active:scale-95 disabled:active:scale-100" id="save-btn" disabled>保存</button>
+    <h1 class="text-lg font-bold tracking-wide drop-shadow-sm" id="page-title" data-i18n="add_event_title">新建事件</h1>
+    <button onclick="saveEvent()" class="text-[#8B4513] text-base font-bold opacity-50 transition-all bg-white/40 px-3 py-1 rounded-full border border-white/30 hover:bg-white/60 active:scale-95 disabled:active:scale-100" id="save-btn" disabled data-i18n="event_save">保存</button>
   </header>
 
   <!-- Form -->
@@ -29,13 +30,13 @@
       
       <!-- Title Input -->
       <div class="bg-white/40 backdrop-blur-xl rounded-2xl overflow-hidden shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 focus-within:ring-2 focus-within:ring-[#b35c1e]/20 transition-all">
-        <input type="text" id="event-title" placeholder="標題" class="w-full p-4 text-lg bg-transparent outline-none text-[#5c4033] placeholder-[#8B4513]/40" oninput="checkForm()">
+        <input type="text" id="event-title" placeholder="標題" data-i18n-placeholder="event_title_placeholder" class="w-full p-4 text-lg bg-transparent outline-none text-[#5c4033] placeholder-[#8B4513]/40" oninput="checkForm()">
       </div>
 
       <!-- Date Time -->
       <div class="bg-white/40 backdrop-blur-xl rounded-2xl overflow-hidden shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 divide-y divide-white/40">
         <div class="flex justify-between items-center p-4 hover:bg-white/30 transition-colors">
-          <span class="text-[#8B4513] font-medium">全天</span>
+          <span class="text-[#8B4513] font-medium" data-i18n="event_all_day">全天</span>
           <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" id="all-day" class="sr-only peer" checked onchange="toggleTimeInputs()">
             <div class="w-11 h-6 bg-white/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#b35c1e] shadow-inner border border-white/40"></div>
@@ -43,7 +44,7 @@
         </div>
         
         <div class="flex justify-between items-center p-4 hover:bg-white/30 transition-colors">
-          <span class="text-[#8B4513] font-medium">開始</span>
+          <span class="text-[#8B4513] font-medium" data-i18n="event_start">開始</span>
           <div class="flex gap-2">
              <input type="date" id="start-date" class="bg-transparent text-[#5c4033] outline-none text-right font-medium focus:text-[#b35c1e] transition-colors">
              <input type="time" id="start-time" class="bg-transparent text-[#5c4033] outline-none text-right font-medium focus:text-[#b35c1e] transition-colors hidden">
@@ -51,7 +52,7 @@
         </div>
 
         <div class="flex justify-between items-center p-4 hover:bg-white/30 transition-colors">
-          <span class="text-[#8B4513] font-medium">結束</span>
+          <span class="text-[#8B4513] font-medium" data-i18n="event_end">結束</span>
           <div class="flex gap-2">
              <input type="date" id="end-date" class="bg-transparent text-[#5c4033] outline-none text-right font-medium focus:text-[#b35c1e] transition-colors">
              <input type="time" id="end-time" class="bg-transparent text-[#5c4033] outline-none text-right font-medium focus:text-[#b35c1e] transition-colors hidden">
@@ -61,11 +62,11 @@
 
       <!-- Description -->
       <div class="bg-white/40 backdrop-blur-xl rounded-2xl overflow-hidden shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 focus-within:ring-2 focus-within:ring-[#b35c1e]/20 transition-all">
-        <textarea id="description" rows="6" placeholder="備註" class="w-full p-4 text-base bg-transparent outline-none text-[#5c4033] placeholder-[#8B4513]/40 resize-none"></textarea>
+        <textarea id="description" rows="6" placeholder="備註" data-i18n-placeholder="event_desc_placeholder" class="w-full p-4 text-base bg-transparent outline-none text-[#5c4033] placeholder-[#8B4513]/40 resize-none"></textarea>
       </div>
 
       <!-- Delete Button (Hidden by default) -->
-      <button onclick="deleteEvent()" id="delete-btn" class="w-full py-4 text-red-500 bg-white/40 backdrop-blur-xl rounded-2xl shadow-sm border border-red-100 font-medium hover:bg-red-50/50 transition-colors hidden">
+      <button onclick="deleteEvent()" id="delete-btn" class="w-full py-4 text-red-500 bg-white/40 backdrop-blur-xl rounded-2xl shadow-sm border border-red-100 font-medium hover:bg-red-50/50 transition-colors hidden" data-i18n="event_delete">
         刪除事件
       </button>
 
@@ -73,6 +74,36 @@
   </main>
 
   <script>
+    // Translation Logic
+    function applyTranslations() {
+      if (typeof t !== 'function') return;
+      
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        const translation = t(key);
+        if (translation) {
+          if (el.hasAttribute('data-i18n-html')) {
+            el.innerHTML = translation;
+          } else {
+            el.innerText = translation;
+          }
+        }
+      });
+      
+      // Update placeholders
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+          const key = el.getAttribute('data-i18n-placeholder');
+          const translation = t(key);
+          if(translation) {
+              el.placeholder = translation;
+          }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        applyTranslations();
+    });
+
     // Global Event ID
     let currentEventId = null;
 
@@ -97,7 +128,7 @@
         
         if (event) {
             currentEventId = event.id;
-            document.getElementById('page-title').innerText = '編輯事件';
+            document.getElementById('page-title').innerText = t('edit_event_title');
             document.getElementById('event-title').value = event.title;
             document.getElementById('start-date').value = event.startDate;
             document.getElementById('end-date').value = event.endDate;
@@ -194,7 +225,7 @@
 
     function deleteEvent() {
         if (!currentEventId) return;
-        if (!confirm('確定要刪除這個事件嗎？')) return;
+        if (!confirm(t('event_delete_confirm'))) return;
 
         const events = JSON.parse(localStorage.getItem('buddhist_calendar_events') || '[]');
         const newEvents = events.filter(e => e.id !== currentEventId);

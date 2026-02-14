@@ -1,20 +1,20 @@
-const CACHE_NAME = 'foli-cache-v12';
+const CACHE_NAME = 'foli-cache-v19';
 const ASSETS_TO_CACHE = [
   './',
-  './index.html?v=12',
-  './reader.html?v=12',
-  './add_event.html?v=12',
-  './manifest.json?v=12',
+  './index.html?v=19',
+  './reader.html?v=19',
+  './add_event.html?v=19',
+  './manifest.json?v=19',
   './icons/icon-512.png',
-  './i18n.js?v=12',
-  './lunar.js?v=12',
-  './recipe_data.js?v=12',
-  './diet_logic.js?v=12',
-  './video_data.js?v=12',
-  './audio_data_v12.js',
-  './ai_chat.js?v=12',
-  './video_snippet.js?v=12',
-  './search_data.js?v=12'
+  './i18n.js?v=19',
+  './lunar.js?v=19',
+  './recipe_data.js?v=19',
+  './diet_logic.js?v=19',
+  './video_data.js?v=19',
+  './audio_data_v13.js',
+  './ai_chat.js?v=19',
+  './video_snippet.js?v=19',
+  './search_data.js?v=19'
 ];
 
 // Install Event: Cache Core Assets
@@ -55,6 +55,31 @@ self.addEventListener('fetch', (event) => {
 
   // Exclude media files (mp3, wav, mp4) from caching to support Range requests and save space
   const url = new URL(event.request.url);
+  
+  // Strategy for announcement.html: Network First (Freshness over Cache)
+  if (url.pathname.endsWith('announcement.html')) {
+      event.respondWith(
+          fetch(event.request)
+              .then(response => {
+                  // If valid response, clone and cache
+                  if (response && response.status === 200) {
+                      const responseToCache = response.clone();
+                      caches.open(CACHE_NAME).then(cache => {
+                          cache.put(event.request, responseToCache);
+                      });
+                      return response;
+                  }
+                  // If network fails or 404, try cache
+                  return caches.match(event.request);
+              })
+              .catch(() => {
+                  // Offline -> fallback to cache
+                  return caches.match(event.request);
+              })
+      );
+      return;
+  }
+
   if (url.pathname.match(/\.(mp3|wav|mp4)$/i)) {
       return; // Let the browser handle it (network only)
   }

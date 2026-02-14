@@ -195,6 +195,9 @@ async function handleUserSend() {
         // Build Prompt
         const context = getLunarContext();
         const fullPrompt = `
+SYSTEM_INSTRUCTION:
+${AI_SYSTEM_PROMPT}
+
 CONTEXT_DATA:
 ${context}
 
@@ -288,18 +291,16 @@ async function callGeminiFlash(prompt) {
         parts: [{ text: msg.text }]
     }));
     
+    // Simple payload structure for debugging
     const payload = {
-        system_instruction: {
-            parts: [{ text: AI_SYSTEM_PROMPT }]
-        },
-        contents: [
-            ...historyPayload, // Previous history
-            {
-                role: "user",
-                parts: [{ text: prompt }]
-            }
-        ]
+        contents: [{
+            parts: [{
+                text: prompt
+            }]
+        }]
     };
+    
+    console.log("Sending Payload to Backend:", JSON.stringify(payload, null, 2));
 
     const response = await fetch(URL, {
         method: 'POST',

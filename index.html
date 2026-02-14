@@ -21,19 +21,19 @@
   };
 
 </script>
-  <script src="lunar.js?v=12"></script>
+  <script src="lunar.js?v=18"></script>
 <!-- i18n Definitions -->
   <!-- i18n Definitions -->
-  <script src="i18n.js?v=12"></script>
+  <script src="i18n.js?v=18"></script>
   <!-- Load Recipe Data -->
-  <script src="recipe_data.js?v=12"></script>
-  <script src="diet_logic.js?v=12"></script>
-  <script src="video_data.js?v=12"></script>
-  <script src="audio_data_v12.js"></script>
+  <script src="recipe_data.js?v=18"></script>
+  <script src="diet_logic.js?v=18"></script>
+  <script src="video_data.js?v=18"></script>
+  <script src="audio_data_v13.js"></script>
   <!-- Load Search Data Lazily -->
-  <!-- <script src="search_data.js?v=12"></script> -->
+  <!-- <script src="search_data.js?v=18"></script> -->
   <!-- Load AI Chat -->
-  <script src="ai_chat.js?v=12"></script>
+  <script src="ai_chat.js?v=18"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Serif SC", serif; }
     .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
@@ -100,7 +100,43 @@
          <span class="w-2 h-2 rounded-full bg-[#8B4513] shadow-sm"></span>
          今日修行提示
       </div>
-      <div class="text-[#5c4033] text-sm leading-relaxed font-serif font-medium opacity-90">居士道者，當為如下之做，一者護法，二者持菩薩戒，三者隨善知識學，四至十三者為普賢願望！善知識，如是之作者，能為福報種，做佛門因！吾說是人乃佛坐下大居士道者！</div>
+      <div id="announcement-container" class="text-[#5c4033] text-sm leading-relaxed font-serif font-medium opacity-90 min-h-[100px]">
+        <div class="flex justify-center items-center h-full pt-4">
+            <div class="animate-pulse text-stone-400">正在获取最新通告...</div>
+        </div>
+      </div>
+      <script>
+        function loadAnnouncement() {
+            // Fetch raw HTML content with cache busting
+            fetch('announcement.html?t=' + Date.now())
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then(html => {
+                    const container = document.getElementById('announcement-container');
+                    if (!container) return;
+                    
+                    // Directly inject the HTML content
+                    container.innerHTML = html;
+                })
+                .catch(err => {
+                    console.error('Failed to load announcement', err);
+                    const container = document.getElementById('announcement-container');
+                    if (container) {
+                         // Fallback UI
+                         container.innerHTML = `<div class="text-center text-stone-400 py-4">无法加载公告，请检查网络</div>`;
+                    }
+                });
+        }
+        
+        loadAnnouncement();
+        
+        // Refresh when visible
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') loadAnnouncement();
+        });
+      </script>
     </div>
 
   </section>
@@ -109,7 +145,7 @@
     <!-- Search Header -->
     <div class="sticky top-0 z-10 bg-gradient-to-b from-white/40 to-white/20 backdrop-blur-md pb-4 pt-2 border-b border-white/20">
         <div class="relative px-2">
-            <input type="text" id="search-input" placeholder="搜索開示、佛經..." 
+            <input type="text" id="search-input" placeholder="搜索開示、佛經..." data-i18n-placeholder="search_placeholder"
                    class="w-full bg-white/60 backdrop-blur-sm rounded-2xl border border-white/50 px-10 py-3 text-[#5c4033] placeholder-stone-400 focus:outline-none focus:border-[#8B4513]/50 focus:ring-2 focus:ring-[#8B4513]/20 shadow-inner transition-all"
                    oninput="performSearch(this.value)">
             <div class="absolute left-5 top-3.5 text-[#8B4513]/50">
@@ -204,8 +240,8 @@
                 </div>
                 <!-- Text -->
                 <div class="flex-1">
-                    <div class="font-bold text-[#5c4033] text-lg">音频開示</div>
-                    <div class="text-xs text-[#8B4513]/60">聆听法音</div>
+                    <div class="font-bold text-[#5c4033] text-lg" data-i18n="dharma_audio">音频開示</div>
+                    <div class="text-xs text-[#8B4513]/60" data-i18n="dharma_audio_sub">聆听法音</div>
                 </div>
                 <!-- Chevron -->
                 <div class="w-8 h-8 rounded-full bg-white/50 flex items-center justify-center text-[#8B4513]/40 group-hover:bg-purple-50 group-hover:text-purple-500 transition-colors">
@@ -285,6 +321,7 @@
         <div class="flex p-1 bg-orange-100/30 backdrop-blur-sm border border-white/40 rounded-xl mx-1 shadow-inner">
             <button onclick="switchChantMode('counter')" id="btn-mode-counter" class="flex-1 py-2 rounded-lg text-sm font-bold shadow-sm bg-white text-[#b35c1e] transition-all duration-200" data-i18n="chant_counter">念佛計數</button>
             <button onclick="switchChantMode('meditation')" id="btn-mode-meditation" class="flex-1 py-2 rounded-lg text-sm font-bold text-[#8B4513]/60 hover:text-[#b35c1e] hover:bg-white/40 transition-all duration-200" data-i18n="chant_timer">打坐計時</button>
+            <button onclick="switchChantMode('stats')" id="btn-mode-stats" class="flex-1 py-2 rounded-lg text-sm font-bold text-[#8B4513]/60 hover:text-[#b35c1e] hover:bg-white/40 transition-all duration-200" data-i18n="stats_title">統計</button>
         </div>
     </div>
 
@@ -414,6 +451,33 @@
             </div>
         </div>
     </div>
+
+    <!-- Mode: Stats -->
+    <div id="mode-stats" class="hidden flex-1 overflow-y-auto px-1 pb-20 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div class="bg-white/40 backdrop-blur-xl rounded-3xl p-5 mb-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40">
+             <div class="text-[#8B4513] text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#8B4513]"></span>
+                <span data-i18n="stats_title">月度统计</span>
+            </div>
+            
+            <!-- Chant Chart -->
+            <div class="mb-6">
+                <div class="text-xs text-[#8B4513]/60 mb-2 font-bold" data-i18n="stats_chant">念佛计数</div>
+                <div class="bg-white/30 rounded-xl p-4 border border-white/40 shadow-inner h-48 flex items-end justify-between gap-1" id="chart-chant">
+                    <!-- Bars injected by JS -->
+                </div>
+            </div>
+
+            <!-- Meditation Chart -->
+            <div>
+                <div class="text-xs text-[#8B4513]/60 mb-2 font-bold" data-i18n="stats_meditation">禅坐时长 (分钟)</div>
+                <div class="bg-white/30 rounded-xl p-4 border border-white/40 shadow-inner h-48 flex items-end justify-between gap-1" id="chart-meditation">
+                    <!-- Bars injected by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
   </section>
 
     <!-- Mode: Zen Diet (Vegetarian) -->
@@ -1006,7 +1070,7 @@
         <div class="mt-4 px-2 animate-in fade-in duration-300">
             <div class="flex items-center gap-2 mb-4 text-[#8c7853] font-bold">
                 <span class="text-lg">💡</span>
-                <span>名詞釋疑</span>
+                <span>${t('term_explanation')}</span>
             </div>
             <div class="flex flex-wrap gap-2">
                 ${chips}
@@ -1043,14 +1107,14 @@
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span class="text-sm">正在載入搜索數據庫...</span>
+                    <span class="text-sm">${t('search_loading_db')}</span>
                 </div>
               `;
 
               loadSearchData().then(() => {
                  performSearch(query);
               }).catch(() => {
-                 document.getElementById('search-results').innerHTML = '<div class="text-center text-red-500 mt-10">數據加載失敗，請檢查網絡</div>';
+                 document.getElementById('search-results').innerHTML = `<div class="text-center text-red-500 mt-10">${t('search_load_fail')}</div>`;
               });
               return;
           }
@@ -1083,7 +1147,7 @@
           container.innerHTML = `
             <div class="text-center text-stone-400 mt-10">
                 <div class="text-4xl mb-2 opacity-50">😕</div>
-                <p class="text-sm">未找到相關結果</p>
+                <p class="text-sm">${t('search_no_results')}</p>
             </div>
           `;
           return;
@@ -1114,13 +1178,13 @@
 
           // Icon based on category
           let icon = '📄';
-          let catLabel = '文檔';
+          let catLabel = t('cat_doc');
           let colorClass = 'text-stone-500';
           
-          if (item.category === 'sutra') { icon = '📖'; catLabel = '佛經'; colorClass = 'text-amber-700'; }
-          else if (item.category === 'master') { icon = '👤'; catLabel = '祖師'; colorClass = 'text-purple-700'; }
-          else if (item.category === 'teaching') { icon = '🎓'; catLabel = '開示'; colorClass = 'text-blue-700'; }
-          else if (item.category === 'search_result') { icon = '🔍'; catLabel = '資料'; colorClass = 'text-purple-700'; }
+          if (item.category === 'sutra') { icon = '📖'; catLabel = t('cat_sutra'); colorClass = 'text-amber-700'; }
+          else if (item.category === 'master') { icon = '👤'; catLabel = t('cat_master'); colorClass = 'text-purple-700'; }
+          else if (item.category === 'teaching') { icon = '🎓'; catLabel = t('cat_teaching'); colorClass = 'text-blue-700'; }
+          else if (item.category === 'search_result') { icon = '🔍'; catLabel = t('cat_data'); colorClass = 'text-purple-700'; }
 
           html += `
             <div onclick="openReader('${item.id}')" class="bg-white/40 backdrop-blur-md rounded-2xl p-4 shadow-sm border border-white/50 ring-1 ring-white/30 active:scale-[0.98] transition-all cursor-pointer hover:shadow-lg group">
@@ -1497,7 +1561,7 @@
       const isToday = (year === today.getFullYear() && month === (today.getMonth() + 1) && day === today.getDate());
       
       // Title
-      const titleText = isToday ? '今日信息' : '當日信息'; 
+      const titleText = isToday ? t('info_today') : t('info_day'); 
 
       // Safety check for Lunar Library
       if (typeof Solar === 'undefined') {
@@ -1510,8 +1574,8 @@
                  <div class="text-sm font-bold text-[#5c4033] font-serif">${year}年 ${month}月 ${day}日</div>
              </div>
              <div class="p-4 bg-stone-50 text-stone-600 text-sm rounded-xl text-center">
-                 正在加載農曆數據...<br>
-                 <span class="text-xs opacity-70">如長時間無反應，請<a href="javascript:location.reload()" class="underline">刷新頁面</a></span>
+                 ${t('loading_lunar')}<br>
+                 <span class="text-xs opacity-70">${t('loading_timeout')}</span>
              </div>
            `;
            const el = document.getElementById('day-info-content');
@@ -1552,15 +1616,11 @@
           const globalFestivals = getGlobalFestivals(year, month, day);
           let globalFestHtml = '';
           if (globalFestivals.length > 0) {
+              // Compressed: Single line
               globalFestHtml = `
-                   <div class="mt-3 p-4 bg-indigo-50/60 backdrop-blur-md rounded-2xl border border-indigo-100/50 shadow-sm ring-1 ring-indigo-100/30">
-                     <div class="font-bold text-indigo-800 mb-2 flex items-center gap-2 text-sm">
-                         <span class="text-lg">🌍</span>
-                         <span>世界節日</span>
-                     </div>
-                     <div class="flex flex-wrap gap-2">
-                         ${globalFestivals.map(f => `<span class="px-2.5 py-1 bg-white/80 border border-indigo-200 text-indigo-700 text-xs rounded-lg font-bold shadow-sm backdrop-blur-sm">${f}</span>`).join('')}
-                     </div>
+                   <div class="mt-2 px-3 py-2 bg-indigo-50/60 backdrop-blur-md rounded-xl border border-indigo-100/50 shadow-sm flex items-center gap-2">
+                     <span class="text-lg shrink-0">🌍</span>
+                     <div class="text-xs font-bold text-indigo-800 truncate leading-none pt-0.5">${globalFestivals.join(' · ')}</div>
                    </div>`;
           }
     
@@ -1584,8 +1644,8 @@
           const jieqi = lunar.getJieQi();
           const yiList = lunar.getDayYi();
           const jiList = lunar.getDayJi();
-          const yiStr = yiList.length > 0 ? yiList.slice(0, 10).join('、') + (yiList.length > 10 ? '...' : '') : '諸事不宜';
-          const jiStr = jiList.length > 0 ? jiList.slice(0, 10).join('、') + (jiList.length > 10 ? '...' : '') : '諸事不忌';
+          const yiStr = yiList.length > 0 ? yiList.slice(0, 10).join('、') + (yiList.length > 10 ? '...' : '') : t('nothing_suitable');
+          const jiStr = jiList.length > 0 ? jiList.slice(0, 10).join('、') + (jiList.length > 10 ? '...' : '') : t('nothing_taboo');
           
           // WuXing Logic
           let wuxingStr = '';
@@ -1595,7 +1655,7 @@
               const wxGan = {'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'};
               const wxZhi = {'子':'水','丑':'土','寅':'木','卯':'木','辰':'土','巳':'火','午':'火','未':'土','申':'金','酉':'金','戌':'土','亥':'水'};
               if(wxGan[gan] && wxZhi[zhi]) {
-                  wuxingStr = `天干[${gan}]屬${wxGan[gan]} · 地支[${zhi}]屬${wxZhi[zhi]}`;
+                  wuxingStr = `${t('gan_label')}[${gan}]${t('belongs_to')}${wxGan[gan]} · ${t('zhi_label')}[${zhi}]${t('belongs_to')}${wxZhi[zhi]}`;
               }
           } catch(e) {}
       
@@ -1606,7 +1666,8 @@
                   <span class="w-1.5 h-1.5 rounded-full bg-[#a67c52]"></span>
                   ${titleText}
                 </div>
-                <div class="text-sm font-bold text-[#5c4033] font-serif">${year}年 ${month}月 ${day}日</div>
+                <!-- Replaced Date with WuXing -->
+                <div class="text-[10px] font-bold text-[#8c7853] bg-[#f8c390]/20 px-2 py-1 rounded-lg border border-[#f8c390]/30">${wuxingStr || ''}</div>
             </div>
             
             <!-- Lunar Header (Compact) -->
@@ -1622,33 +1683,21 @@
                ${jieqi ? `<span class="ml-auto px-3 py-0.5 bg-gradient-to-r from-[#b35c1e] to-[#d68c45] text-white text-[10px] rounded-full font-bold shadow-sm">${jieqi}</span>` : ''}
           </div>
     
-          <!-- Yi / Ji (Prominent Glass) -->
-            <div class="grid grid-cols-1 gap-3 mb-4 font-serif mt-3">
-                 <!-- Yi -->
-                 <div class="bg-emerald-50/60 backdrop-blur-md rounded-2xl p-4 border border-emerald-100/50 shadow-sm ring-1 ring-emerald-100/30">
-                     <div class="flex items-center gap-2 mb-2">
-                         <div class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-emerald-200">宜</div>
-                         <span class="text-emerald-800 font-bold text-base">今日所宜</span>
-                     </div>
-                     <div class="text-sm text-stone-700 leading-relaxed pl-10 opacity-90">${yiStr}</div>
-                 </div>
-                 
-                 <!-- Ji -->
-                 <div class="bg-rose-50/60 backdrop-blur-md rounded-2xl p-4 border border-rose-100/50 shadow-sm ring-1 ring-rose-100/30">
-                      <div class="flex items-center gap-2 mb-2">
-                         <div class="w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-rose-200">忌</div>
-                         <span class="text-rose-800 font-bold text-base">今日所忌</span>
-                     </div>
-                     <div class="text-sm text-stone-700 leading-relaxed pl-10 opacity-90">${jiStr}</div>
-                 </div>
+          <!-- Yi / Ji (Merged & Compressed) -->
+            <div class="mt-2 bg-stone-50/60 backdrop-blur-md rounded-xl p-3 border border-stone-100 shadow-sm font-serif">
+                <!-- Yi -->
+                <div class="flex items-start gap-3 mb-2">
+                    <div class="shrink-0 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs shadow-sm">${t('yi_label')}</div>
+                    <div class="text-xs text-stone-700 leading-relaxed pt-1">${yiStr}</div>
+                </div>
+                <!-- Divider -->
+                <div class="h-px bg-stone-200 w-full my-2"></div>
+                <!-- Ji -->
+                <div class="flex items-start gap-3">
+                    <div class="shrink-0 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs shadow-sm">${t('ji_label')}</div>
+                    <div class="text-xs text-stone-700 leading-relaxed pt-1">${jiStr}</div>
+                </div>
             </div>
-            
-            ${wuxingStr ? `
-               <div class="pt-2 border-t border-[#b35c1e]/10 text-center mb-2">
-                  <div class="text-[10px] text-[#8c7853] mb-0.5 opacity-70">今日五行</div>
-                  <div class="text-xs font-bold text-[#5c4033] tracking-wide">${wuxingStr}</div>
-               </div>
-            ` : ''}
       
             <!-- Buddhist Info -->
             ${infoHtml}
@@ -1662,7 +1711,7 @@
           console.error('Render Day Info Error', e);
           const card = document.getElementById('day-info-card');
           if(card) {
-               card.innerHTML = `<div class="p-4 text-center text-red-500 text-sm">數據加載錯誤: ${e.message}<br><span class="text-xs text-stone-500">請刷新頁面重試</span></div>`;
+               card.innerHTML = `<div class="p-4 text-center text-red-500 text-sm">${t('error_data')}: ${e.message}<br><span class="text-xs text-stone-500">${t('retry_refresh')}</span></div>`;
           }
       }
   }
@@ -1754,7 +1803,7 @@
   
   function saveCounterRecord() {
       if (count === 0) return;
-      if(!confirm('確定要保存記錄並歸零嗎？')) return;
+      if(!confirm(t('counter_save_confirm'))) return;
       
       // Create Record
       const record = {
@@ -1787,7 +1836,7 @@
       const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
       
       if (history.length === 0) {
-          historyEl.innerHTML = '<div class="text-center text-stone-400 py-4 text-xs">暫無記錄</div>';
+          historyEl.innerHTML = `<div class="text-center text-stone-400 py-4 text-xs">${t('history_empty')}</div>`;
           return;
       }
 
@@ -1812,6 +1861,107 @@
       historyEl.innerHTML = html;
   }
 
+  function renderStats() {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    
+    // 1. Chant Data (Aggregate History + Current)
+    const chantHistory = JSON.parse(localStorage.getItem('buddhist_counter_history') || '[]');
+    const chantCurrent = JSON.parse(localStorage.getItem('buddhist_counter') || '{}');
+    
+    const chantDailyMap = {};
+    
+    // Add History
+    chantHistory.forEach(rec => {
+        const d = new Date(rec.timestamp);
+        if(d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+            const day = d.getDate();
+            chantDailyMap[day] = (chantDailyMap[day] || 0) + rec.count;
+        }
+    });
+
+    // Add Current (Unsaved)
+    Object.keys(chantCurrent).forEach(dateKey => {
+        const d = new Date(dateKey);
+        // Only if valid date and matches current month
+        if(!isNaN(d.getTime()) && d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+            const day = d.getDate();
+            chantDailyMap[day] = (chantDailyMap[day] || 0) + chantCurrent[dateKey];
+        }
+    });
+
+    let maxChant = 0;
+    const chantDaily = [];
+    
+    for(let i=1; i<=daysInMonth; i++) {
+        const val = chantDailyMap[i] || 0;
+        chantDaily.push({day: i, val: val});
+        if(val > maxChant) maxChant = val;
+    }
+    
+    const chantContainer = document.getElementById('chart-chant');
+    if(chantContainer) {
+        let html = '';
+        chantDaily.forEach(d => {
+            const hPercent = maxChant > 0 ? (d.val / maxChant) * 100 : 0;
+            const h = Math.max(hPercent, 5); 
+            const color = d.val > 0 ? 'bg-[#f8c390]' : 'bg-stone-100';
+            html += `
+                <div class="flex-1 flex flex-col items-center group relative">
+                    <div class="w-full rounded-t-sm ${color} transition-all duration-500 hover:bg-[#b35c1e]" style="height: ${h}%"></div>
+                    ${d.day % 5 === 0 ? `<div class="text-[8px] text-[#8B4513]/40 mt-1 absolute -bottom-4 transform -translate-x-1/2 left-1/2">${d.day}</div>` : ''}
+                    <div class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-stone-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-lg">
+                        ${d.day}日: ${d.val}
+                    </div>
+                </div>
+            `;
+        });
+        chantContainer.innerHTML = html;
+    }
+
+    // 2. Meditation Data
+    const medHistory = JSON.parse(localStorage.getItem('meditation_session_history') || '[]');
+    const medDailyMap = {};
+    medHistory.forEach(rec => {
+        const d = new Date(rec.timestamp);
+        if(d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+            const day = d.getDate();
+            const mins = Math.round(rec.duration / 60);
+            medDailyMap[day] = (medDailyMap[day] || 0) + mins;
+        }
+    });
+    
+    let maxMed = 0;
+    const medDaily = [];
+    for(let i=1; i<=daysInMonth; i++) {
+        const val = medDailyMap[i] || 0;
+        medDaily.push({day: i, val: val});
+        if(val > maxMed) maxMed = val;
+    }
+    
+    const medContainer = document.getElementById('chart-meditation');
+    if(medContainer) {
+        let html = '';
+        medDaily.forEach(d => {
+            const hPercent = maxMed > 0 ? (d.val / maxMed) * 100 : 0;
+            const h = Math.max(hPercent, 5);
+            const color = d.val > 0 ? 'bg-emerald-300' : 'bg-stone-100';
+            html += `
+                <div class="flex-1 flex flex-col items-center group relative">
+                    <div class="w-full rounded-t-sm ${color} transition-all duration-500 hover:bg-emerald-600" style="height: ${h}%"></div>
+                    ${d.day % 5 === 0 ? `<div class="text-[8px] text-[#8B4513]/40 mt-1 absolute -bottom-4 transform -translate-x-1/2 left-1/2">${d.day}</div>` : ''}
+                    <div class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-stone-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-lg">
+                        ${d.day}日: ${d.val} min
+                    </div>
+                </div>
+            `;
+        });
+        medContainer.innerHTML = html;
+    }
+  }
+
   // Meditation Logic
   let meditationState = 'idle'; // idle, running, paused
   let meditationStartTime = null;
@@ -1823,26 +1973,47 @@
   function switchChantMode(mode) {
       const btnCounter = document.getElementById('btn-mode-counter');
       const btnMeditation = document.getElementById('btn-mode-meditation');
+      const btnStats = document.getElementById('btn-mode-stats');
+      
       const viewCounter = document.getElementById('mode-counter');
       const viewMeditation = document.getElementById('mode-meditation');
+      const viewStats = document.getElementById('mode-stats');
 
+      // Reset all buttons
+      [btnCounter, btnMeditation, btnStats].forEach(btn => {
+          if(btn) {
+              btn.classList.remove('bg-white', 'text-[#b35c1e]', 'shadow-sm');
+              btn.classList.add('text-stone-500');
+          }
+      });
+      
+      // Hide all views
+      [viewCounter, viewMeditation, viewStats].forEach(view => {
+          if(view) view.classList.add('hidden');
+      });
+
+      // Activate selected
       if (mode === 'counter') {
-          btnCounter.classList.add('bg-white', 'text-[#b35c1e]', 'shadow-sm');
-          btnCounter.classList.remove('text-stone-500');
-          btnMeditation.classList.remove('bg-white', 'text-[#b35c1e]', 'shadow-sm');
-          btnMeditation.classList.add('text-stone-500');
-          
-          viewCounter.classList.remove('hidden');
-          viewMeditation.classList.add('hidden');
-          updateHistory(); // Refresh history
-      } else {
-          btnMeditation.classList.add('bg-white', 'text-[#b35c1e]', 'shadow-sm');
-          btnMeditation.classList.remove('text-stone-500');
-          btnCounter.classList.remove('bg-white', 'text-[#b35c1e]', 'shadow-sm');
-          btnCounter.classList.add('text-stone-500');
-          
-          viewMeditation.classList.remove('hidden');
-          viewCounter.classList.add('hidden');
+          if(btnCounter) {
+              btnCounter.classList.add('bg-white', 'text-[#b35c1e]', 'shadow-sm');
+              btnCounter.classList.remove('text-stone-500');
+          }
+          if(viewCounter) viewCounter.classList.remove('hidden');
+          updateHistory(); 
+      } else if (mode === 'meditation') {
+          if(btnMeditation) {
+              btnMeditation.classList.add('bg-white', 'text-[#b35c1e]', 'shadow-sm');
+              btnMeditation.classList.remove('text-stone-500');
+          }
+          if(viewMeditation) viewMeditation.classList.remove('hidden');
+          if(typeof renderMeditationHistory === 'function') renderMeditationHistory();
+      } else if (mode === 'stats') {
+          if(btnStats) {
+              btnStats.classList.add('bg-white', 'text-[#b35c1e]', 'shadow-sm');
+              btnStats.classList.remove('text-stone-500');
+          }
+          if(viewStats) viewStats.classList.remove('hidden');
+          renderStats();
       }
   }
 
@@ -2474,14 +2645,14 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                             </svg>
-                            <span>当前为移动网络，请注意流量消耗</span>
+                            <span data-i18n="video_mobile_warning">当前为移动网络，请注意流量消耗</span>
                         </div>
                         <button onclick="this.parentElement.classList.add('hidden')" class="text-yellow-700 hover:text-yellow-900 font-bold px-2">✕</button>
                     </div>
 
                     <!-- External Link Fallback -->
                     <a id="video-fallback-btn" href="#" target="_blank" class="hidden absolute bottom-4 right-4 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full backdrop-blur-md text-sm font-medium transition-colors flex items-center gap-2">
-                        <span>在 YouTube 观看</span>
+                        <span data-i18n="video_watch_youtube">在 YouTube 观看</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                     </a>
                 </div>
@@ -2489,6 +2660,40 @@
         </div>
     </div>
     
+    <div class="text-center text-[10px] text-stone-300 py-4 opacity-50">App Version: v19.0</div>
+
+    <script>
+      function applyTranslations() {
+        if (typeof t !== 'function') return;
+        
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          const translation = t(key);
+          if (translation) {
+            if (el.hasAttribute('data-i18n-html')) {
+              el.innerHTML = translation;
+            } else {
+              el.innerText = translation;
+            }
+          }
+        });
+        
+        // Update placeholders
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            const translation = t(key);
+            if(translation) {
+                el.placeholder = translation;
+            }
+        });
+      }
+
+      // Initial call
+      document.addEventListener('DOMContentLoaded', () => {
+          applyTranslations();
+      });
+    </script>
+
     <script>
       // Service Worker Registration
       if ('serviceWorker' in navigator) {
@@ -2498,9 +2703,24 @@
               console.log('SW registered:', registration);
               // Check for updates every time page loads
               registration.update();
+              
+              registration.onupdatefound = () => {
+                const newWorker = registration.installing;
+                newWorker.onstatechange = () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        console.log('New update available');
+                    }
+                };
+              };
             })
             .catch(error => {
               console.log('SW registration failed:', error);
+            });
+            
+            // Auto-reload when new SW takes control
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                console.log('New version activated, reloading...');
+                window.location.reload();
             });
         });
       }
