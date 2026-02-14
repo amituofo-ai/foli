@@ -1,20 +1,20 @@
-const CACHE_NAME = 'foli-cache-v15';
+const CACHE_NAME = 'foli-cache-v17';
 const ASSETS_TO_CACHE = [
   './',
-  './index.html?v=15',
-  './reader.html?v=15',
-  './add_event.html?v=15',
-  './manifest.json?v=15',
+  './index.html?v=17',
+  './reader.html?v=17',
+  './add_event.html?v=17',
+  './manifest.json?v=17',
   './icons/icon-512.png',
-  './i18n.js?v=15',
-  './lunar.js?v=15',
-  './recipe_data.js?v=15',
-  './diet_logic.js?v=15',
-  './video_data.js?v=15',
+  './i18n.js?v=17',
+  './lunar.js?v=17',
+  './recipe_data.js?v=17',
+  './diet_logic.js?v=17',
+  './video_data.js?v=17',
   './audio_data_v13.js',
-  './ai_chat.js?v=15',
-  './video_snippet.js?v=15',
-  './search_data.js?v=15'
+  './ai_chat.js?v=17',
+  './video_snippet.js?v=17',
+  './search_data.js?v=17'
 ];
 
 // Install Event: Cache Core Assets
@@ -55,6 +55,31 @@ self.addEventListener('fetch', (event) => {
 
   // Exclude media files (mp3, wav, mp4) from caching to support Range requests and save space
   const url = new URL(event.request.url);
+  
+  // Strategy for announcement.html: Network First (Freshness over Cache)
+  if (url.pathname.endsWith('announcement.html')) {
+      event.respondWith(
+          fetch(event.request)
+              .then(response => {
+                  // If valid response, clone and cache
+                  if (response && response.status === 200) {
+                      const responseToCache = response.clone();
+                      caches.open(CACHE_NAME).then(cache => {
+                          cache.put(event.request, responseToCache);
+                      });
+                      return response;
+                  }
+                  // If network fails or 404, try cache
+                  return caches.match(event.request);
+              })
+              .catch(() => {
+                  // Offline -> fallback to cache
+                  return caches.match(event.request);
+              })
+      );
+      return;
+  }
+
   if (url.pathname.match(/\.(mp3|wav|mp4)$/i)) {
       return; // Let the browser handle it (network only)
   }

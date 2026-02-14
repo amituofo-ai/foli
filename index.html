@@ -21,19 +21,19 @@
   };
 
 </script>
-  <script src="lunar.js?v=15"></script>
+  <script src="lunar.js?v=17"></script>
 <!-- i18n Definitions -->
   <!-- i18n Definitions -->
-  <script src="i18n.js?v=15"></script>
+  <script src="i18n.js?v=17"></script>
   <!-- Load Recipe Data -->
-  <script src="recipe_data.js?v=15"></script>
-  <script src="diet_logic.js?v=15"></script>
-  <script src="video_data.js?v=15"></script>
+  <script src="recipe_data.js?v=17"></script>
+  <script src="diet_logic.js?v=17"></script>
+  <script src="video_data.js?v=17"></script>
   <script src="audio_data_v13.js"></script>
   <!-- Load Search Data Lazily -->
-  <!-- <script src="search_data.js?v=15"></script> -->
+  <!-- <script src="search_data.js?v=17"></script> -->
   <!-- Load AI Chat -->
-  <script src="ai_chat.js?v=15"></script>
+  <script src="ai_chat.js?v=17"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Serif SC", serif; }
     .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
@@ -100,26 +100,43 @@
          <span class="w-2 h-2 rounded-full bg-[#8B4513] shadow-sm"></span>
          今日修行提示
       </div>
-      <div class="text-[#5c4033] text-sm leading-relaxed font-serif font-medium opacity-90">
-        <div class="font-bold text-center mb-3 text-base">直 播 公 告</div>
-        <p class="mb-2">谛深佛将于2026年除夕夜，北京时间晚19:00点，在须弥山佛国网做吉祥如意直播，祈福修福者，可将祈请编成短信发给法务处，以将所请转呈谛深佛获取复愿！</p>
-        <p class="mb-2">大众请法内容可发至法务；</p>
-        <p class="mb-4">求皈依者，皈依表也发至法务，此次受皈依采取不公开的方式进行。转告收看功德利益。</p>
-        
-        <div class="font-bold mb-1">直播间链接</div>
-        <div class="mb-2">
-            （1） <a href="https://www.dishendashitw.org/Category?type=txt2" target="_blank" class="text-[#b35c1e] underline break-all">https://www.dishendashitw.org/Category?type=txt2</a><br>
-            <span class="text-xs opacity-75">www.dishendashitw.org</span>
-        </div>
-        <div class="mb-4">
-            （2）YouTube 同步直播
-        </div>
-
-        <div class="text-right font-bold mt-4">
-            妙湛寺法务处<br>
-            2026年02月05日
+      <div id="announcement-container" class="text-[#5c4033] text-sm leading-relaxed font-serif font-medium opacity-90 min-h-[100px]">
+        <div class="flex justify-center items-center h-full pt-4">
+            <div class="animate-pulse text-stone-400">正在获取最新通告...</div>
         </div>
       </div>
+      <script>
+        function loadAnnouncement() {
+            // Fetch raw HTML content with cache busting
+            fetch('announcement.html?t=' + Date.now())
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then(html => {
+                    const container = document.getElementById('announcement-container');
+                    if (!container) return;
+                    
+                    // Directly inject the HTML content
+                    container.innerHTML = html;
+                })
+                .catch(err => {
+                    console.error('Failed to load announcement', err);
+                    const container = document.getElementById('announcement-container');
+                    if (container) {
+                         // Fallback UI
+                         container.innerHTML = `<div class="text-center text-stone-400 py-4">无法加载公告，请检查网络</div>`;
+                    }
+                });
+        }
+        
+        loadAnnouncement();
+        
+        // Refresh when visible
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') loadAnnouncement();
+        });
+      </script>
     </div>
 
   </section>
@@ -2508,7 +2525,7 @@
         </div>
     </div>
     
-    <div class="text-center text-[10px] text-stone-300 py-4 opacity-50">App Version: v15.0</div>
+    <div class="text-center text-[10px] text-stone-300 py-4 opacity-50">App Version: v17.0</div>
 
     <script>
       // Service Worker Registration
