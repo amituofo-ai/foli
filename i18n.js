@@ -96,7 +96,37 @@ const I18N = {
         info_today: '今日信息',
         info_day: '当日信息',
         video_mobile_warning: '当前为移动网络，请注意流量消耗',
-        video_watch_youtube: '在 YouTube 观看'
+        video_watch_youtube: '在 YouTube 观看',
+        // Add Event Page
+        add_event_title: '添加事件',
+        edit_event_title: '编辑事件',
+        event_cancel: '取消',
+        event_save: '保存',
+        event_delete: '删除事件',
+        event_title_placeholder: '标题',
+        event_all_day: '全天',
+        event_start: '开始',
+        event_end: '结束',
+        event_desc_placeholder: '备注',
+        event_delete_confirm: '确定要删除这个事件吗？',
+        event_saved: '事件已保存',
+        // Practice/Homework Tab
+        history_empty: '暂无记录',
+        counter_save_confirm: '确定要保存记录并归零吗？',
+        meditation_less_than_1min: '打坐时间不足 1 分钟，不予记录。',
+        meditation_save_confirm: '确定要保存此次禅修记录并归零吗？',
+        meditation_duration_short: '<1 分',
+        meditation_duration_min: '{min} 分',
+        meditation_status_ready: '准备开始',
+        meditation_status_running: '禅修中...',
+        meditation_status_paused: '已暂停',
+        meditation_status_done: '圆满结束',
+        meditation_alert: '禅修圆满！共 {min} 分钟。',
+        // Statistics
+        stats_title: '月度修持统计',
+        stats_chant: '念佛 (声)',
+        stats_meditation: '打坐 (分)',
+        stats_month_view: '本月概览'
     },
     'zh-TW': {
         app_title: '燃燈佛曆',
@@ -183,7 +213,32 @@ const I18N = {
         info_today: '今日訊息',
         info_day: '當日訊息',
         video_mobile_warning: '當前為移動網絡，請注意流量消耗',
-        video_watch_youtube: '在 YouTube 觀看'
+        video_watch_youtube: '在 YouTube 觀看',
+        // Add Event Page
+        add_event_title: '添加事件',
+        edit_event_title: '編輯事件',
+        event_cancel: '取消',
+        event_save: '保存',
+        event_delete: '刪除事件',
+        event_title_placeholder: '標題',
+        event_all_day: '全天',
+        event_start: '開始',
+        event_end: '結束',
+        event_desc_placeholder: '備註',
+        event_delete_confirm: '確定要刪除這個事件嗎？',
+        event_saved: '事件已保存',
+        // Practice/Homework Tab
+        history_empty: '暫無記錄',
+        counter_save_confirm: '確定要保存記錄並歸零嗎？',
+        meditation_less_than_1min: '打坐時間不足 1 分鐘，不予記錄。',
+        meditation_save_confirm: '確定要保存此次禪修記錄並歸零嗎？',
+        meditation_duration_short: '<1 分',
+        meditation_duration_min: '{min} 分',
+        // Statistics
+        stats_title: '月度修持統計',
+        stats_chant: '念佛 (聲)',
+        stats_meditation: '打坐 (分)',
+        stats_month_view: '本月概覽'
     },
     'en': {
         app_title: 'Lamp Buddha Calendar',
@@ -282,7 +337,35 @@ const I18N = {
         info_today: 'Today Info',
         info_day: 'Day Info',
         video_mobile_warning: 'Using mobile data, watch out for usage',
-        video_watch_youtube: 'Watch on YouTube'
+        video_watch_youtube: 'Watch on YouTube',
+        // Add Event Page
+        add_event_title: 'Add Event',
+        edit_event_title: 'Edit Event',
+        event_cancel: 'Cancel',
+        event_save: 'Save',
+        event_delete: 'Delete',
+        event_title_placeholder: 'Title',
+        event_all_day: 'All Day',
+        event_start: 'Start',
+        event_end: 'End',
+        event_desc_placeholder: 'Notes',
+        event_delete_confirm: 'Are you sure you want to delete this event?',
+        event_saved: 'Event saved',
+        // Practice/Homework Tab
+        history_empty: 'No records',
+        counter_save_confirm: 'Confirm to save and reset count?',
+        meditation_less_than_1min: 'Less than 1 minute, not recorded.',
+        meditation_save_confirm: 'Confirm to save meditation session?',
+        meditation_duration_short: '<1 min',
+        meditation_duration_min: '{min} min',
+        meditation_save_confirm: 'Save and reset this session?',
+        meditation_duration_short: '<1 min',
+        meditation_duration_min: '{min} mins',
+        // Statistics
+        stats_title: 'Monthly Stats',
+        stats_chant: 'Chanting (Count)',
+        stats_meditation: 'Meditation (Min)',
+        stats_month_view: 'Overview'
     }
 };
 

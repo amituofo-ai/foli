@@ -321,6 +321,7 @@
         <div class="flex p-1 bg-orange-100/30 backdrop-blur-sm border border-white/40 rounded-xl mx-1 shadow-inner">
             <button onclick="switchChantMode('counter')" id="btn-mode-counter" class="flex-1 py-2 rounded-lg text-sm font-bold shadow-sm bg-white text-[#b35c1e] transition-all duration-200" data-i18n="chant_counter">念佛計數</button>
             <button onclick="switchChantMode('meditation')" id="btn-mode-meditation" class="flex-1 py-2 rounded-lg text-sm font-bold text-[#8B4513]/60 hover:text-[#b35c1e] hover:bg-white/40 transition-all duration-200" data-i18n="chant_timer">打坐計時</button>
+            <button onclick="switchChantMode('stats')" id="btn-mode-stats" class="flex-1 py-2 rounded-lg text-sm font-bold text-[#8B4513]/60 hover:text-[#b35c1e] hover:bg-white/40 transition-all duration-200" data-i18n="stats_title">統計</button>
         </div>
     </div>
 
@@ -450,6 +451,33 @@
             </div>
         </div>
     </div>
+
+    <!-- Mode: Stats -->
+    <div id="mode-stats" class="hidden flex-1 overflow-y-auto px-1 pb-20 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div class="bg-white/40 backdrop-blur-xl rounded-3xl p-5 mb-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40">
+             <div class="text-[#8B4513] text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#8B4513]"></span>
+                <span data-i18n="stats_title">月度统计</span>
+            </div>
+            
+            <!-- Chant Chart -->
+            <div class="mb-6">
+                <div class="text-xs text-[#8B4513]/60 mb-2 font-bold" data-i18n="stats_chant">念佛计数</div>
+                <div class="bg-white/30 rounded-xl p-4 border border-white/40 shadow-inner h-48 flex items-end justify-between gap-1" id="chart-chant">
+                    <!-- Bars injected by JS -->
+                </div>
+            </div>
+
+            <!-- Meditation Chart -->
+            <div>
+                <div class="text-xs text-[#8B4513]/60 mb-2 font-bold" data-i18n="stats_meditation">禅坐时长 (分钟)</div>
+                <div class="bg-white/30 rounded-xl p-4 border border-white/40 shadow-inner h-48 flex items-end justify-between gap-1" id="chart-meditation">
+                    <!-- Bars injected by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
   </section>
 
     <!-- Mode: Zen Diet (Vegetarian) -->
@@ -1775,7 +1803,7 @@
   
   function saveCounterRecord() {
       if (count === 0) return;
-      if(!confirm('確定要保存記錄並歸零嗎？')) return;
+      if(!confirm(t('counter_save_confirm'))) return;
       
       // Create Record
       const record = {
@@ -1808,7 +1836,7 @@
       const history = JSON.parse(localStorage.getItem(historyKey) || '[]');
       
       if (history.length === 0) {
-          historyEl.innerHTML = '<div class="text-center text-stone-400 py-4 text-xs">暫無記錄</div>';
+          historyEl.innerHTML = `<div class="text-center text-stone-400 py-4 text-xs">${t('history_empty')}</div>`;
           return;
       }
 
@@ -1833,6 +1861,107 @@
       historyEl.innerHTML = html;
   }
 
+  function renderStats() {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    
+    // 1. Chant Data (Aggregate History + Current)
+    const chantHistory = JSON.parse(localStorage.getItem('buddhist_counter_history') || '[]');
+    const chantCurrent = JSON.parse(localStorage.getItem('buddhist_counter') || '{}');
+    
+    const chantDailyMap = {};
+    
+    // Add History
+    chantHistory.forEach(rec => {
+        const d = new Date(rec.timestamp);
+        if(d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+            const day = d.getDate();
+            chantDailyMap[day] = (chantDailyMap[day] || 0) + rec.count;
+        }
+    });
+
+    // Add Current (Unsaved)
+    Object.keys(chantCurrent).forEach(dateKey => {
+        const d = new Date(dateKey);
+        // Only if valid date and matches current month
+        if(!isNaN(d.getTime()) && d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+            const day = d.getDate();
+            chantDailyMap[day] = (chantDailyMap[day] || 0) + chantCurrent[dateKey];
+        }
+    });
+
+    let maxChant = 0;
+    const chantDaily = [];
+    
+    for(let i=1; i<=daysInMonth; i++) {
+        const val = chantDailyMap[i] || 0;
+        chantDaily.push({day: i, val: val});
+        if(val > maxChant) maxChant = val;
+    }
+    
+    const chantContainer = document.getElementById('chart-chant');
+    if(chantContainer) {
+        let html = '';
+        chantDaily.forEach(d => {
+            const hPercent = maxChant > 0 ? (d.val / maxChant) * 100 : 0;
+            const h = Math.max(hPercent, 5); 
+            const color = d.val > 0 ? 'bg-[#f8c390]' : 'bg-stone-100';
+            html += `
+                <div class="flex-1 flex flex-col items-center group relative">
+                    <div class="w-full rounded-t-sm ${color} transition-all duration-500 hover:bg-[#b35c1e]" style="height: ${h}%"></div>
+                    ${d.day % 5 === 0 ? `<div class="text-[8px] text-[#8B4513]/40 mt-1 absolute -bottom-4 transform -translate-x-1/2 left-1/2">${d.day}</div>` : ''}
+                    <div class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-stone-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-lg">
+                        ${d.day}日: ${d.val}
+                    </div>
+                </div>
+            `;
+        });
+        chantContainer.innerHTML = html;
+    }
+
+    // 2. Meditation Data
+    const medHistory = JSON.parse(localStorage.getItem('meditation_session_history') || '[]');
+    const medDailyMap = {};
+    medHistory.forEach(rec => {
+        const d = new Date(rec.timestamp);
+        if(d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+            const day = d.getDate();
+            const mins = Math.round(rec.duration / 60);
+            medDailyMap[day] = (medDailyMap[day] || 0) + mins;
+        }
+    });
+    
+    let maxMed = 0;
+    const medDaily = [];
+    for(let i=1; i<=daysInMonth; i++) {
+        const val = medDailyMap[i] || 0;
+        medDaily.push({day: i, val: val});
+        if(val > maxMed) maxMed = val;
+    }
+    
+    const medContainer = document.getElementById('chart-meditation');
+    if(medContainer) {
+        let html = '';
+        medDaily.forEach(d => {
+            const hPercent = maxMed > 0 ? (d.val / maxMed) * 100 : 0;
+            const h = Math.max(hPercent, 5);
+            const color = d.val > 0 ? 'bg-emerald-300' : 'bg-stone-100';
+            html += `
+                <div class="flex-1 flex flex-col items-center group relative">
+                    <div class="w-full rounded-t-sm ${color} transition-all duration-500 hover:bg-emerald-600" style="height: ${h}%"></div>
+                    ${d.day % 5 === 0 ? `<div class="text-[8px] text-[#8B4513]/40 mt-1 absolute -bottom-4 transform -translate-x-1/2 left-1/2">${d.day}</div>` : ''}
+                    <div class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-stone-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-10 shadow-lg">
+                        ${d.day}日: ${d.val} min
+                    </div>
+                </div>
+            `;
+        });
+        medContainer.innerHTML = html;
+    }
+  }
+
   // Meditation Logic
   let meditationState = 'idle'; // idle, running, paused
   let meditationStartTime = null;
@@ -1844,26 +1973,47 @@
   function switchChantMode(mode) {
       const btnCounter = document.getElementById('btn-mode-counter');
       const btnMeditation = document.getElementById('btn-mode-meditation');
+      const btnStats = document.getElementById('btn-mode-stats');
+      
       const viewCounter = document.getElementById('mode-counter');
       const viewMeditation = document.getElementById('mode-meditation');
+      const viewStats = document.getElementById('mode-stats');
 
+      // Reset all buttons
+      [btnCounter, btnMeditation, btnStats].forEach(btn => {
+          if(btn) {
+              btn.classList.remove('bg-white', 'text-[#b35c1e]', 'shadow-sm');
+              btn.classList.add('text-stone-500');
+          }
+      });
+      
+      // Hide all views
+      [viewCounter, viewMeditation, viewStats].forEach(view => {
+          if(view) view.classList.add('hidden');
+      });
+
+      // Activate selected
       if (mode === 'counter') {
-          btnCounter.classList.add('bg-white', 'text-[#b35c1e]', 'shadow-sm');
-          btnCounter.classList.remove('text-stone-500');
-          btnMeditation.classList.remove('bg-white', 'text-[#b35c1e]', 'shadow-sm');
-          btnMeditation.classList.add('text-stone-500');
-          
-          viewCounter.classList.remove('hidden');
-          viewMeditation.classList.add('hidden');
-          updateHistory(); // Refresh history
-      } else {
-          btnMeditation.classList.add('bg-white', 'text-[#b35c1e]', 'shadow-sm');
-          btnMeditation.classList.remove('text-stone-500');
-          btnCounter.classList.remove('bg-white', 'text-[#b35c1e]', 'shadow-sm');
-          btnCounter.classList.add('text-stone-500');
-          
-          viewMeditation.classList.remove('hidden');
-          viewCounter.classList.add('hidden');
+          if(btnCounter) {
+              btnCounter.classList.add('bg-white', 'text-[#b35c1e]', 'shadow-sm');
+              btnCounter.classList.remove('text-stone-500');
+          }
+          if(viewCounter) viewCounter.classList.remove('hidden');
+          updateHistory(); 
+      } else if (mode === 'meditation') {
+          if(btnMeditation) {
+              btnMeditation.classList.add('bg-white', 'text-[#b35c1e]', 'shadow-sm');
+              btnMeditation.classList.remove('text-stone-500');
+          }
+          if(viewMeditation) viewMeditation.classList.remove('hidden');
+          if(typeof renderMeditationHistory === 'function') renderMeditationHistory();
+      } else if (mode === 'stats') {
+          if(btnStats) {
+              btnStats.classList.add('bg-white', 'text-[#b35c1e]', 'shadow-sm');
+              btnStats.classList.remove('text-stone-500');
+          }
+          if(viewStats) viewStats.classList.remove('hidden');
+          renderStats();
       }
   }
 
