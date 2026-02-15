@@ -39,19 +39,58 @@
     .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
   </style>
 </head>
-<body class="bg-gradient-to-br from-[#f8c390] via-[#f9dba0] to-[#fbf2d3] bg-fixed text-[#4a3b32] pb-24 selection:bg-[#b35c1e] selection:text-white min-h-screen">
+<body class="bg-gradient-to-br from-[#f8c390] via-[#f9dba0] to-[#fbf2d3] bg-fixed text-[#4a3b32] pb-24 lg:pb-0 selection:bg-[#b35c1e] selection:text-white min-h-screen">
 
-<header class="flex justify-between items-center px-4 py-3 bg-white/30 backdrop-blur-xl sticky top-0 z-30 shadow-sm border-b border-white/30 transition-all duration-300">
-  <button onclick="toggleSettings()" class="w-9 h-9 flex justify-center items-center text-[#8B4513] text-lg active:scale-90 transition-transform hover:bg-white/40 rounded-full border border-white/20 shadow-sm">
-    ⚙️
-  </button>
-  <div id="app-title" class="text-lg font-bold tracking-wide text-[#5c4033] drop-shadow-sm">燃燈佛曆</div>
-  <a href="add_event.html" class="w-9 h-9 flex justify-center items-center text-[#8B4513] text-2xl leading-none no-underline active:scale-90 transition-transform bg-white/40 rounded-full shadow-sm hover:bg-white/60 border border-white/20">
-    +
-  </a>
-</header>
+<div class="lg:flex lg:h-screen lg:overflow-hidden lg:pb-0">
+    <!-- Desktop/Pad Sidebar (Navigation) -->
+    <header class="lg:w-64 lg:h-full lg:flex-col lg:justify-start lg:border-r lg:border-white/20 lg:bg-white/40 lg:backdrop-blur-xl lg:pt-8 lg:pb-4 flex justify-between items-center px-4 py-3 bg-white/30 backdrop-blur-xl sticky top-0 z-30 shadow-sm border-b border-white/30 transition-all duration-300 lg:static lg:shadow-none">
+      
+      <!-- Logo Area -->
+      <div class="flex justify-between lg:flex-col items-center lg:gap-4 lg:mb-8 w-full lg:px-6">
+          <div id="app-title" class="text-lg lg:text-2xl font-bold tracking-wide text-[#5c4033] drop-shadow-sm order-2 lg:order-1">燃燈佛曆</div>
+          
+          <!-- Mobile Settings/Add Buttons (Hidden on Desktop) -->
+          <button onclick="toggleSettings()" class="lg:hidden w-9 h-9 flex justify-center items-center text-[#8B4513] text-lg active:scale-90 transition-transform hover:bg-white/40 rounded-full border border-white/20 shadow-sm order-1">
+            ⚙️
+          </button>
+          <a href="add_event.html" class="lg:hidden w-9 h-9 flex justify-center items-center text-[#8B4513] text-2xl leading-none no-underline active:scale-90 transition-transform bg-white/40 rounded-full shadow-sm hover:bg-white/60 border border-white/20 order-3">
+            +
+          </a>
+      </div>
 
-<main class="px-4 py-1 max-w-md mx-auto">
+      <!-- Desktop Navigation Links (Replaces Bottom Bar) -->
+      <nav class="hidden lg:flex flex-col w-full px-4 gap-2 flex-1">
+          <button onclick="switchTab('calendar')" id="nav-desktop-calendar" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/50 transition-all font-bold text-lg">
+              <span>📅</span> <span data-i18n="tab_calendar">日历</span>
+          </button>
+          <button onclick="switchTab('chant')" id="nav-desktop-chant" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/50 transition-all font-bold text-lg">
+              <span>📿</span> <span data-i18n="tab_chant">功课</span>
+          </button>
+          <button onclick="switchTab('search')" id="nav-desktop-search" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/50 transition-all font-bold text-lg">
+              <span>🔍</span> <span data-i18n="tab_search">搜索</span>
+          </button>
+          <button onclick="switchTab('dharma')" id="nav-desktop-dharma" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/50 transition-all font-bold text-lg">
+              <span>📚</span> <span data-i18n="tab_dharma">佛法</span>
+          </button>
+          <button onclick="switchTab('diet')" id="nav-desktop-diet" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/50 transition-all font-bold text-lg">
+              <span>🥗</span> <span data-i18n="tab_diet">素斋</span>
+          </button>
+      </nav>
+
+      <!-- Desktop Footer Actions -->
+      <div class="hidden lg:flex flex-col gap-3 px-6 w-full mt-auto">
+          <a href="add_event.html" class="flex items-center justify-center gap-2 w-full py-3 bg-[#b35c1e] text-white rounded-xl shadow-md hover:bg-[#8B4513] transition-colors font-bold">
+              <span>+</span> <span data-i18n="event_add_title">添加事件</span>
+          </a>
+          <button onclick="toggleSettings()" class="flex items-center justify-center gap-2 w-full py-3 bg-white/40 text-[#5c4033] rounded-xl hover:bg-white/60 transition-colors font-bold border border-white/20">
+              <span>⚙️</span> <span data-i18n="settings">设置</span>
+          </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 lg:h-full lg:overflow-y-auto px-4 py-1 max-w-md lg:max-w-5xl mx-auto w-full lg:p-8 scroll-smooth">
+
   <section id="tab-calendar" class="tab-content block pt-2">
     
     <!-- Calendar Card -->
@@ -501,16 +540,17 @@
 
     </div>
 </main>
+</div>
 
 <!-- AdMob Banner Placeholder -->
-<div id="ad-banner-container" class="fixed bottom-[56px] left-0 right-0 z-30 flex justify-center items-center bg-white/30 backdrop-blur-sm border-t border-white/20" style="height: 50px;">
+<div id="ad-banner-container" class="lg:hidden fixed bottom-[56px] left-0 right-0 z-30 flex justify-center items-center bg-white/30 backdrop-blur-sm border-t border-white/20" style="height: 50px;">
     <div class="w-[320px] h-[50px] bg-black/5 rounded flex items-center justify-center text-xs text-[#8B4513]/40 border border-white/10">
         AdMob Banner (320x50)
     </div>
 </div>
 
 <!-- Bottom Navigation (Floating Glass) -->
-<nav class="fixed bottom-6 left-6 right-6 flex bg-white/60 backdrop-blur-2xl border border-white/50 rounded-full z-40 shadow-[0_8px_32px_rgba(0,0,0,0.1)] h-[64px] items-center justify-around px-2 ring-1 ring-white/40 transition-all duration-300">
+<nav class="lg:hidden fixed bottom-6 left-6 right-6 flex bg-white/60 backdrop-blur-2xl border border-white/50 rounded-full z-40 shadow-[0_8px_32px_rgba(0,0,0,0.1)] h-[64px] items-center justify-around px-2 ring-1 ring-white/40 transition-all duration-300">
   <button id="btn-tab-calendar" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#8B4513] font-bold transition-all active:scale-90" onclick="switchTab('calendar', this)">
     <span class="text-2xl drop-shadow-sm">🗓️</span>
     <span class="text-[10px]" data-i18n="tab_calendar">日曆</span>
@@ -1736,39 +1776,62 @@
   }
 
   // Switch Tab Logic
-  function switchTab(tabId, btn) {
-    // Hide all tabs
+  function switchTab(tabId) {
+    // 1. Switch Content
     document.querySelectorAll('.tab-content').forEach(el => {
       el.classList.add('hidden');
       el.classList.remove('block');
     });
     
-    // Deactivate all nav buttons
-    document.querySelectorAll('nav button').forEach(el => {
-      el.classList.remove('text-[#b35c1e]', 'font-bold');
-      el.classList.add('text-stone-500');
-    });
-
-    // Show target tab
     const target = document.getElementById('tab-' + tabId);
     if(target) {
         target.classList.remove('hidden');
         target.classList.add('block');
     }
-    
-    // Activate button
-    if(!btn) {
-        btn = document.getElementById('btn-tab-' + tabId);
+
+    // 2. Update Mobile Nav Buttons
+    // Reset all mobile buttons
+    document.querySelectorAll('#btn-tab-calendar, #btn-tab-search, #btn-tab-dharma, #btn-tab-diet, #btn-tab-chant').forEach(btn => {
+        btn.classList.remove('text-[#b35c1e]', 'font-bold');
+        btn.classList.add('text-[#8B4513]/60');
+        const icon = btn.querySelector('span:first-child');
+        if(icon) icon.classList.add('opacity-80');
+    });
+
+    // Activate current mobile button
+    const mobileBtn = document.getElementById('btn-tab-' + tabId);
+    if(mobileBtn) {
+        mobileBtn.classList.remove('text-[#8B4513]/60');
+        mobileBtn.classList.add('text-[#b35c1e]', 'font-bold');
+        const icon = mobileBtn.querySelector('span:first-child');
+        if(icon) icon.classList.remove('opacity-80');
     }
-    
-    if(btn) {
-        btn.classList.remove('text-stone-500');
-        btn.classList.add('text-[#b35c1e]', 'font-bold');
+
+    // 3. Update Desktop Nav Buttons
+    // Reset all desktop buttons
+    document.querySelectorAll('#nav-desktop-calendar, #nav-desktop-search, #nav-desktop-dharma, #nav-desktop-diet, #nav-desktop-chant').forEach(btn => {
+        btn.classList.remove('bg-white/60', 'text-[#b35c1e]', 'shadow-sm');
+        btn.classList.add('text-[#8c7853]', 'hover:bg-white/50');
+    });
+
+    // Activate current desktop button
+    const desktopBtn = document.getElementById('nav-desktop-' + tabId);
+    if(desktopBtn) {
+        desktopBtn.classList.remove('text-[#8c7853]', 'hover:bg-white/50');
+        desktopBtn.classList.add('bg-white/60', 'text-[#b35c1e]', 'shadow-sm');
     }
 
     // Special logic for Diet tab
     if (tabId === 'diet') {
         fetchZenMeal(false);
+    }
+    
+    // Scroll to top
+    if(window.innerWidth >= 1024) {
+        const main = document.querySelector('main');
+        if(main) main.scrollTo({top:0, behavior:'smooth'});
+    } else {
+        window.scrollTo({top:0, behavior:'smooth'});
     }
   }
 
