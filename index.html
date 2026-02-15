@@ -37,6 +37,13 @@
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Serif SC", serif; }
     .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    /* Custom scrollbar for desktop */
+    @media (min-width: 1024px) {
+      .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(139, 69, 19, 0.2); border-radius: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(139, 69, 19, 0.4); }
+    }
   </style>
 </head>
 <body class="bg-gradient-to-br from-[#f8c390] via-[#f9dba0] to-[#fbf2d3] bg-fixed text-[#4a3b32] pb-24 lg:pb-0 selection:bg-[#b35c1e] selection:text-white min-h-screen">
@@ -63,9 +70,6 @@
           <button onclick="switchTab('calendar')" id="nav-desktop-calendar" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/50 transition-all font-bold text-lg">
               <span>📅</span> <span data-i18n="tab_calendar">日历</span>
           </button>
-          <button onclick="switchTab('chant')" id="nav-desktop-chant" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/50 transition-all font-bold text-lg">
-              <span>📿</span> <span data-i18n="tab_chant">功课</span>
-          </button>
           <button onclick="switchTab('search')" id="nav-desktop-search" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/50 transition-all font-bold text-lg">
               <span>🔍</span> <span data-i18n="tab_search">搜索</span>
           </button>
@@ -74,6 +78,9 @@
           </button>
           <button onclick="switchTab('diet')" id="nav-desktop-diet" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/50 transition-all font-bold text-lg">
               <span>🥗</span> <span data-i18n="tab_diet">素斋</span>
+          </button>
+          <button onclick="switchTab('chant')" id="nav-desktop-chant" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/50 transition-all font-bold text-lg">
+              <span>📿</span> <span data-i18n="tab_chant">功课</span>
           </button>
       </nav>
 
@@ -89,7 +96,7 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-1 lg:h-full lg:overflow-y-auto px-4 py-1 max-w-md lg:max-w-5xl mx-auto w-full lg:p-8 scroll-smooth">
+    <main class="flex-1 lg:h-full lg:overflow-y-auto px-4 py-1 max-w-md lg:max-w-5xl mx-auto w-full lg:p-8 scroll-smooth lg:pr-2 custom-scrollbar">
 
   <section id="tab-calendar" class="tab-content block pt-2">
     
@@ -704,7 +711,13 @@
       const year = currentYear + offset;
       const appTitle = document.getElementById('app-title');
       if (appTitle) {
-          appTitle.innerText = `${t('app_title')} ${year} 年`;
+          // Check if current language is English to determine format
+          const lang = localStorage.getItem('app_language') || 'zh-TW';
+          if (lang === 'en') {
+            appTitle.innerText = `${t('app_title')} ${year}`;
+          } else {
+            appTitle.innerText = `${t('app_title')} ${year}`;
+          }
       }
   }
 
