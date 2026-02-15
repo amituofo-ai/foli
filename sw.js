@@ -1,20 +1,21 @@
-const CACHE_NAME = 'foli-cache-v19';
+const CACHE_NAME = 'foli-cache-v19.2';
 const ASSETS_TO_CACHE = [
   './',
-  './index.html?v=19',
-  './reader.html?v=19',
-  './add_event.html?v=19',
-  './manifest.json?v=19',
+  './index.html?v=19.2',
+  './reader.html?v=19.2',
+  './add_event.html?v=19.2',
+  './manifest.json?v=19.2',
   './icons/icon-512.png',
-  './i18n.js?v=19',
-  './lunar.js?v=19',
-  './recipe_data.js?v=19',
-  './diet_logic.js?v=19',
-  './video_data.js?v=19',
+  './i18n.js?v=19.2',
+  './lunar.js?v=19.2',
+  './recipe_data.js?v=19.2',
+  './diet_logic.js?v=19.2',
+  './sutras_data.js?v=19.2',
+  './video_data.js?v=19.2',
   './audio_data_v13.js',
-  './ai_chat.js?v=19',
-  './video_snippet.js?v=19',
-  './search_data.js?v=19'
+  './ai_chat.js?v=19.2',
+  './video_snippet.js?v=19.2',
+  './search_data.js?v=19.2'
 ];
 
 // Install Event: Cache Core Assets
@@ -98,23 +99,15 @@ self.addEventListener('fetch', (event) => {
           return networkResponse;
         }
 
-        // 3. Clone and cache the new content (Dynamic Caching)
-        // This ensures "content loaded once" is available offline next time
+        // 3. Cache the new resource (Dynamic Caching)
+        // Clone the response because it's a stream and can only be consumed once
         const responseToCache = networkResponse.clone();
 
         caches.open(CACHE_NAME).then((cache) => {
-          // Use the original request to cache, but if we used ignoreSearch above, 
-          // we should probably be careful. But here we cache the exact request URL.
-          // This allows versioned files to be cached separately if needed, 
-          // or we can strip search params if we want to deduplicate.
-          // For safety, let's cache the exact URL requested.
           cache.put(event.request, responseToCache);
         });
 
         return networkResponse;
-      }).catch((error) => {
-        // Network failed (offline) and not in cache
-        console.log('SW: Fetch failed', error);
       });
     })
   );
