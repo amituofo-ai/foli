@@ -166,6 +166,12 @@ const I18N = {
         meditation_alert: '禪修圓滿！共 {min} 分鐘。',
         history_label: '記錄',
         unit_sound: '聲',
+        // Missing keys added
+        chant_counter: '念佛計數',
+        chant_timer: '打坐計時',
+        today_homework: '今日功課',
+        chant_target: '南無阿彌陀佛',
+        chant_count_today: '今日已唸誦',
         today_fast_title: '今日齋期',
         today_no_special: '今日無特殊節日，適合日常修行。',
         recommendation_prefix: '建議：',
