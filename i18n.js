@@ -100,6 +100,7 @@ const I18N = {
         // Common
         date_day_suffix: '日',
         // Add Event Page
+        event_add_title: '+ 备忘',
         add_event_title: '添加事件',
         edit_event_title: '编辑事件',
         event_cancel: '取消',
@@ -225,6 +226,7 @@ const I18N = {
         // Common
         date_day_suffix: '日',
         // Add Event Page
+        event_add_title: '+ 備忘',
         add_event_title: '添加事件',
         edit_event_title: '編輯事件',
         event_cancel: '取消',
@@ -351,6 +353,7 @@ const I18N = {
         // Common
         date_day_suffix: '',
         // Add Event Page
+        event_add_title: '+ Event',
         add_event_title: 'Add Event',
         edit_event_title: 'Edit Event',
         event_cancel: 'Cancel',
