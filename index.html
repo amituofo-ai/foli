@@ -721,9 +721,9 @@
           // Check if current language is English to determine format
           const lang = localStorage.getItem('app_language') || 'zh-TW';
           if (lang === 'en') {
-            appTitle.innerText = `${t('app_title')} ${year}`;
+            appTitle.innerHTML = `${t('app_title')} ${year}`;
           } else {
-            appTitle.innerText = `${t('app_title')} ${year}`;
+            appTitle.innerHTML = `${t('app_title')} ${year}`;
           }
       }
   }
@@ -1346,7 +1346,7 @@
     const buddhistYear = currentYear + offset;
     const appTitle = document.getElementById('app-title');
     if (appTitle) {
-        appTitle.innerText = `${t('app_title')} ${buddhistYear}`;
+        appTitle.innerHTML = `${t('app_title')} ${buddhistYear}`;
     }
 
     const firstDay = new Date(currentYear, currentMonth, 1).getDay(); // 0 is Sunday
