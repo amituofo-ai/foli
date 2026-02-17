@@ -1,6 +1,6 @@
 const I18N = {
     'zh-CN': {
-        app_title: '燃灯佛历',
+        app_title: '<img src="flag.png" alt="Flag" class="h-6 inline-block mr-2">燃灯佛历',
         settings: '设置',
         tab_calendar: '日历',
         tab_chant: '功课',
@@ -132,7 +132,7 @@ const I18N = {
         stats_month_view: '本月概览'
     },
     'zh-TW': {
-        app_title: '燃燈佛曆',
+        app_title: '<img src="flag.png" alt="Flag" class="h-6 inline-block mr-2">燃燈佛曆',
         settings: '設置',
         tab_calendar: '日曆',
         tab_chant: '功課',
@@ -253,7 +253,7 @@ const I18N = {
         stats_month_view: '本月概覽'
     },
     'en': {
-        app_title: 'Lamp Buddha Calendar',
+        app_title: '<img src="flag.png" alt="Flag" class="h-6 inline-block mr-2">Lamp Buddha Calendar',
         settings: 'Settings',
         tab_calendar: 'Calendar',
         tab_chant: 'Practice',
