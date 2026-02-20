@@ -1,8 +1,8 @@
-const CACHE_NAME = 'foli-cache-v19.8';
+const CACHE_NAME = 'foli-cache-v19.9';
 const ASSETS_TO_CACHE = [
   './',
   './flag.png',
-  './index.html?v=19.6',
+  './index.html?v=19.9',
   './reader.html?v=19.4',
   './add_event.html?v=19.4',
   './manifest.json?v=19.4',
