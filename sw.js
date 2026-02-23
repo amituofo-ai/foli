@@ -1,8 +1,8 @@
-const CACHE_NAME = 'foli-cache-v19.9';
+const CACHE_NAME = 'foli-cache-v20.1';
 const ASSETS_TO_CACHE = [
   './',
   './flag.png',
-  './index.html?v=19.9',
+  './index.html?v=20.1',
   './reader.html?v=19.4',
   './add_event.html?v=19.4',
   './manifest.json?v=19.4',
@@ -15,6 +15,7 @@ const ASSETS_TO_CACHE = [
   './video_data.js?v=19.4',
   './audio_data_v13.js',
   './ai_chat.js?v=19.4',
+  './events_data.js', // Add events data to cache
   './video_snippet.js?v=19.4',
   './search_data.js?v=19.4'
 ];
@@ -44,7 +45,7 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  self.clients.claim();
+  return self.clients.claim();
 });
 
 // Fetch Event: Cache First Strategy with Dynamic Caching
