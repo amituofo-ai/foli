@@ -35,7 +35,73 @@
   <!-- <script src="search_data.js?v=19.4"></script> -->
   <!-- Load AI Chat -->
   <script src="ai_chat.js?v=19.4"></script>
-  <script src="events_data.js"></script>
+  <script src="events_data.js?v=20.3"></script>
+  <script>
+    function showTooltip(event, html) {
+      const tooltip = document.getElementById('event-tooltip');
+      if (!tooltip) return;
+      tooltip.innerHTML = html;
+      tooltip.style.display = 'block';
+      const x = event.clientX + 15;
+      const y = event.clientY + 15;
+      const tooltipRect = tooltip.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      let left = x;
+      if (x + tooltipRect.width > viewportWidth) {
+        left = viewportWidth - tooltipRect.width - 15;
+      }
+
+      let top = y;
+      if (y + tooltipRect.height > viewportHeight) {
+        top = viewportHeight - tooltipRect.height - 15;
+      }
+
+      tooltip.style.left = left + 'px';
+      tooltip.style.top = top + 'px';
+    }
+
+    function hideTooltip() {
+      const tooltip = document.getElementById('event-tooltip');
+      if (tooltip) tooltip.style.display = 'none';
+    }
+
+    function applySpecialEvents(year, month) {
+        if (!window.events_data) {
+            console.log("events_data not found");
+            return;
+        }
+
+        const eventTypeClassMap = {
+            '直播开示': 'live-dharma-talk',
+            '法会': 'dharma-assembly',
+            '打七': 'retreat',
+            '组织大会': 'organization-conference'
+        };
+
+        // This time, we just apply classes, assuming renderCalendar cleans the grid.
+        window.events_data.forEach(event => {
+            const [eventYear, eventMonthStr, eventDay] = event.date.split('-');
+            if (parseInt(eventYear) === year && parseInt(eventMonthStr) === (month + 1)) {
+                const dayElement = document.querySelector(`.day-cell[data-date='${event.date}']`);
+                const eventClass = eventTypeClassMap[event.type];
+
+                if (dayElement && eventClass) {
+                    dayElement.classList.add(`event-${eventClass}`);
+                    
+                    // To avoid duplicate listeners, we use a flag.
+                    if (!dayElement.dataset.hasEvent) {
+                        const tooltipHtml = `<b>${event.title}</b><br>${event.description}`;
+                        dayElement.addEventListener('mousemove', (e) => showTooltip(e, tooltipHtml));
+                        dayElement.addEventListener('mouseleave', hideTooltip);
+                        dayElement.dataset.hasEvent = 'true';
+                    }
+                }
+            }
+        });
+    }
+  </script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Serif SC", serif; }
     .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
@@ -45,23 +111,29 @@
       .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 4px; }
       .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(139, 69, 19, 0.2); border-radius: 4px; }
       .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(139, 69, 19, 0.4); }
+
+      // Finally, apply special events
+      applySpecialEvents(year, month);
     }
     /* Special Event Styles */
-    .event-live_dharma_talk { background-color: gold !important; color: black !important; }
-    .event-dharma_assembly { background-color: #FFC107 !important; border: 2px solid gold; }
-    .event-retreat { background-color: #FFFACD !important; border: 2px solid gold; }
-    .event-organization_conference { background-color: #AEC6CF !important; }
+    .event-live-dharma-talk { background-color: gold !important; color: black !important; border-radius: 0.75rem; }
+    .event-dharma-assembly { background-color: #FFC107 !important; border: 2px solid gold; border-radius: 0.75rem; }
+    .event-retreat { background-color: #FFFACD !important; border: 2px solid gold; border-radius: 0.75rem; }
+    .event-organization-conference { background-color: #AEC6CF !important; border-radius: 0.75rem; }
 
     #event-tooltip {
       position: fixed;
       display: none;
-      background-color: rgba(0, 0, 0, 0.8);
+      background-color: rgba(0, 0, 0, 0.85);
       color: white;
       padding: 8px 12px;
       border-radius: 8px;
       font-size: 14px;
       z-index: 1000;
       pointer-events: none; /* So it doesn't interfere with mouse events */
+      max-width: 250px;
+      border: 1px solid rgba(255,255,255,0.2);
+      backdrop-filter: blur(4px);
     }
   </style>
 </head>
