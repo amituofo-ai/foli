@@ -68,10 +68,12 @@
     }
 
     function applySpecialEvents(year, month) {
-        if (!window.events) { // Corrected from events_data to events
-            console.log("events data not found, waiting for it to load...");
+        console.log(`[Debug] applySpecialEvents called for ${year}-${month + 1}`);
+        if (!window.events) {
+            console.error("[Debug] window.events is not defined. Cannot apply events.");
             return;
         }
+        console.log(`[Debug] Found ${window.events.length} events in total.`);
 
         const eventTypeClassMap = {
             '直播开示': 'live-dharma-talk',
@@ -80,26 +82,36 @@
             '组织大会': 'organization-conference'
         };
 
-        // This time, we just apply classes, assuming renderCalendar cleans the grid.
+        let eventsInMonth = 0;
         window.events.forEach(event => {
             const [eventYear, eventMonthStr, eventDay] = event.date.split('-');
             if (parseInt(eventYear) === year && parseInt(eventMonthStr) === (month + 1)) {
+                eventsInMonth++;
+                console.log(`[Debug] Found event in this month: "${event.title}" on ${event.date}`);
+                
                 const dayElement = document.querySelector(`.day-cell[data-date='${event.date}']`);
                 const eventClass = eventTypeClassMap[event.type];
 
                 if (dayElement && eventClass) {
+                    console.log(`[Debug] Found day cell for ${event.date}. Applying class: event-${eventClass}`);
                     dayElement.classList.add(`event-${eventClass}`);
                     
-                    // To avoid duplicate listeners, we use a flag.
                     if (!dayElement.dataset.hasEvent) {
                         const tooltipHtml = `<b>${event.title}</b><br>${event.description}`;
                         dayElement.addEventListener('mousemove', (e) => showTooltip(e, tooltipHtml));
                         dayElement.addEventListener('mouseleave', hideTooltip);
                         dayElement.dataset.hasEvent = 'true';
                     }
+                } else if (!dayElement) {
+                    console.warn(`[Debug] Could not find day cell for date: ${event.date}`);
+                } else if (!eventClass) {
+                    console.warn(`[Debug] No CSS class mapping for event type: "${event.type}"`);
                 }
             }
         });
+        if (eventsInMonth === 0) {
+            console.log("[Debug] No events found for the currently displayed month.");
+        }
     }
   </script>
   <style>
