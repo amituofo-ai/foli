@@ -1,8 +1,8 @@
-const CACHE_NAME = 'foli-cache-v20.5';
+const CACHE_NAME = 'foli-cache-v20.6';
 const ASSETS_TO_CACHE = [
   './',
   './flag.png',
-  './index.html?v=20.5',
+  './index.html?v=20.6',
   './reader.html?v=19.4',
   './add_event.html?v=19.4',
   './manifest.json?v=19.4',
@@ -15,7 +15,7 @@ const ASSETS_TO_CACHE = [
   './video_data.js?v=19.4',
   './audio_data_v13.js',
   './ai_chat.js?v=19.4',
-  './events_data.js', // Add events data to cache
+  './events_data.js?v=20.5', // Add events data to cache
   './video_snippet.js?v=19.4',
   './search_data.js?v=19.4'
 ];
