@@ -1610,6 +1610,9 @@
 
       grid.appendChild(cell);
     }
+
+    // Apply special event styles after calendar is rendered
+    applySpecialEvents(currentYear, currentMonth);
   }
 
   // Helper: Get Nth Weekday of Month
