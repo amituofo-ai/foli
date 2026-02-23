@@ -1,8 +1,8 @@
-const CACHE_NAME = 'foli-cache-v20.2';
+const CACHE_NAME = 'foli-cache-v20.3';
 const ASSETS_TO_CACHE = [
   './',
   './flag.png',
-  './index.html?v=20.2',
+  './index.html?v=20.3',
   './reader.html?v=19.4',
   './add_event.html?v=19.4',
   './manifest.json?v=19.4',
@@ -48,7 +48,7 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim();
 });
 
-// Fetch Event: Cache First Strategy with Dynamic Caching
+// Fetch Event: Strategies for different assets
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
@@ -56,40 +56,42 @@ self.addEventListener('fetch', (event) => {
   // Skip chrome-extension requests or other non-http schemes
   if (!event.request.url.startsWith('http')) return;
 
-  // Exclude media files (mp3, wav, mp4) from caching to support Range requests and save space
   const url = new URL(event.request.url);
-  
-  // Strategy for announcement.html: Network First (Freshness over Cache)
-  if (url.pathname.endsWith('announcement.html')) {
-      event.respondWith(
-          fetch(event.request)
-              .then(response => {
-                  // If valid response, clone and cache
-                  if (response && response.status === 200) {
-                      const responseToCache = response.clone();
-                      caches.open(CACHE_NAME).then(cache => {
-                          cache.put(event.request, responseToCache);
-                      });
-                      return response;
-                  }
-                  // If network fails or 404, try cache
-                  return caches.match(event.request);
-              })
-              .catch(() => {
-                  // Offline -> fallback to cache
-                  return caches.match(event.request);
-              })
-      );
-      return;
-  }
 
+  // Strategy for HTML: Network First, then Cache
+  // This ensures users always get the latest app shell.
+  if (event.request.headers.get('Accept').includes('text/html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // If valid response, clone and cache for offline use
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // If network fails (offline), fallback to cache
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+  
+  // Strategy for media: Network only
+  // Avoids caching large files and supports Range requests.
   if (url.pathname.match(/\.(mp3|wav|mp4)$/i)) {
       return; // Let the browser handle it (network only)
   }
 
+  // Strategy for other assets (CSS, JS, images): Cache First, then Network
+  // This is fast and efficient for static assets.
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      // 1. Return cached response if found (Cache First)
+      // 1. Return cached response if found
       if (cachedResponse) {
         return cachedResponse;
       }
@@ -97,14 +99,12 @@ self.addEventListener('fetch', (event) => {
       // 2. If not in cache, fetch from network
       return fetch(event.request).then((networkResponse) => {
         // Check if we received a valid response
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic' && networkResponse.type !== 'cors' && networkResponse.type !== 'opaque') {
+        if (!networkResponse || networkResponse.status !== 200 || (networkResponse.type !== 'basic' && networkResponse.type !== 'cors' && networkResponse.type !== 'opaque')) {
           return networkResponse;
         }
 
-        // 3. Cache the new resource (Dynamic Caching)
-        // Clone the response because it's a stream and can only be consumed once
+        // 3. Cache the new resource
         const responseToCache = networkResponse.clone();
-
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseToCache);
         });
