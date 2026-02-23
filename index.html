@@ -68,8 +68,8 @@
     }
 
     function applySpecialEvents(year, month) {
-        if (!window.events_data) {
-            console.log("events_data not found");
+        if (!window.events) { // Corrected from events_data to events
+            console.log("events data not found, waiting for it to load...");
             return;
         }
 
@@ -81,7 +81,7 @@
         };
 
         // This time, we just apply classes, assuming renderCalendar cleans the grid.
-        window.events_data.forEach(event => {
+        window.events.forEach(event => {
             const [eventYear, eventMonthStr, eventDay] = event.date.split('-');
             if (parseInt(eventYear) === year && parseInt(eventMonthStr) === (month + 1)) {
                 const dayElement = document.querySelector(`.day-cell[data-date='${event.date}']`);
