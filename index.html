@@ -1548,26 +1548,54 @@
       midRow.appendChild(lunarDiv);
       cell.appendChild(midRow);
       
-      // 3. Bottom Row: Festival + Event
+     // 3. Bottom Row: Festival + Event
       const bottomContainer = document.createElement('div');
       bottomContainer.className = 'w-full flex flex-col gap-0.5 mt-auto px-0.5';
 
-      // Festival Text
+      const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const sEvent = (window.specialEvents && Array.isArray(window.specialEvents)) 
+                     ? window.specialEvents.find(e => e.date === dateString) 
+                     : null;
+
+      // --- A. 节日文字 ---
       if (info && info.festival) {
           const festDiv = document.createElement('div');
           festDiv.innerText = info.festival;
-          // Adjust text color for contrast if isToday
           festDiv.className = isToday 
             ? 'text-[8px] text-white/90 leading-tight text-center w-full truncate font-bold'
             : 'text-[8px] text-[#b35c1e] leading-tight text-center w-full truncate font-bold opacity-90';
           bottomContainer.appendChild(festDiv);
       }
 
-      // Event Marker
-      if (info && info.events && info.events.length > 0) {
+      // --- B. 特殊事件 (实现整个方块金色) ---
+      if (sEvent) {
+          const typeStyles = {
+              // 佛陀开示：背景纯金，文字深褐
+              'live_dharma_talk': { bg: '#FFD700', text: '#5C4033', border: '#B8860B' }, 
+              'dharma_assembly': { bg: '#FFF4E6', text: '#E67E22', border: '#FD7E14' },  
+              'retreat': { bg: '#FEF9C3', text: '#854D0E', border: '#FACC15' },          
+              'organization_conference': { bg: '#EFF6FF', text: '#1D4ED8', border: '#3B82F6' }, 
+              'default': { bg: '#F5F5F4', text: '#44403C', border: '#A8A29E' }
+          };
+          const style = typeStyles[sEvent.type] || typeStyles['default'];
+
+          if (!isToday) {
+              // 强制整个方块背景变色
+              cell.style.backgroundColor = style.bg;
+              cell.style.border = `1px solid ${style.border}`;
+              // 移除原本的背景类防止干扰
+              cell.classList.remove('hover:bg-stone-100/50', 'text-stone-700');
+              cell.style.color = style.text; // 让日期数字也适配颜色
+          }
+
+          const eventDiv = document.createElement('div');
+          eventDiv.innerText = sEvent.description; 
+          eventDiv.style.cssText = `font-size: 8px; color: ${style.text}; background-color: rgba(255, 255, 255, 0.5); border-radius: 4px; padding: 2px 1px; width: 100%; text-align: center; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid ${style.border}44;`;
+          bottomContainer.appendChild(eventDiv);
+      } 
+      else if (info && info.events && info.events.length > 0) {
           const eventDiv = document.createElement('div');
           eventDiv.innerText = info.events[0].title;
-          // Make event pill smaller/cleaner
           eventDiv.className = 'text-[8px] text-blue-700 bg-blue-50/80 backdrop-blur-sm border border-blue-100 rounded-sm px-0.5 py-0.5 w-full truncate text-center shadow-sm';
           bottomContainer.appendChild(eventDiv);
       }
