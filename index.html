@@ -67,51 +67,45 @@
       if (tooltip) tooltip.style.display = 'none';
     }
 
-    function applySpecialEvents(year, month) {
-        console.log(`[Debug] applySpecialEvents called for ${year}-${month + 1}`);
-        if (!window.events) {
-            console.error("[Debug] window.events is not defined. Cannot apply events.");
-            return;
-        }
-        console.log(`[Debug] Found ${window.events.length} events in total.`);
+    function applySpecialStyles(year, month) {
+        const today = new Date();
+        const calendarGrid = document.getElementById('calendar-grid');
+        const dayCells = calendarGrid.children;
 
-        const eventTypeClassMap = {
-            '直播开示': 'live-dharma-talk',
-            '法会': 'dharma-assembly',
-            '打七': 'retreat',
-            '组织大会': 'organization-conference'
-        };
+        Array.from(dayCells).forEach(dayCell => {
+            // Skip empty cells
+            if (!dayCell.textContent) return;
 
-        let eventsInMonth = 0;
-        window.events.forEach(event => {
-            const [eventYear, eventMonthStr, eventDay] = event.date.split('-');
-            if (parseInt(eventYear) === year && parseInt(eventMonthStr) === (month + 1)) {
-                eventsInMonth++;
-                console.log(`[Debug] Found event in this month: "${event.title}" on ${event.date}`);
-                
-                const dayElement = document.querySelector(`.day-cell[data-date='${event.date}']`);
-                const eventClass = eventTypeClassMap[event.type];
+            const day = parseInt(dayCell.textContent, 10);
+            if (isNaN(day)) return;
 
-                if (dayElement && eventClass) {
-                    console.log(`[Debug] Found day cell for ${event.date}. Applying class: event-${eventClass}`);
-                    dayElement.classList.add(`event-${eventClass}`);
-                    
-                    if (!dayElement.dataset.hasEvent) {
-                        const tooltipHtml = `<b>${event.title}</b><br>${event.description}`;
-                        dayElement.addEventListener('mousemove', (e) => showTooltip(e, tooltipHtml));
-                        dayElement.addEventListener('mouseleave', hideTooltip);
-                        dayElement.dataset.hasEvent = 'true';
-                    }
-                } else if (!dayElement) {
-                    console.warn(`[Debug] Could not find day cell for date: ${event.date}`);
-                } else if (!eventClass) {
-                    console.warn(`[Debug] No CSS class mapping for event type: "${event.type}"`);
+            const yyyymmdd = `${year}${String(month + 1).padStart(2, '0')}${String(day).padStart(2, '0')}`;
+            const eventData = window.events ? window.events.find(e => e.date === yyyymmdd) : null;
+            const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+
+            // Reset styles first
+            dayCell.innerHTML = day;
+            dayCell.className = 'h-12 lg:h-16 flex justify-center items-center text-lg rounded-xl transition-all duration-200 cursor-pointer hover:bg-white/50 text-[#5c4033]/80';
+
+            if (eventData) {
+                dayCell.innerHTML = `<div class='flex flex-col items-center justify-center leading-tight'><span class='text-base'>${day}</span><span class='text-xs font-bold'>${eventData.title}</span></div>`;
+                const eventClass = `event-${eventData.type.replace(/_/g, '-')}`;
+                dayCell.classList.add(...eventClass.split(' '));
+                dayCell.onmouseover = (e) => showTooltip(e, `<b>${eventData.title}</b><br>${eventData.description}`);
+                dayCell.onmouseout = hideTooltip;
+            } else if (isToday) {
+                dayCell.innerHTML = `<div class='flex flex-col items-center justify-center leading-tight'><span class='text-lg'>${day}</span><span class='text-xs font-bold'>${i18n.t('today')}</span></div>`;
+                dayCell.classList.add('bg-white/80', 'text-[#b35c1e]', 'font-bold', 'shadow-lg', 'ring-2', 'ring-white');
+            }
+
+            // Apply selected style
+            if (day === selectedDate.getDate() && month === selectedDate.getMonth() && year === selectedDate.getFullYear()) {
+                if (!isToday && !eventData) { // Don't override today/event styles
+                  dayCell.classList.add('bg-white/50', 'font-bold', 'shadow-md');
                 }
             }
         });
-        if (eventsInMonth === 0) {
-            console.log("[Debug] No events found for the currently displayed month.");
-        }
+    }
   </script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Serif SC", serif; }
@@ -1610,9 +1604,6 @@
 
       grid.appendChild(cell);
     }
-
-    // Apply special event styles after calendar is rendered
-    applySpecialEvents(currentYear, currentMonth);
   }
 
   // Helper: Get Nth Weekday of Month
