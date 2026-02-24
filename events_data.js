@@ -3,21 +3,11 @@ window.specialEvents = [
   { 
     "date": "2026-02-16", 
     "type": "live_dharma_talk", 
-    "description": "佛陀直播开示" 
+    "description": "佛陀直播開示" 
   },
-  { 
-    "date": "待定", 
-    "type": "dharma_assembly", 
-    "description": "药师忏法会" 
-  },
-  { 
-    "date": "待定", 
-    "type": "retreat", 
-    "description": "精进佛七" 
-  },
-  { 
-    "date": "待定", 
+   { 
+    "date": "2026-01-11", 
     "type": "organization_conference", 
-    "description": "组织大会" 
+    "description": "組織大會" 
   }
 ];
