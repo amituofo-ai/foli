@@ -1554,8 +1554,8 @@
 
       const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const sEvent = (window.specialEvents && Array.isArray(window.specialEvents)) 
-                     ? window.specialEvents.find(e => e.date === dateString) 
-                     : null;
+               ? window.specialEvents.find(e => e.date === dateString && e.date.includes('-')) 
+               : null;
 
       // --- A. 节日文字 ---
       if (info && info.festival) {
