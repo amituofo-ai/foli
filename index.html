@@ -2478,29 +2478,30 @@
   }
 
   function renderAudioList() {
-      const list = document.getElementById('audio-list');
-      if(!list || typeof audioData === 'undefined') return;
+    const list = document.getElementById('audio-list');
+    if (!list || typeof audioData === 'undefined') return;
 
-      list.innerHTML = audioData.map((audio, idx) => `
-          <div onclick="openAudioModal(${idx})" class="mb-2 bg-white/40 backdrop-blur-md rounded-2xl p-3 shadow-sm border border-white/50 ring-1 ring-white/30 flex items-center gap-3 active:scale-[0.98] transition-all cursor-pointer hover:shadow-lg group">
-              <div class="w-10 h-10 rounded-full bg-stone-100/80 backdrop-blur-sm flex items-center justify-center text-[#b35c1e] shrink-0 group-hover:bg-[#b35c1e] group-hover:text-white transition-colors shadow-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-                      <path fill-rule="evenodd" d="M19.952 1.651a.75.75 0 01.298.599V16.303a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.393-4.89l1.891-.54V6.111l-11.25 3.214v11.389a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.393-4.89l1.891-.54V4.508a.75.75 0 01.956-.708l12-3.429a.75.75 0 01.8.28z" clip-rule="evenodd" />
-                  </svg>
-              </div>
-              <div class="flex-1 min-w-0">
-                  <div class="font-bold text-[#5c4033] text-sm truncate group-hover:text-[#b35c1e] transition-colors">${audio.title}</div>
-                  <div class="text-xs text-stone-500 mt-0.5 opacity-80">MP3/WAV Audio</div>
-              </div>
-              <div class="text-stone-400/80">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
-                  </svg>
-              </div>
-          </div>
-      `).join('');
-  }
+    list.innerHTML = audioData.map((audio, idx) => `
+        <div onclick="openAudioModal(${idx})" class="mb-3 bg-white/40 backdrop-blur-md rounded-2xl p-4 shadow-sm border border-white/50 ring-1 ring-white/30 flex items-center gap-4 active:scale-[0.98] transition-all cursor-pointer hover:shadow-lg group">
+            <div class="w-10 h-10 rounded-full bg-stone-100/80 backdrop-blur-sm flex items-center justify-center text-[#b35c1e] shrink-0 group-hover:bg-[#b35c1e] group-hover:text-white transition-colors shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                    <path fill-rule="evenodd" d="M19.952 1.651a.75.75 0 01.298.599V16.303a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.393-4.89l1.891-.54V6.111l-11.25 3.214v11.389a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.393-4.89l1.891-.54V4.508a.75.75 0 01.956-.708l12-3.429a.75.75 0 01.8.28z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="font-bold text-[#5c4033] text-sm leading-snug line-clamp-2 group-hover:text-[#b35c1e] transition-colors">
+                    ${audio.title}
+                </div>
+            </div>
+            <div class="text-stone-400/80 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
+                </svg>
+            </div>
+        </div>
+    `).join('');
+}
 
   function openAudioModal(index) {
       const modal = document.getElementById('audio-modal');
@@ -2548,33 +2549,37 @@
       }
   }
 
-  function renderVideoList() {
-      const list = document.getElementById('video-list');
-      if(!list || typeof videoData === 'undefined') return;
+ function renderVideoList() {
+    const list = document.getElementById('video-list');
+    if (!list || typeof videoData === 'undefined') return;
 
-      list.innerHTML = videoData.map((video, idx) => `
-          <div onclick="openVideoModal(${idx})" class="mb-2 bg-white/40 backdrop-blur-md rounded-2xl p-3 shadow-sm border border-white/50 ring-1 ring-white/30 flex items-center gap-3 active:scale-[0.98] transition-all cursor-pointer hover:shadow-lg group">
-              <div class="relative w-24 aspect-video bg-stone-100 rounded-lg overflow-hidden shrink-0 shadow-inner">
-                  <div class="absolute inset-0 flex items-center justify-center text-red-500 bg-black/5 group-hover:bg-black/10 transition-colors">
-                      <span class="text-xl drop-shadow-sm">▶️</span>
-                  </div>
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="font-bold text-[#5c4033] text-sm line-clamp-2 group-hover:text-red-600 transition-colors" title="${video.title}">${video.title}</div>
-                <div class="text-xs text-stone-500 mt-1 flex items-center gap-2 opacity-80">
-                    <span>YouTube</span>
-                    ${video.duration ? `<span>•</span><span>${video.duration}</span>` : ''}
-                </div>
+    list.innerHTML = videoData.map((video, idx) => `
+        <div onclick="openVideoModal(${idx})" class="mb-2 bg-white/40 backdrop-blur-md rounded-2xl p-3 shadow-sm border border-white/50 ring-1 ring-white/30 flex items-center gap-3 active:scale-[0.98] transition-all cursor-pointer hover:shadow-lg group">
+            
+            <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600 shrink-0 group-hover:bg-red-600 group-hover:text-white transition-all shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
             </div>
-              <div class="text-stone-400/80">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
-                  </svg>
-              </div>
-          </div>
-      `).join('');
-  }
+
+            <div class="flex-1 min-w-0">
+                <div class="font-bold text-[#5c4033] text-xs leading-snug line-clamp-2 group-hover:text-red-600 transition-colors">
+                    ${video.title}
+                </div>
+                ${video.duration ? `
+                <div class="text-[10px] text-stone-400 mt-0.5 opacity-80 flex items-center">
+                    <span>${video.duration}</span>
+                </div>` : ''}
+            </div>
+
+            <div class="text-stone-400/60 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A.75.75 0 008.5 7.82v4.36a.75.75 0 001.055.652l3.75-2.18a.75.75 0 000-1.304l-3.75-2.18z" clip-rule="evenodd" />
+                </svg>
+            </div>
+        </div>
+    `).join('');
+}
 
   function openVideoModal(index) {
       const modal = document.getElementById('video-modal');
