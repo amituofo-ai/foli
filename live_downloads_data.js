@@ -6,6 +6,6 @@ const live_downloads = [
     },
     {
         "title": "《2026年2月16除夕夜直播》",
-        "url": "https://mypikpak.com/s/VOmO8l46a9Rki_i5xbHvwQao2"
+        "url": "https://mypikpak.com/s/VOmP0IvHwkLMKOSe7N7f1zIDo2"
     }
 ];
