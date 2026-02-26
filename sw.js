@@ -1,23 +1,24 @@
-const CACHE_NAME = 'foli-cache-v20.8';
+const CACHE_NAME = 'foli-cache-v20.9';
 const ASSETS_TO_CACHE = [
   './',
   './flag.png',
-  './index.html?v=20.8',
-  './reader.html?v=19.4',
-  './add_event.html?v=19.4',
-  './manifest.json?v=19.4',
+  './index.html?v=20.9',
+  './reader.html?v=20.9',
+  './add_event.html?v=20.9',
+  './manifest.json?v=20.9',
   './icons/icon-512.png',
-  './i18n.js?v=20.8',
-  './live_downloads_data.js',
-  './lunar.js?v=19.4',
-  './recipe_data.js?v=19.4',
-  './diet_logic.js?v=19.4',
-  './sutras_data.js?v=19.4',
-  './video_data.js?v=19.4',
-  './audio_data_v13.js',
-  './ai_chat.js?v=19.4',
-  './video_snippet.js?v=19.4',
-  './search_data.js?v=19.4'
+  './i18n.js?v=20.9',
+  './lunar.js?v=20.9',
+  './sutras_data.js?v=20.9',
+  './recipe_data.js?v=20.9',
+  './diet_logic.js?v=20.9',
+  './video_data.js?v=20.9',
+  './audio_data_v13.js?v=20.9',
+  './ai_chat.js?v=20.9',
+  './video_snippet.js?v=20.9',
+  './search_data.js?v=20.9',
+  './events_data.js?v=20.9',
+  './live_downloads_data.js?v=20.9'
 ];
 
 // Install Event: Cache Core Assets
