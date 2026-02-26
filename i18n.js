@@ -131,7 +131,8 @@ const I18N = {
         stats_title: '月度修持统计',
         stats_chant: '念佛 (声)',
         stats_meditation: '打坐 (分)',
-        stats_month_view: '本月概览'
+        stats_month_view: '本月概览',
+        settings_version: '版本'
     },
     'zh-TW': {
         app_title: '<img src="flag.png" alt="Flag" class="h-7 inline-block mr-2">燃燈佛曆',
@@ -254,7 +255,8 @@ const I18N = {
         stats_title: '月度修持統計',
         stats_chant: '念佛 (聲)',
         stats_meditation: '打坐 (分)',
-        stats_month_view: '本月概覽'
+        stats_month_view: '本月概覽',
+        settings_version: '版本'
     },
     'en': {
         app_title: '<img src="flag.png" alt="Flag" class="h-7 inline-block mr-2">Lamp Buddha Calendar',
@@ -384,7 +386,8 @@ const I18N = {
         stats_title: 'Monthly Stats',
         stats_chant: 'Chanting (Count)',
         stats_meditation: 'Meditation (Min)',
-        stats_month_view: 'Overview'
+        stats_month_view: 'Overview',
+        settings_version: 'Version'
     }
 };
 
