@@ -1,13 +1,14 @@
-const CACHE_NAME = 'foli-cache-v20.2';
+const CACHE_NAME = 'foli-cache-v20.7';
 const ASSETS_TO_CACHE = [
   './',
   './flag.png',
-  './index.html?v=20.2',
+  './index.html?v=20.7',
   './reader.html?v=19.4',
   './add_event.html?v=19.4',
   './manifest.json?v=19.4',
   './icons/icon-512.png',
-  './i18n.js?v=19.8',
+  './i18n.js?v=20.4',
+  './live_downloads_data.js',
   './lunar.js?v=19.4',
   './recipe_data.js?v=19.4',
   './diet_logic.js?v=19.4',
