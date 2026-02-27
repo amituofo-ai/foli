@@ -3009,6 +3009,9 @@
     // Override existing renderCalendar function
     const originalRenderCalendar = window.renderCalendar;
     window.renderCalendar = function(date) {
+      if (!date) {
+      date = window.currentDisplayDate || new Date();
+      }
       const calendarGrid = document.getElementById('calendar-grid');
       const calendarHeader = document.getElementById('calendar-header');
       const weekdayHeader = document.getElementById('weekday-header');
