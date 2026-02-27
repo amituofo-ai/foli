@@ -1926,6 +1926,16 @@
       }
   }
 
+  // Bridge function：舊代碼仍呼叫 updateDayInfo(Date)，這裡轉調到新的 renderDayInfo
+  function updateDayInfo(dateObject) {
+      if (!(dateObject instanceof Date) || typeof renderDayInfo !== 'function') return;
+      renderDayInfo(
+          dateObject.getFullYear(),
+          dateObject.getMonth() + 1,
+          dateObject.getDate()
+      );
+  }
+
   // Show TongSheng Modal - REMOVED
   function showTongSheng(year, month, day) {
      // Legacy stub removed, calling renderDayInfo instead
@@ -3122,9 +3132,14 @@
         }
         calendarGrid.appendChild(cell);
       }
-      applySpecialEvents(year, month);
-      // Re-select the currently displayed day after re-render
-      if(window.updateDayInfo) updateDayInfo(currentDisplayDate);
+      // Re-select the目前顯示的日期資訊
+      if (typeof window.currentDisplayDate === 'undefined') {
+        window.currentDisplayDate = new Date();
+      }
+      if (window.renderDayInfo) {
+        const d = window.currentDisplayDate;
+        window.renderDayInfo(d.getFullYear(), d.getMonth() + 1, d.getDate());
+      }
     }
 
     // Ensure the script runs after the DOM is fully loaded
