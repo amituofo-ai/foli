@@ -1511,20 +1511,18 @@
       // Get Info
       const info = getBuddhistInfo(currentYear, currentMonth + 1, d);
       
-      // Populate Markers
+      // Populate Markers（去掉朔日，月齋/十齋/六齋統一顯示在右側）
       if (info && info.markers) {
           info.markers.forEach(m => {
+              if (m === '朔') return; // 不再顯示朔日
               const badge = document.createElement('div');
               badge.innerText = m;
-              if (m === '月' || m === '朔') {
+              if (m === '月') {
                   badge.className = 'w-3.5 h-3.5 flex items-center justify-center bg-stone-200/80 backdrop-blur-sm text-stone-600 rounded-md shadow-sm';
               } else {
-                  // '十', '六'
-                  // Add border-white for contrast if isToday
                   badge.className = `w-3.5 h-3.5 flex items-center justify-center bg-gradient-to-br from-[#b35c1e] to-[#d68c45] text-white rounded-full shadow-sm opacity-90 ${isToday ? 'border border-white/40' : 'border border-[#b35c1e]/20'}`;
               }
-              if (['月', '朔'].includes(m)) leftMarkers.appendChild(badge);
-              else rightMarkers.appendChild(badge);
+              rightMarkers.appendChild(badge);
           });
       }
 
@@ -3070,61 +3068,109 @@
 
         if (day > 0 && day <= daysInMonth) {
           const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-          const specialEvent = window.specialEvents && window.specialEvents.find(e => e.date === dateString);
+          const info = typeof getBuddhistInfo === 'function' ? getBuddhistInfo(year, month + 1, day) : null;
+          const sEvent = (window.specialEvents && Array.isArray(window.specialEvents)) ? window.specialEvents.find(e => e.date === dateString) : null;
+          const globalFests = typeof getGlobalFestivals === 'function' ? getGlobalFestivals(year, month + 1, day) : [];
+          const hasGlobalFest = globalFests.length > 0;
 
-          let dayStr = `<div class="text-sm lg:text-base font-medium">${day}</div>`;
-          let lunarStr = '';
-          try {
-            if (typeof Solar !== 'undefined') {
-              const solarObj = Solar.fromYmd(year, month + 1, day);
-              const lunarObj = solarObj.getLunar();
-              const jieQi = lunarObj.getJieQi();
-              if (jieQi) {
-                lunarStr = `<div class="text-[10px] lg:text-xs opacity-70 font-bold text-emerald-600">${jieQi}</div>`;
-              } else {
-                const lunarMonth = lunarObj.getMonthInChinese();
-                const lunarDay = lunarObj.getDayInChinese();
-                // 初一顯示「X月」，其他顯示日
-                if (lunarDay === '初一') {
-                  lunarStr = `<div class="text-[10px] lg:text-xs opacity-70">${lunarMonth}月</div>`;
-                } else {
-                  lunarStr = `<div class="text-[10px] lg:text-xs opacity-70">${lunarDay}</div>`;
-                }
-              }
-            }
-          } catch (e) {
-            console.error('Lunar render error', e);
-            lunarStr = `<div class="text-[10px] lg:text-xs opacity-50">--</div>`;
-          }
-          
-          cell.innerHTML = dayStr + lunarStr;
-          cell.className = 'relative text-center py-1.5 rounded-lg transition-all duration-200 cursor-pointer ';
-
+          cell.className = 'day-cell relative flex flex-col items-center justify-start min-h-[75px] py-1 rounded-xl cursor-pointer transition-all duration-200 active:scale-95 select-none group';
           if (isToday) {
-            cell.className += 'bg-[#8B4513] text-white shadow-lg ring-2 ring-white/50';
+            cell.classList.add('bg-[#b35c1e]', 'text-white', 'shadow-md');
           } else {
-            cell.className += 'hover:bg-white/50 active:scale-95';
+            cell.classList.add('text-stone-700', 'hover:bg-stone-100/50');
           }
 
-          if (specialEvent) {
-              cell.classList.add(`event-${specialEvent.type}`);
-              cell.setAttribute('onmouseover', `showTooltip(event, '${specialEvent.description}')`);
-              cell.setAttribute('onmouseout', 'hideTooltip()');
+          // 1. Top Row: 左標記(月/朔) | 日期 | 右標記(十/六)
+          const topRow = document.createElement('div');
+          topRow.className = 'w-full flex justify-between items-start px-0.5 mb-0.5';
+          const leftMarkers = document.createElement('div');
+          leftMarkers.className = 'flex flex-col gap-0.5 text-[8px] leading-none';
+          const rightMarkers = document.createElement('div');
+          rightMarkers.className = 'flex flex-col gap-0.5 text-[8px] leading-none';
+          if (info && info.markers) {
+            info.markers.forEach(m => {
+              if (m === '朔') return; // 不再顯示朔日
+              const badge = document.createElement('div');
+              badge.innerText = m;
+              if (m === '月') {
+                badge.className = 'w-3.5 h-3.5 flex items-center justify-center bg-stone-200/80 backdrop-blur-sm text-stone-600 rounded-md shadow-sm';
+              } else {
+                badge.className = `w-3.5 h-3.5 flex items-center justify-center bg-gradient-to-br from-[#b35c1e] to-[#d68c45] text-white rounded-full shadow-sm opacity-90 ${isToday ? 'border border-white/40' : 'border border-[#b35c1e]/20'}`;
+              }
+              rightMarkers.appendChild(badge);
+            });
           }
-          
+          const num = document.createElement('div');
+          num.innerText = day;
+          if (isToday) num.className = 'text-lg leading-none mx-auto font-serif font-bold drop-shadow-sm';
+          else if (hasGlobalFest) num.className = 'text-lg leading-none font-bold mx-auto font-serif text-indigo-600';
+          else num.className = 'text-lg leading-none font-medium mx-auto font-serif opacity-90 group-hover:opacity-100';
+          topRow.appendChild(leftMarkers);
+          topRow.appendChild(num);
+          topRow.appendChild(rightMarkers);
+          cell.appendChild(topRow);
+
+          // 2. Middle Row: 節氣/農曆
+          const midRow = document.createElement('div');
+          midRow.className = 'flex items-center justify-center gap-1 mb-0.5 w-full relative';
+          let displayText = '';
+          try {
+            if (typeof getLunarText === 'function') {
+              displayText = getLunarText(year, month + 1, day).replace('農曆 ', '').replace(/.*月/, '');
+            }
+          } catch (e) {}
+          if (info && info.jieqi) displayText = info.jieqi;
+          const lunarDiv = document.createElement('div');
+          if (info && info.jieqi) lunarDiv.className = isToday ? 'text-[10px] text-orange-100 font-bold' : 'text-[10px] text-[#b35c1e] font-bold';
+          else lunarDiv.className = isToday ? 'text-[10px] text-orange-100/90 font-medium' : 'text-[10px] text-stone-500/80 font-medium';
+          if (info && info.festival) lunarDiv.className = isToday ? 'text-[10px] text-white font-bold' : 'text-[10px] text-[#b35c1e] font-bold';
+          lunarDiv.innerText = displayText || ' ';
+          midRow.appendChild(lunarDiv);
+          cell.appendChild(midRow);
+
+          // 3. Bottom: 節日名 / 特殊事件
+          const bottomContainer = document.createElement('div');
+          bottomContainer.className = 'w-full flex flex-col gap-0.5 mt-auto px-0.5';
+          if (info && info.festival) {
+            const festDiv = document.createElement('div');
+            festDiv.innerText = info.festival;
+            festDiv.className = isToday ? 'text-[8px] text-white/90 leading-tight text-center w-full truncate font-bold' : 'text-[8px] text-[#b35c1e] leading-tight text-center w-full truncate font-bold opacity-90';
+            bottomContainer.appendChild(festDiv);
+          }
+          if (sEvent) {
+            const typeStyles = { live_dharma_talk: { bg: '#FFD700', text: '#5C4033', border: '#B8860B' }, dharma_assembly: { bg: '#FFF4E6', text: '#E67E22', border: '#FD7E14' }, retreat: { bg: '#FEF9C3', text: '#854D0E', border: '#FACC15' }, organization_conference: { bg: '#EFF6FF', text: '#1D4ED8', border: '#3B82F6' }, default: { bg: '#F5F5F4', text: '#44403C', border: '#A8A29E' } };
+            const style = typeStyles[sEvent.type] || typeStyles.default;
+            if (!isToday) {
+              cell.style.backgroundColor = style.bg;
+              cell.style.border = `1px solid ${style.border}`;
+              cell.classList.remove('hover:bg-stone-100/50', 'text-stone-700');
+              cell.style.color = style.text;
+            }
+            const eventDiv = document.createElement('div');
+            eventDiv.innerText = sEvent.description || sEvent.title || '';
+            eventDiv.style.cssText = `font-size: 8px; color: ${style.text}; background-color: rgba(255, 255, 255, 0.5); border-radius: 4px; padding: 2px 1px; width: 100%; text-align: center; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid ${style.border}44;`;
+            bottomContainer.appendChild(eventDiv);
+          } else if (info && info.events && info.events.length > 0) {
+            const eventDiv = document.createElement('div');
+            eventDiv.innerText = info.events[0].title;
+            eventDiv.className = 'text-[8px] text-blue-700 bg-blue-50/80 backdrop-blur-sm border border-blue-100 rounded-sm px-0.5 py-0.5 w-full truncate text-center shadow-sm';
+            bottomContainer.appendChild(eventDiv);
+          }
+          cell.appendChild(bottomContainer);
+
+          if (sEvent && typeof showTooltip === 'function') {
+            cell.setAttribute('onmouseover', `showTooltip(event, '${(sEvent.description || sEvent.title || '').replace(/'/g, "\\'")}')`);
+            cell.setAttribute('onmouseout', 'hideTooltip()');
+          }
+
           cell.onclick = () => {
             window.currentDisplayDate = currentDate;
             updateDayInfo(currentDate);
-            document.querySelectorAll('#calendar-grid > div').forEach(c => {
-                c.classList.remove('bg-[#b35c1e]', 'text-white', 'shadow-md');
-                if (!c.classList.contains('bg-[#8B4513]')) {
-                   c.classList.add('hover:bg-white/50', 'active:scale-95');
-                }
+            document.querySelectorAll('#calendar-grid .day-cell').forEach(c => {
+              c.classList.remove('ring-2', 'ring-[#b35c1e]', 'ring-white', 'ring-offset-2', 'bg-orange-100', 'bg-white/20', 'backdrop-blur-sm', 'border-white/80');
             });
-            if (!isToday) {
-               cell.classList.add('bg-[#b35c1e]', 'text-white', 'shadow-md');
-               cell.classList.remove('hover:bg-white/50', 'active:scale-95');
-            }
+            if (isToday) cell.classList.add('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-[#b35c1e]');
+            else cell.classList.add('bg-white/20', 'backdrop-blur-sm', 'border', 'border-white/80');
           };
         } else {
           cell.className = 'text-center py-2 rounded-lg text-transparent';
@@ -3132,7 +3178,7 @@
         }
         calendarGrid.appendChild(cell);
       }
-      // Re-select the目前顯示的日期資訊
+      // 更新右側「今日信息」為當前顯示的日期
       if (typeof window.currentDisplayDate === 'undefined') {
         window.currentDisplayDate = new Date();
       }
