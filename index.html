@@ -769,6 +769,10 @@
 </div>
 
 <script>
+  var today = new Date(); 
+  var currentDisplayDate = new Date(); 
+  var currentMonth = currentDisplayDate.getMonth();
+  var currentYear = currentDisplayDate.getFullYear();
   // Settings Logic
   function toggleSettings() {
       const modal = document.getElementById('settings-modal');
