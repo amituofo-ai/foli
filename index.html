@@ -94,7 +94,8 @@
                 dayCell.onmouseover = (e) => showTooltip(e, `<b>${eventData.title}</b><br>${eventData.description}`);
                 dayCell.onmouseout = hideTooltip;
             } else if (isToday) {
-                dayCell.innerHTML = `<div class='flex flex-col items-center justify-center leading-tight'><span class='text-lg'>${day}</span><span class='text-xs font-bold'>${i18n.t('today')}</span></div>`;
+                const todayLabel = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 'Today' : '今日';
+                dayCell.innerHTML = `<div class='flex flex-col items-center justify-center leading-tight'><span class='text-lg'>${day}</span><span class='text-xs font-bold'>${todayLabel}</span></div>`;
                 dayCell.classList.add('bg-white/80', 'text-[#b35c1e]', 'font-bold', 'shadow-lg', 'ring-2', 'ring-white');
             }
 
@@ -1933,22 +1934,24 @@
 
   // Change Month Logic
   function changeMonth(offset) {
-    // 1. 確保 currentDisplayDate 存在
-    if (typeof currentDisplayDate === 'undefined') {
-        window.currentDisplayDate = new Date();
+    // 使用全局 window.currentDisplayDate，避免 let 的 TDZ 問題
+    if (!window.currentDisplayDate || !(window.currentDisplayDate instanceof Date)) {
+      window.currentDisplayDate = new Date();
     }
 
-    // 2. 避免月底跳轉錯誤
-    currentDisplayDate.setDate(1); 
-    currentDisplayDate.setMonth(currentDisplayDate.getMonth() + offset);
+    const d = window.currentDisplayDate;
 
-    // 3. 更新全局年月
-    window.currentMonth = currentDisplayDate.getMonth();
-    window.currentYear = currentDisplayDate.getFullYear();
+    // 避免月底跳轉錯誤，先設為 1 號再調整月份
+    d.setDate(1);
+    d.setMonth(d.getMonth() + offset);
 
-    // 4. [關鍵修復] 必須把這個日期對象傳給 renderCalendar
+    // 更新全局年月
+    window.currentMonth = d.getMonth();
+    window.currentYear = d.getFullYear();
+
+    // 重新渲染日曆
     if (window.renderCalendar) {
-        window.renderCalendar(currentDisplayDate);
+      window.renderCalendar(d);
     }
 }
 
@@ -3019,11 +3022,24 @@
       const year = date.getFullYear();
       const month = date.getMonth();
 
-      const monthName = i18n.t('months')[month];
+      // Month title，多語言簡單處理：英文顯示英文月份，其餘顯示「X月」
+      let monthName;
+      if (typeof currentLang !== 'undefined' && currentLang === 'en') {
+        const enMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        monthName = enMonths[month];
+      } else {
+        monthName = `${month + 1}月`;
+      }
       calendarHeader.textContent = `${year} ${monthName}`;
 
+      // Weekday header：英文用簡寫，中文直接用 I18N.weekdays
       weekdayHeader.innerHTML = '';
-      const weekdays = i18n.t('weekdays_short');
+      let weekdays;
+      if (typeof currentLang !== 'undefined' && currentLang === 'en') {
+        weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      } else {
+        weekdays = t('weekdays');
+      }
       weekdays.forEach(day => {
         const dayEl = document.createElement('div');
         dayEl.textContent = day;
@@ -3074,7 +3090,7 @@
           }
           
           cell.onclick = () => {
-            currentDisplayDate = currentDate;
+            window.currentDisplayDate = currentDate;
             updateDayInfo(currentDate);
             document.querySelectorAll('#calendar-grid > div').forEach(c => {
                 c.classList.remove('bg-[#b35c1e]', 'text-white', 'shadow-md');
@@ -3100,9 +3116,11 @@
 
     // Ensure the script runs after the DOM is fully loaded
     document.addEventListener('DOMContentLoaded', function() {
-      if (typeof currentDisplayDate !== 'undefined') {
-        renderCalendar(currentDisplayDate);
+      // 初始化當前顯示日期並渲染一次
+      if (!(window.currentDisplayDate instanceof Date)) {
+        window.currentDisplayDate = new Date();
       }
+      renderCalendar(window.currentDisplayDate);
     });
   </script>
 </body>
