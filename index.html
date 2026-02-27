@@ -3049,7 +3049,8 @@
       calendarGrid.innerHTML = '';
       const firstDayOfMonth = new Date(year, month, 1);
       const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const firstDayOfWeek = (firstDayOfMonth.getDay() === 0 && getWeekStart() === 'monday') ? 6 : (firstDayOfMonth.getDay() + (getWeekStart() === 'monday' ? -1 : 0) + 7) % 7;
+      // 以星期日作為一週起始，不再依賴 getWeekStart()
+      const firstDayOfWeek = firstDayOfMonth.getDay();
 
       for (let i = 0; i < 42; i++) {
         const day = i - firstDayOfWeek + 1;
