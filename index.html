@@ -3062,17 +3062,29 @@
           const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const specialEvent = window.specialEvents && window.specialEvents.find(e => e.date === dateString);
 
-          const lunarDate = Lunar.solar2lunar(year, month + 1, day);
           let dayStr = `<div class="text-sm lg:text-base font-medium">${day}</div>`;
-          let lunarStr;
-          if (lunarDate.term) {
-            lunarStr = `<div class="text-[10px] lg:text-xs opacity-70 font-bold text-emerald-600">${lunarDate.term}</div>`;
-          } else if (lunarDate.isLeap) {
-            lunarStr = `<div class="text-[10px] lg:text-xs opacity-70">闰${lunarDate.monthStr}${lunarDate.dayStr}</div>`;
-          } else if (lunarDate.day === 1) {
-            lunarStr = `<div class="text-[10px] lg:text-xs opacity-70">${lunarDate.monthStr}</div>`;
-          } else {
-            lunarStr = `<div class="text-[10px] lg:text-xs opacity-70">${lunarDate.dayStr}</div>`;
+          let lunarStr = '';
+          try {
+            if (typeof Solar !== 'undefined') {
+              const solarObj = Solar.fromYmd(year, month + 1, day);
+              const lunarObj = solarObj.getLunar();
+              const jieQi = lunarObj.getJieQi();
+              if (jieQi) {
+                lunarStr = `<div class="text-[10px] lg:text-xs opacity-70 font-bold text-emerald-600">${jieQi}</div>`;
+              } else {
+                const lunarMonth = lunarObj.getMonthInChinese();
+                const lunarDay = lunarObj.getDayInChinese();
+                // 初一顯示「X月」，其他顯示日
+                if (lunarDay === '初一') {
+                  lunarStr = `<div class="text-[10px] lg:text-xs opacity-70">${lunarMonth}月</div>`;
+                } else {
+                  lunarStr = `<div class="text-[10px] lg:text-xs opacity-70">${lunarDay}</div>`;
+                }
+              }
+            }
+          } catch (e) {
+            console.error('Lunar render error', e);
+            lunarStr = `<div class="text-[10px] lg:text-xs opacity-50">--</div>`;
           }
           
           cell.innerHTML = dayStr + lunarStr;
