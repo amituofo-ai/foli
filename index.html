@@ -1933,16 +1933,24 @@
 
   // Change Month Logic
   function changeMonth(offset) {
-    currentMonth += offset;
-    if (currentMonth > 11) {
-      currentMonth = 0;
-      currentYear++;
-    } else if (currentMonth < 0) {
-      currentMonth = 11;
-      currentYear--;
+    // 1. 確保 currentDisplayDate 存在
+    if (typeof currentDisplayDate === 'undefined') {
+        window.currentDisplayDate = new Date();
     }
-    renderCalendar();
-  }
+
+    // 2. 避免月底跳轉錯誤
+    currentDisplayDate.setDate(1); 
+    currentDisplayDate.setMonth(currentDisplayDate.getMonth() + offset);
+
+    // 3. 更新全局年月
+    window.currentMonth = currentDisplayDate.getMonth();
+    window.currentYear = currentDisplayDate.getFullYear();
+
+    // 4. [關鍵修復] 必須把這個日期對象傳給 renderCalendar
+    if (window.renderCalendar) {
+        window.renderCalendar(currentDisplayDate);
+    }
+}
 
   // Switch Tab Logic
   function switchTab(tabId) {
@@ -2996,6 +3004,9 @@
     // Override existing renderCalendar function
     const originalRenderCalendar = window.renderCalendar;
     window.renderCalendar = function(date) {
+        if (!date) {
+        date = window.currentDisplayDate || new Date();
+      }
       const calendarGrid = document.getElementById('calendar-grid');
       const calendarHeader = document.getElementById('calendar-header');
       const weekdayHeader = document.getElementById('weekday-header');
