@@ -769,10 +769,6 @@
 </div>
 
 <script>
-  var today = new Date(); 
-  var currentDisplayDate = new Date(); 
-  var currentMonth = currentDisplayDate.getMonth();
-  var currentYear = currentDisplayDate.getFullYear();
   // Settings Logic
   function toggleSettings() {
       const modal = document.getElementById('settings-modal');
@@ -1446,11 +1442,6 @@
 
   // Render Calendar Logic
   function renderCalendar() {
-    if (typeof today === 'undefined' || !today) {
-        window.today = new Date();
-    }
-    const today = window.today; 
- 
     const header = document.getElementById('calendar-header');
     const grid = document.getElementById('calendar-grid');
     const weekdayHeader = document.getElementById('weekday-header');
@@ -1942,20 +1933,16 @@
 
   // Change Month Logic
   function changeMonth(offset) {
-  // 如果變量沒定義，先初始化
-  if (typeof currentDisplayDate === 'undefined' || !currentDisplayDate) {
-    window.currentDisplayDate = new Date();
+    currentMonth += offset;
+    if (currentMonth > 11) {
+      currentMonth = 0;
+      currentYear++;
+    } else if (currentMonth < 0) {
+      currentMonth = 11;
+      currentYear--;
+    }
+    renderCalendar();
   }
-
-  window.currentDisplayDate.setDate(1); 
-  window.currentDisplayDate.setMonth(window.currentDisplayDate.getMonth() + offset);
-
-  // 更新全局變量
-  window.currentMonth = window.currentDisplayDate.getMonth();
-  window.currentYear = window.currentDisplayDate.getFullYear();
-
-  renderCalendar();
-}
 
   // Switch Tab Logic
   function switchTab(tabId) {
@@ -3009,9 +2996,6 @@
     // Override existing renderCalendar function
     const originalRenderCalendar = window.renderCalendar;
     window.renderCalendar = function(date) {
-      if (!date) {
-      date = window.currentDisplayDate || new Date();
-      }
       const calendarGrid = document.getElementById('calendar-grid');
       const calendarHeader = document.getElementById('calendar-header');
       const weekdayHeader = document.getElementById('weekday-header');
