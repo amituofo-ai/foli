@@ -1446,6 +1446,11 @@
 
   // Render Calendar Logic
   function renderCalendar() {
+    if (typeof today === 'undefined' || !today) {
+        window.today = new Date();
+    }
+    const today = window.today; 
+ 
     const header = document.getElementById('calendar-header');
     const grid = document.getElementById('calendar-grid');
     const weekdayHeader = document.getElementById('weekday-header');
@@ -1936,17 +1941,19 @@
   }
 
   // Change Month Logic
-    // Change Month Logic
   function changeMonth(offset) {
-  // Set the date to the first day of the current month to avoid month-end issues
-  currentDisplayDate.setDate(1); 
-  currentDisplayDate.setMonth(currentDisplayDate.getMonth() + offset);
+  // 如果變量沒定義，先初始化
+  if (typeof currentDisplayDate === 'undefined' || !currentDisplayDate) {
+    window.currentDisplayDate = new Date();
+  }
 
-  // [关键修复] 更新 renderCalendar 函数所依赖的全局变量
-  currentMonth = currentDisplayDate.getMonth();
-  currentYear = currentDisplayDate.getFullYear();
+  window.currentDisplayDate.setDate(1); 
+  window.currentDisplayDate.setMonth(window.currentDisplayDate.getMonth() + offset);
 
-  // 现在调用 renderCalendar，它将使用正确的月份和年份
+  // 更新全局變量
+  window.currentMonth = window.currentDisplayDate.getMonth();
+  window.currentYear = window.currentDisplayDate.getFullYear();
+
   renderCalendar();
 }
 
