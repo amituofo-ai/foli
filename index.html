@@ -1932,17 +1932,19 @@
   }
 
   // Change Month Logic
+    // Change Month Logic
   function changeMonth(offset) {
-    currentMonth += offset;
-    if (currentMonth > 11) {
-      currentMonth = 0;
-      currentYear++;
-    } else if (currentMonth < 0) {
-      currentMonth = 11;
-      currentYear--;
-    }
-    renderCalendar();
-  }
+  // Set the date to the first day of the current month to avoid month-end issues
+  currentDisplayDate.setDate(1); 
+  currentDisplayDate.setMonth(currentDisplayDate.getMonth() + offset);
+
+  // [关键修复] 更新 renderCalendar 函数所依赖的全局变量
+  currentMonth = currentDisplayDate.getMonth();
+  currentYear = currentDisplayDate.getFullYear();
+
+  // 现在调用 renderCalendar，它将使用正确的月份和年份
+  renderCalendar();
+}
 
   // Switch Tab Logic
   function switchTab(tabId) {
