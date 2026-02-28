@@ -109,87 +109,174 @@
     }
   </script>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Serif SC", serif; }
+    /* ========== 設計變數 Design Tokens ========== */
+    :root {
+      --color-bg-start: #f5e6d3;
+      --color-bg-mid: #f8ecd8;
+      --color-bg-end: #faf4e8;
+      --color-accent: #b35c1e;
+      --color-accent-deep: #8B4513;
+      --color-text: #4a3b32;
+      --color-text-muted: #5c4033;
+      --color-surface: rgba(255,255,255,0.55);
+      --color-surface-strong: rgba(255,255,255,0.75);
+      --color-border: rgba(255,255,255,0.5);
+      --radius-card: 1.25rem;
+      --radius-btn: 0.75rem;
+      --radius-pill: 9999px;
+      --shadow-card: 0 4px 24px -4px rgba(139, 69, 19, 0.08), 0 0 0 1px rgba(255,255,255,0.6) inset;
+      --shadow-nav: 0 8px 32px rgba(0,0,0,0.06), 0 0 0 1px rgba(255,255,255,0.5);
+      --transition: 0.2s ease;
+    }
+
+    body {
+      font-family: "PingFang SC", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0.01em;
+      -webkit-font-smoothing: antialiased;
+    }
     .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-    /* Custom scrollbar for desktop */
+
+    /* 背景：佛教金黃 + 光源 + 深淺變化，蓮花紋理加強 */
+    .bg-app {
+      background-color: #d4b88c;
+      background-image:
+        /* 主光源：右上金黃暖光 */
+        radial-gradient(ellipse 100% 80% at 85% 5%, rgba(255, 248, 210, 0.92) 0%, rgba(255, 236, 180, 0.65) 22%, rgba(250, 220, 150, 0.3) 45%, transparent 68%),
+        /* 金黃色塊：中上區 */
+        radial-gradient(ellipse 80% 50% at 50% 15%, rgba(255, 230, 160, 0.4) 0%, rgba(245, 210, 130, 0.15) 50%, transparent 70%),
+        /* 次光源：左側柔和金光 */
+        radial-gradient(ellipse 55% 100% at 0% 45%, rgba(255, 242, 200, 0.6) 0%, rgba(240, 215, 160, 0.2) 50%, transparent 70%),
+        /* 暗區：左下與底部 */
+        radial-gradient(ellipse 85% 55% at 8% 102%, rgba(165, 130, 90, 0.5) 0%, rgba(145, 110, 75, 0.18) 42%, transparent 65%),
+        /* 暗區：右下 */
+        radial-gradient(ellipse 65% 75% at 102% 88%, rgba(185, 150, 100, 0.38) 0%, transparent 58%),
+        linear-gradient(165deg, #e2cfaa 0%, #f0e0c0 20%, #f5e8c8 40%, #e0c898 58%, #d4b878 75%, #e4d4a8 90%, #f0e4c4 100%);
+      background-attachment: fixed;
+      background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+      background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+      min-height: 100vh;
+    }
+
+    /* 卡片通用：毛玻璃（半透明 + 強模糊），襯托背景色彩變化 */
+    .card-glass {
+      background: rgba(255, 252, 245, 0.52);
+      backdrop-filter: blur(24px) saturate(1.1);
+      -webkit-backdrop-filter: blur(24px) saturate(1.1);
+      border-radius: var(--radius-card);
+      box-shadow: 0 4px 24px -4px rgba(139, 69, 19, 0.06), 0 0 0 1px rgba(255,255,255,0.65) inset;
+      border: 1px solid rgba(255,255,255,0.55);
+      transition: box-shadow var(--transition), transform var(--transition);
+    }
+    .card-glass:hover { box-shadow: 0 12px 40px -8px rgba(139, 69, 19, 0.1), 0 0 0 1px rgba(255,255,255,0.8) inset; }
+
+    /* 區塊標題 */
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-accent-deep);
+      opacity: 0.9;
+    }
+    .section-label::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    /* 自定義滾動條 */
     @media (min-width: 1024px) {
       .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-      .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 4px; }
-      .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(139, 69, 19, 0.2); border-radius: 4px; }
-      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(139, 69, 19, 0.4); }
+      .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.15); border-radius: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(139, 69, 19, 0.18); border-radius: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(139, 69, 19, 0.28); }
     }
-    /* Special Event Styles */
-    .event-live-dharma-talk { background-color: gold !important; color: black !important; border-radius: 0.75rem; }
-    .event-dharma-assembly { background-color: #FFC107 !important; border: 2px solid gold; border-radius: 0.75rem; }
-    .event-retreat { background-color: #FFFACD !important; border: 2px solid gold; border-radius: 0.75rem; }
-    .event-organization-conference { background-color: #AEC6CF !important; border-radius: 0.75rem; }
 
+    /* 特殊事件樣式 */
+    .event-live-dharma-talk { background: linear-gradient(135deg, #ffd54f 0%, #ffb300 100%) !important; color: #2d1f0f !important; border-radius: var(--radius-btn); box-shadow: 0 2px 8px rgba(255,179,0,0.3); }
+    .event-dharma-assembly { background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%) !important; border: 1px solid rgba(255,193,7,0.5) !important; border-radius: var(--radius-btn); }
+    .event-retreat { background: linear-gradient(135deg, #fffde7 0%, #fff9c4 100%) !important; border: 1px solid rgba(255,235,59,0.5) !important; border-radius: var(--radius-btn); }
+    .event-organization-conference { background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important; border-radius: var(--radius-btn); box-shadow: 0 2px 8px rgba(33,150,243,0.15); }
+
+    /* 導航 / 設置圖標：統一線條風格，顯式繼承按鈕文字色（避免本地打開變黑） */
+    .nav-icon, .nav-icon-sm { color: inherit; display: inline-flex; align-items: center; justify-content: center; }
+    .nav-icon { width: 1.25rem; height: 1.25rem; flex-shrink: 0; }
+    .nav-icon-sm { width: 1.375rem; height: 1.375rem; flex-shrink: 0; }
+    .nav-icon svg, .nav-icon-sm svg { width: 100%; height: 100%; color: inherit; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-icon svg.icon-fill, .nav-icon-sm svg.icon-fill { stroke: none; fill: currentColor; }
+
+    /* 浮動提示框 */
     #event-tooltip {
       position: fixed;
       display: none;
-      background-color: rgba(0, 0, 0, 0.85);
-      color: white;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 14px;
+      background: rgba(45, 31, 15, 0.92);
+      color: #faf4e8;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.45;
       z-index: 1000;
-      pointer-events: none; /* So it doesn't interfere with mouse events */
-      max-width: 250px;
-      border: 1px solid rgba(255,255,255,0.2);
-      backdrop-filter: blur(4px);
+      pointer-events: none;
+      max-width: 260px;
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
     }
   </style>
 </head>
-<body class="bg-gradient-to-br from-[#f8c390] via-[#f9dba0] to-[#fbf2d3] bg-fixed text-[#4a3b32] pb-24 lg:pb-0 selection:bg-[#b35c1e] selection:text-white min-h-screen">
+<body class="bg-app text-[#4a3b32] pb-24 lg:pb-0 selection:bg-[#b35c1e] selection:text-white min-h-screen">
 
 <div id="event-tooltip"></div>
 
 <div class="lg:flex lg:h-screen lg:overflow-hidden lg:pb-0">
     <!-- Desktop/Pad Sidebar (Navigation) -->
-    <header class="lg:w-64 lg:h-full lg:flex-col lg:justify-start lg:border-r lg:border-white/20 lg:bg-white/40 lg:backdrop-blur-xl lg:pt-8 lg:pb-4 flex justify-between items-center px-4 py-3 bg-white/30 backdrop-blur-xl sticky top-0 z-30 shadow-sm border-b border-white/30 transition-all duration-300 lg:static lg:shadow-none">
+    <header class="lg:w-64 lg:h-full lg:flex-col lg:justify-start lg:border-r lg:border-white/30 lg:bg-white/50 lg:backdrop-blur-xl lg:pt-8 lg:pb-4 flex justify-between items-center px-4 py-3 bg-white/40 backdrop-blur-xl sticky top-0 z-30 shadow-[0_1px_0_0_rgba(255,255,255,0.8)] border-b border-white/40 transition-all duration-300 lg:static lg:shadow-none">
       
       <!-- Logo Area -->
       <div class="flex justify-between lg:flex-col items-center lg:gap-4 lg:mb-8 w-full lg:px-6">
-          <div id="app-title" class="text-lg lg:text-2xl font-bold tracking-wide text-[#5c4033] drop-shadow-sm order-2 lg:order-1 flex items-center gap-2">
-            <img src="flag.png" alt="Flag" class="h-7">
+          <div id="app-title" class="text-lg lg:text-2xl font-semibold tracking-tight text-[#5c4033] order-2 lg:order-1 flex items-center gap-2">
+            <img src="flag.png" alt="Flag" class="h-7 rounded shadow-sm">
             <span>燃燈佛曆</span>
           </div>
-          
-          <!-- Mobile Settings/Add Buttons (Hidden on Desktop) -->
-          <button onclick="toggleSettings()" class="lg:hidden w-9 h-9 flex justify-center items-center text-[#8B4513] text-lg active:scale-90 transition-transform hover:bg-white/40 rounded-full border border-white/20 shadow-sm order-1">
-            ⚙️
+          <button onclick="toggleSettings()" class="lg:hidden w-10 h-10 flex justify-center items-center text-[#8B4513] active:scale-95 transition-all rounded-xl bg-white/50 hover:bg-white/70 border border-white/40 order-1">
+            <span class="nav-icon-sm"><svg class="icon-fill" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33-1.82l-1.1-1.9a1.65 1.65 0 0 0-1.82-.67l-1.43.47a8 8 0 0 1-2.68 0l-1.43-.47a1.65 1.65 0 0 0-1.82.67l-1.1 1.9a1.65 1.65 0 0 0 .33 1.82l1.08.84a8 8 0 0 1 0 2.32l-1.08.84a1.65 1.65 0 0 0-.33 1.82l1.1 1.9a1.65 1.65 0 0 0 1.82.67l1.43-.47a8 8 0 0 1 2.68 0l1.43.47a1.65 1.65 0 0 0 1.82-.67l1.1-1.9a1.65 1.65 0 0 0-.33-1.82l-1.08-.84a8 8 0 0 1 0-2.32l1.08-.84z"/></svg></span>
           </button>
-          <a href="add_event.html" class="lg:hidden w-9 h-9 flex justify-center items-center text-[#8B4513] text-2xl leading-none no-underline active:scale-90 transition-transform bg-white/40 rounded-full shadow-sm hover:bg-white/60 border border-white/20 order-3">
+          <a href="add_event.html" class="lg:hidden w-10 h-10 flex justify-center items-center text-[#8B4513] text-2xl leading-none no-underline active:scale-95 transition-all rounded-xl bg-white/50 shadow-sm hover:bg-white/70 border border-white/40 order-3">
             +
           </a>
       </div>
 
-      <!-- Desktop Navigation Links (Replaces Bottom Bar) -->
-      <nav class="hidden lg:flex flex-col w-full px-4 gap-2 flex-1">
-          <button onclick="switchTab('calendar')" id="nav-desktop-calendar" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/50 transition-all font-bold text-lg">
-              <span>📅</span> <span data-i18n="tab_calendar">日历</span>
+      <!-- Desktop Navigation Links -->
+      <nav class="hidden lg:flex flex-col w-full px-3 gap-1.5 flex-1">
+          <button onclick="switchTab('calendar')" id="nav-desktop-calendar" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/60 transition-all duration-200 font-semibold text-base">
+              <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2.5" ry="2.5"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span> <span data-i18n="tab_calendar">日历</span>
           </button>
-          <button onclick="switchTab('search')" id="nav-desktop-search" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/50 transition-all font-bold text-lg">
-              <span>🔍</span> <span data-i18n="tab_search">搜索</span>
+          <button onclick="switchTab('search')" id="nav-desktop-search" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/60 transition-all duration-200 font-semibold text-base">
+              <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span> <span data-i18n="tab_search">搜索</span>
           </button>
-          <button onclick="switchTab('dharma')" id="nav-desktop-dharma" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/50 transition-all font-bold text-lg">
-              <span>📚</span> <span data-i18n="tab_dharma">佛法</span>
+          <button onclick="switchTab('dharma')" id="nav-desktop-dharma" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/60 transition-all duration-200 font-semibold text-base">
+              <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="2.8"/><path d="M12 12 L12 2 M12 12 L12 22 M12 12 L2 12 M12 12 L22 12 M12 12 L4.9 4.9 M12 12 L19.1 19.1 M12 12 L19.1 4.9 M12 12 L4.9 19.1"/></svg></span> <span data-i18n="tab_dharma">佛法</span>
           </button>
-          <button onclick="switchTab('diet')" id="nav-desktop-diet" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/50 transition-all font-bold text-lg">
-              <span>🥗</span> <span data-i18n="tab_diet">素斋</span>
+          <button onclick="switchTab('diet')" id="nav-desktop-diet" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/60 transition-all duration-200 font-semibold text-base">
+              <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.5 6.5C9.5 4 11 2 13 2c2.5 0 4 2.5 4 5a7 7 0 0 1-6 13z"/><path d="M14 11c2 0 3-2 3-4s-1-4-3-4"/></svg></span> <span data-i18n="tab_diet">素斋</span>
           </button>
-          <button onclick="switchTab('chant')" id="nav-desktop-chant" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/50 transition-all font-bold text-lg">
-              <span>📿</span> <span data-i18n="tab_chant">功课</span>
+          <button onclick="switchTab('chant')" id="nav-desktop-chant" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#8c7853] hover:bg-white/60 transition-all duration-200 font-semibold text-base">
+              <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="8" r="1.5"/><circle cx="12" cy="16" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="9.2" cy="9.2" r="1.5"/><circle cx="14.8" cy="9.2" r="1.5"/><circle cx="14.8" cy="14.8" r="1.5"/><circle cx="9.2" cy="14.8" r="1.5"/></svg></span> <span data-i18n="tab_chant">功课</span>
           </button>
       </nav>
 
       <!-- Desktop Footer Actions -->
-      <div class="hidden lg:flex flex-col gap-3 px-6 w-full mt-auto">
-          <a href="add_event.html" class="flex items-center justify-center w-full py-3 bg-[#b35c1e] text-white rounded-xl shadow-md hover:bg-[#8B4513] transition-colors font-bold">
+      <div class="hidden lg:flex flex-col gap-2.5 px-4 w-full mt-auto pb-4">
+          <a href="add_event.html" class="flex items-center justify-center w-full py-3 bg-[#b35c1e] text-white rounded-xl shadow-md hover:bg-[#9a4f1a] hover:shadow-lg transition-all duration-200 font-semibold">
               <span data-i18n="event_add_title">+ 备忘</span>
           </a>
-          <button onclick="toggleSettings()" class="flex items-center justify-center gap-2 w-full py-3 bg-white/40 text-[#5c4033] rounded-xl hover:bg-white/60 transition-colors font-bold border border-white/20">
-              <span>⚙️</span> <span data-i18n="settings">设置</span>
+          <button onclick="toggleSettings()" class="flex items-center justify-center gap-2 w-full py-3 bg-white/50 text-[#5c4033] rounded-xl hover:bg-white/70 transition-all duration-200 font-semibold border border-white/40">
+              <span class="nav-icon"><svg class="icon-fill" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33-1.82l-1.1-1.9a1.65 1.65 0 0 0-1.82-.67l-1.43.47a8 8 0 0 1-2.68 0l-1.43-.47a1.65 1.65 0 0 0-1.82.67l-1.1 1.9a1.65 1.65 0 0 0 .33 1.82l1.08.84a8 8 0 0 1 0 2.32l-1.08.84a1.65 1.65 0 0 0-.33 1.82l1.1 1.9a1.65 1.65 0 0 0 1.82.67l1.43-.47a8 8 0 0 1 2.68 0l1.43.47a1.65 1.65 0 0 0 1.82-.67l1.1-1.9a1.65 1.65 0 0 0-.33-1.82l-1.08-.84a8 8 0 0 1 0-2.32l1.08-.84z"/></svg></span> <span data-i18n="settings">设置</span>
           </button>
       </div>
     </header>
@@ -202,51 +289,38 @@
   <section id="tab-calendar" class="tab-content block pt-2">
     
     <!-- Calendar Card -->
-    <div class="bg-gradient-to-br from-white/60 to-[#f8c390]/20 backdrop-blur-2xl rounded-3xl p-4 mb-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 relative overflow-hidden">
-      <!-- Decorative Element -->
-      <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#f8c390]/20 rounded-full blur-2xl pointer-events-none"></div>
-      
-      <!-- Header with Month Switcher -->
+    <div class="card-glass p-5 mb-5 relative overflow-hidden">
+      <div class="absolute -top-12 -right-12 w-36 h-36 bg-[#f8c390]/25 rounded-full blur-3xl pointer-events-none"></div>
       <div class="flex justify-between items-center mb-4 px-1 relative z-10">
-        <button onclick="changeMonth(-1)" class="p-2.5 hover:bg-white/50 rounded-full text-[#8B4513] transition-all active:scale-90 shadow-sm border border-white/40 bg-white/20">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
+        <button onclick="changeMonth(-1)" class="p-3 rounded-full text-[#8B4513] transition-all duration-200 active:scale-95 bg-white/60 hover:bg-white/80 border border-white/60 shadow-sm hover:shadow">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
         </button>
-        <div id="calendar-header" class="text-xl font-serif font-bold text-[#5c4033] tracking-wide drop-shadow-sm"></div>
-        <button onclick="changeMonth(1)" class="p-2.5 hover:bg-white/50 rounded-full text-[#8B4513] transition-all active:scale-90 shadow-sm border border-white/40 bg-white/20">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            </svg>
+        <div id="calendar-header" class="text-xl font-semibold text-[#5c4033] tracking-tight"></div>
+        <button onclick="changeMonth(1)" class="p-3 rounded-full text-[#8B4513] transition-all duration-200 active:scale-95 bg-white/60 hover:bg-white/80 border border-white/60 shadow-sm hover:shadow">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
         </button>
       </div>
-      
-      <!-- Weekday Headers -->
-      <div id="weekday-header" class="grid grid-cols-7 gap-1 mb-3 text-center text-xs text-[#8B4513] font-bold tracking-wider opacity-80">
+      <div id="weekday-header" class="grid grid-cols-7 gap-1 mb-3 text-center text-xs text-[#8B4513] font-semibold tracking-wider opacity-85">
         <!-- Populated by JS -->
       </div>
-      
-      <!-- Calendar Grid -->
-      <div id="calendar-grid" class="grid grid-cols-7 gap-0.5"></div>
+      <div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
     </div>
 
     <!-- Day Info Card -->
-    <div class="bg-white/40 backdrop-blur-2xl rounded-3xl p-6 mb-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 transition-all duration-300" id="day-info-card">
-      <div class="text-[#8B4513] text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-[#8B4513] shadow-sm"></span>
-        今日訊息
-      </div>
-      <div id="day-detail" class="text-[#5c4033]">
+    <div class="card-glass p-6 mb-5" id="day-info-card">
+      <div class="section-label mb-3">今日訊息</div>
+      <div id="day-detail" class="text-[#5c4033] leading-relaxed">
         <!-- Default content will be set by JS -->
       </div>
     </div>
 
     <!-- Daily Tip Card -->
-    <div class="bg-white/40 backdrop-blur-2xl rounded-3xl p-6 mb-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40">
-      <div class="text-[#8B4513] text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-         <span class="w-2 h-2 rounded-full bg-[#8B4513] shadow-sm"></span>
-         今日修行提示
-      </div>
+    <div class="card-glass p-6 mb-5">
+      <div class="section-label mb-3">今日修行提示</div>
       <div id="announcement-container" class="text-[#5c4033] text-sm leading-relaxed font-serif font-medium opacity-90 min-h-[100px]">
         <div class="flex justify-center items-center h-full pt-4">
             <div class="animate-pulse text-stone-400">正在获取最新通告...</div>
@@ -289,11 +363,10 @@
   </section>
 
   <section id="tab-search" class="tab-content hidden h-full flex flex-col">
-    <!-- Search Header -->
-    <div class="sticky top-0 z-10 bg-gradient-to-b from-white/40 to-white/20 backdrop-blur-md pb-4 pt-2 border-b border-white/20">
-        <div class="relative px-2">
+    <div class="sticky top-0 z-10 bg-white/30 backdrop-blur-xl pb-4 pt-3 border-b border-white/40">
+        <div class="relative px-1">
             <input type="text" id="search-input" placeholder="搜索開示、佛經..." data-i18n-placeholder="search_placeholder"
-                   class="w-full bg-white/60 backdrop-blur-sm rounded-2xl border border-white/50 px-10 py-3 text-[#5c4033] placeholder-stone-400 focus:outline-none focus:border-[#8B4513]/50 focus:ring-2 focus:ring-[#8B4513]/20 shadow-inner transition-all"
+                   class="w-full bg-white/70 backdrop-blur-sm rounded-xl border border-white/60 px-10 py-3 text-[#5c4033] placeholder-stone-400 focus:outline-none focus:border-[#8B4513]/40 focus:ring-2 focus:ring-[#8B4513]/15 transition-all shadow-sm"
                    oninput="performSearch(this.value)">
             <div class="absolute left-5 top-3.5 text-[#8B4513]/50">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -307,12 +380,11 @@
             </button>
         </div>
         
-        <!-- Filters -->
-        <div class="flex gap-2 mt-3 overflow-x-auto pb-1 no-scrollbar px-2" id="search-filters">
-            <button onclick="filterSearch('all')" class="filter-btn active px-4 py-1.5 rounded-full text-xs font-bold border border-[#8B4513] bg-[#8B4513] text-white shadow-sm whitespace-nowrap transition-all active:scale-95" data-filter="all" data-i18n="filter_all">全部</button>
-            <button onclick="filterSearch('teaching')" class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold border border-white/50 bg-white/40 text-[#5c4033] backdrop-blur-sm whitespace-nowrap hover:bg-white/60 hover:border-[#8B4513]/30 transition-all active:scale-95" data-filter="teaching" data-i18n="filter_teaching">文字開示</button>
-            <button onclick="filterSearch('sutra')" class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold border border-white/50 bg-white/40 text-[#5c4033] backdrop-blur-sm whitespace-nowrap hover:bg-white/60 hover:border-[#8B4513]/30 transition-all active:scale-95" data-filter="sutra" data-i18n="filter_sutra">佛經</button>
-            <button onclick="filterSearch('search_result')" class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold border border-white/50 bg-white/40 text-[#5c4033] backdrop-blur-sm whitespace-nowrap hover:bg-white/60 hover:border-[#8B4513]/30 transition-all active:scale-95" data-filter="search_result" data-i18n="filter_result">更多結果</button>
+        <div class="flex gap-2 mt-3 overflow-x-auto pb-1 no-scrollbar px-1" id="search-filters">
+            <button onclick="filterSearch('all')" class="filter-btn active px-4 py-2 rounded-xl text-xs font-semibold border border-[#8B4513] bg-[#8B4513] text-white shadow-sm whitespace-nowrap transition-all duration-200 active:scale-95" data-filter="all" data-i18n="filter_all">全部</button>
+            <button onclick="filterSearch('teaching')" class="filter-btn px-4 py-2 rounded-xl text-xs font-semibold border border-white/50 bg-white/50 text-[#5c4033] whitespace-nowrap hover:bg-white/70 hover:border-[#8B4513]/25 transition-all duration-200 active:scale-95" data-filter="teaching" data-i18n="filter_teaching">文字開示</button>
+            <button onclick="filterSearch('sutra')" class="filter-btn px-4 py-2 rounded-xl text-xs font-semibold border border-white/50 bg-white/50 text-[#5c4033] whitespace-nowrap hover:bg-white/70 hover:border-[#8B4513]/25 transition-all duration-200 active:scale-95" data-filter="sutra" data-i18n="filter_sutra">佛經</button>
+            <button onclick="filterSearch('search_result')" class="filter-btn px-4 py-2 rounded-xl text-xs font-semibold border border-white/50 bg-white/50 text-[#5c4033] whitespace-nowrap hover:bg-white/70 hover:border-[#8B4513]/25 transition-all duration-200 active:scale-95" data-filter="search_result" data-i18n="filter_result">更多結果</button>
         </div>
     </div>
 
@@ -325,9 +397,9 @@
   <section id="tab-dharma" class="tab-content hidden px-1">
     
     <div class="space-y-4 pb-20 pt-2">
-        <!-- 1. Sutras (Moved to top) -->
+        <!-- 1. Sutras -->
         <div class="group">
-            <div onclick="toggleDharmaSection('sutras')" class="relative overflow-hidden bg-white/40 backdrop-blur-xl rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 flex items-center gap-4 transition-all active:scale-95 cursor-pointer z-10 hover:bg-white/50">
+            <div onclick="toggleDharmaSection('sutras')" class="relative overflow-hidden card-glass p-4 flex items-center gap-4 transition-all duration-200 active:scale-[0.99] cursor-pointer z-10 hover:shadow-[0_8px_32px_-6px_rgba(139,69,19,0.1)]">
                 <div class="w-12 h-12 rounded-full bg-rose-100/80 backdrop-blur-sm text-rose-600 flex items-center justify-center text-xl shadow-inner ring-4 ring-white/50">
                     📜
                 </div>
@@ -352,7 +424,7 @@
 
         <!-- 2. Text Teachings (Accordion) -->
         <div class="group">
-            <div onclick="toggleDharmaSection('text-teachings')" class="relative overflow-hidden bg-white/40 backdrop-blur-xl rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 flex items-center gap-4 transition-all active:scale-95 cursor-pointer z-10 hover:bg-white/50">
+            <div onclick="toggleDharmaSection('text-teachings')" class="relative overflow-hidden card-glass p-4 flex items-center gap-4 transition-all duration-200 active:scale-[0.99] cursor-pointer z-10 hover:shadow-[0_8px_32px_-6px_rgba(139,69,19,0.1)]">
                 <!-- Icon -->
                 <div class="w-12 h-12 rounded-full bg-amber-100/80 backdrop-blur-sm text-amber-600 flex items-center justify-center text-xl shadow-inner ring-4 ring-white/50">
                     📖
@@ -380,7 +452,7 @@
 
         <!-- 3. Audio Teachings (Accordion) -->
         <div class="group">
-            <div onclick="toggleDharmaSection('audio')" class="relative overflow-hidden bg-white/40 backdrop-blur-xl rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 flex items-center gap-4 transition-all active:scale-95 cursor-pointer z-10 hover:bg-white/50">
+            <div onclick="toggleDharmaSection('audio')" class="relative overflow-hidden card-glass p-4 flex items-center gap-4 transition-all duration-200 active:scale-[0.99] cursor-pointer z-10 hover:shadow-[0_8px_32px_-6px_rgba(139,69,19,0.1)]">
                 <!-- Icon -->
                 <div class="w-12 h-12 rounded-full bg-purple-100/80 backdrop-blur-sm text-purple-600 flex items-center justify-center text-xl shadow-inner ring-4 ring-white/50">
                     🎧
@@ -408,7 +480,7 @@
 
         <!-- 4. Video Teachings -->
         <div class="group">
-            <div onclick="toggleDharmaSection('video')" class="relative overflow-hidden bg-white/40 backdrop-blur-xl rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 flex items-center gap-4 transition-all active:scale-95 cursor-pointer z-10 hover:bg-white/50">
+            <div onclick="toggleDharmaSection('video')" class="relative overflow-hidden card-glass p-4 flex items-center gap-4 transition-all duration-200 active:scale-[0.99] cursor-pointer z-10 hover:shadow-[0_8px_32px_-6px_rgba(139,69,19,0.1)]">
                 <div class="w-12 h-12 rounded-full bg-blue-100/80 backdrop-blur-sm text-blue-600 flex items-center justify-center text-xl shadow-inner ring-4 ring-white/50">
                     🎥
                 </div>
@@ -433,7 +505,7 @@
 
         <!-- 5. Masters -->
         <div class="group">
-            <div onclick="toggleDharmaSection('masters')" class="relative overflow-hidden bg-white/40 backdrop-blur-xl rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 flex items-center gap-4 transition-all active:scale-95 cursor-pointer z-10 hover:bg-white/50">
+            <div onclick="toggleDharmaSection('masters')" class="relative overflow-hidden card-glass p-4 flex items-center gap-4 transition-all duration-200 active:scale-[0.99] cursor-pointer z-10 hover:shadow-[0_8px_32px_-6px_rgba(139,69,19,0.1)]">
                 <div class="w-12 h-12 rounded-full bg-purple-100/80 backdrop-blur-sm text-purple-600 flex items-center justify-center text-xl shadow-inner ring-4 ring-white/50">
                     👤
                 </div>
@@ -458,7 +530,7 @@
 
         <!-- 6. Live Downloads -->
         <div class="group">
-            <div onclick="toggleDharmaSection('live_downloads')" class="relative overflow-hidden bg-white/40 backdrop-blur-xl rounded-2xl p-4 shadow-[0_8px_32px_0_rgba(255,255,255,0.3)] border border-white/60 ring-1 ring-white/40 flex items-center gap-4 transition-all active:scale-95 cursor-pointer z-10 hover:bg-white/50">
+            <div onclick="toggleDharmaSection('live_downloads')" class="relative overflow-hidden card-glass p-4 flex items-center gap-4 transition-all duration-200 active:scale-[0.99] cursor-pointer z-10 hover:shadow-[0_8px_32px_-6px_rgba(139,69,19,0.1)]">
                 <div class="w-12 h-12 rounded-full bg-purple-100/80 backdrop-blur-sm text-purple-600 flex items-center justify-center text-xl shadow-inner ring-4 ring-white/50">
                     📥
                 </div>
@@ -678,39 +750,37 @@
 </div>
 
 <!-- Bottom Navigation (Floating Glass) -->
-<nav class="lg:hidden fixed bottom-6 left-6 right-6 flex bg-white/60 backdrop-blur-2xl border border-white/50 rounded-full z-40 shadow-[0_8px_32px_rgba(0,0,0,0.1)] h-[64px] items-center justify-around px-2 ring-1 ring-white/40 transition-all duration-300">
-  <button id="btn-tab-calendar" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#8B4513] font-bold transition-all active:scale-90" onclick="switchTab('calendar', this)">
-    <span class="text-2xl drop-shadow-sm">🗓️</span>
-    <span class="text-[10px]" data-i18n="tab_calendar">日曆</span>
+<nav class="lg:hidden fixed bottom-5 left-4 right-4 flex bg-white/70 backdrop-blur-2xl rounded-2xl z-40 h-[72px] items-center justify-around px-2 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/60 transition-all duration-300">
+  <button id="btn-tab-calendar" class="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-[#8B4513] font-semibold transition-all duration-200 active:scale-95 rounded-xl hover:bg-white/50" onclick="switchTab('calendar', this)">
+    <span class="nav-icon-sm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2.5" ry="2.5"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+    <span class="text-[10px] leading-tight" data-i18n="tab_calendar">日曆</span>
   </button>
-  <button id="btn-tab-search" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#8B4513]/60 hover:text-[#8B4513] transition-all active:scale-90" onclick="switchTab('search', this)">
-    <span class="text-2xl drop-shadow-sm opacity-80">🔍</span>
-    <span class="text-[10px]" data-i18n="tab_search">搜索</span>
+  <button id="btn-tab-search" class="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-[#8B4513]/70 hover:text-[#8B4513] transition-all duration-200 active:scale-95 rounded-xl hover:bg-white/50" onclick="switchTab('search', this)">
+    <span class="nav-icon-sm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+    <span class="text-[10px] leading-tight" data-i18n="tab_search">搜索</span>
   </button>
-  <button id="btn-tab-dharma" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#8B4513]/60 hover:text-[#8B4513] transition-all active:scale-90" onclick="switchTab('dharma', this)">
-    <span class="text-2xl drop-shadow-sm opacity-80">☸️</span>
-    <span class="text-[10px]" data-i18n="tab_dharma">佛法</span>
+  <button id="btn-tab-dharma" class="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-[#8B4513]/70 hover:text-[#8B4513] transition-all duration-200 active:scale-95 rounded-xl hover:bg-white/50" onclick="switchTab('dharma', this)">
+    <span class="nav-icon-sm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="2.8"/><path d="M12 12 L12 2 M12 12 L12 22 M12 12 L2 12 M12 12 L22 12 M12 12 L4.9 4.9 M12 12 L19.1 19.1 M12 12 L19.1 4.9 M12 12 L4.9 19.1"/></svg></span>
+    <span class="text-[10px] leading-tight" data-i18n="tab_dharma">佛法</span>
   </button>
-  <button id="btn-tab-diet" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#8B4513]/60 hover:text-[#8B4513] transition-all active:scale-90" onclick="switchTab('diet', this)">
-    <span class="text-2xl drop-shadow-sm opacity-80">🥗</span>
-    <span class="text-[10px]" data-i18n="tab_diet">素斋</span>
+  <button id="btn-tab-diet" class="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-[#8B4513]/70 hover:text-[#8B4513] transition-all duration-200 active:scale-95 rounded-xl hover:bg-white/50" onclick="switchTab('diet', this)">
+    <span class="nav-icon-sm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.5 6.5C9.5 4 11 2 13 2c2.5 0 4 2.5 4 5a7 7 0 0 1-6 13z"/><path d="M14 11c2 0 3-2 3-4s-1-4-3-4"/></svg></span>
+    <span class="text-[10px] leading-tight" data-i18n="tab_diet">素斋</span>
   </button>
-  <button id="btn-tab-chant" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-[#8B4513]/60 hover:text-[#8B4513] transition-all active:scale-90" onclick="switchTab('chant', this)">
-    <span class="text-2xl drop-shadow-sm opacity-80">📿</span>
-    <span class="text-[10px]" data-i18n="tab_chant">功課</span>
+  <button id="btn-tab-chant" class="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-[#8B4513]/70 hover:text-[#8B4513] transition-all duration-200 active:scale-95 rounded-xl hover:bg-white/50" onclick="switchTab('chant', this)">
+    <span class="nav-icon-sm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="8" r="1.5"/><circle cx="12" cy="16" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="9.2" cy="9.2" r="1.5"/><circle cx="14.8" cy="9.2" r="1.5"/><circle cx="14.8" cy="14.8" r="1.5"/><circle cx="9.2" cy="14.8" r="1.5"/></svg></span>
+    <span class="text-[10px] leading-tight" data-i18n="tab_chant">功課</span>
   </button>
 </nav>
 
 <!-- Settings Modal (Glassmorphism) -->
 <div id="settings-modal" class="fixed inset-0 z-50 hidden" style="display: none;">
-    <div class="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity" onclick="toggleSettings()"></div>
-    <div class="absolute top-20 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-2xl p-6 rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)] w-80 border border-white/60 animate-in fade-in slide-in-from-bottom-8 duration-300 ring-1 ring-white/50">
-        <div class="flex justify-between items-center mb-6 border-b border-[#8B4513]/10 pb-3">
-            <span class="font-bold text-[#5c4033] flex items-center gap-2 text-lg" data-i18n="settings">
-                ⚙️ 設置
-            </span>
-            <span id="app-version" class="text-xs font-normal text-gray-400 self-end mb-1"></span>
-            <button onclick="toggleSettings()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#8B4513]/10 text-[#8B4513]/60 transition-colors">✕</button>
+    <div class="absolute inset-0 bg-black/25 backdrop-blur-md transition-opacity" onclick="toggleSettings()"></div>
+    <div class="absolute top-[18%] left-1/2 -translate-x-1/2 bg-white/85 backdrop-blur-2xl p-6 rounded-2xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.18)] w-[min(90vw,320px)] border border-white/70">
+        <div class="flex justify-between items-center mb-5 pb-4 border-b border-[#8B4513]/15">
+            <span class="font-semibold text-[#5c4033] flex items-center gap-2 text-base" data-i18n="settings"><span class="nav-icon inline-block align-middle"><svg class="icon-fill" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33-1.82l-1.1-1.9a1.65 1.65 0 0 0-1.82-.67l-1.43.47a8 8 0 0 1-2.68 0l-1.43-.47a1.65 1.65 0 0 0-1.82.67l-1.1 1.9a1.65 1.65 0 0 0 .33 1.82l1.08.84a8 8 0 0 1 0 2.32l-1.08.84a1.65 1.65 0 0 0-.33 1.82l1.1 1.9a1.65 1.65 0 0 0 1.82.67l1.43-.47a8 8 0 0 1 2.68 0l1.43.47a1.65 1.65 0 0 0 1.82-.67l1.1-1.9a1.65 1.65 0 0 0-.33-1.82l-1.08-.84a8 8 0 0 1 0-2.32l1.08-.84z"/></svg></span> 設置</span>
+            <span id="app-version" class="text-xs text-stone-400"></span>
+            <button onclick="toggleSettings()" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#8B4513]/10 text-[#8B4513]/70 transition-colors text-lg leading-none">✕</button>
         </div>
         
         <div class="space-y-6">
@@ -3050,16 +3120,34 @@
       calendarGrid.innerHTML = '';
       const firstDayOfMonth = new Date(year, month, 1);
       const daysInMonth = new Date(year, month + 1, 0).getDate();
-      // 以星期日作為一週起始，不再依賴 getWeekStart()
       const firstDayOfWeek = firstDayOfMonth.getDay();
+      const prevMonthDays = new Date(year, month, 0).getDate();
+      // 動態行數：若當月日數 + 首日偏移 ≤ 35 則 5 行，否則 6 行
+      const totalCells = (firstDayOfWeek + daysInMonth <= 35) ? 35 : 42;
 
-      for (let i = 0; i < 42; i++) {
+      for (let i = 0; i < totalCells; i++) {
         const day = i - firstDayOfWeek + 1;
-        const currentDate = new Date(year, month, day);
+        let cellYear = year, cellMonth = month, cellDay = day;
+        let isPrevMonth = false, isNextMonth = false;
+        if (day <= 0) {
+          cellDay = prevMonthDays + day;
+          cellMonth = month - 1;
+          cellYear = cellMonth < 0 ? year - 1 : year;
+          cellMonth = cellMonth < 0 ? 11 : cellMonth;
+          isPrevMonth = true;
+        } else if (day > daysInMonth) {
+          cellDay = day - daysInMonth;
+          cellMonth = month + 1;
+          cellYear = cellMonth > 11 ? year + 1 : year;
+          cellMonth = cellMonth > 11 ? 0 : cellMonth;
+          isNextMonth = true;
+        }
+        const currentDate = new Date(cellYear, cellMonth, cellDay);
         const cell = document.createElement('div');
-        const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+        const isCurrentMonth = !isPrevMonth && !isNextMonth;
+        const isToday = cellDay === today.getDate() && cellMonth === today.getMonth() && cellYear === today.getFullYear();
 
-        if (day > 0 && day <= daysInMonth) {
+        if (isCurrentMonth) {
           const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           const info = typeof getBuddhistInfo === 'function' ? getBuddhistInfo(year, month + 1, day) : null;
           const sEvent = (window.specialEvents && Array.isArray(window.specialEvents)) ? window.specialEvents.find(e => e.date === dateString) : null;
@@ -3166,8 +3254,19 @@
             else cell.classList.add('bg-white/20', 'backdrop-blur-sm', 'border', 'border-white/80');
           };
         } else {
-          cell.className = 'text-center py-2 rounded-lg text-transparent';
-          cell.innerHTML = `<div>0</div><div class="text-xs"></div>`;
+          // 上月 / 下月日期：灰色顯示，點擊可切換到該月
+          cell.className = 'day-cell flex flex-col items-center justify-center min-h-[75px] py-1 rounded-xl cursor-pointer transition-all duration-200 active:scale-95 select-none text-gray-400 opacity-60 hover:opacity-80';
+          const numDiv = document.createElement('div');
+          numDiv.className = 'text-lg font-medium';
+          numDiv.innerText = cellDay;
+          cell.appendChild(numDiv);
+          cell.onclick = () => {
+            window.currentDisplayDate = new Date(cellYear, cellMonth, cellDay);
+            window.currentMonth = cellMonth;
+            window.currentYear = cellYear;
+            if (window.renderCalendar) window.renderCalendar(window.currentDisplayDate);
+            updateDayInfo(window.currentDisplayDate);
+          };
         }
         calendarGrid.appendChild(cell);
       }
