@@ -1,11 +1,11 @@
 
 const live_downloads = [
     {
-        "title": "《阿弥陀佛圣诞日全球直播20260105（农历11月17）》",
-        "url": "https://mypikpak.com/s/VOmO8gBp8ETcYaX_oJeuu9zCo2"
+        "title": "20260216 除夕夜全球直播開示",
+        "url": "https://www.alipan.com/s/AGykZhEuhWq"
     },
     {
-        "title": "《2026年2月16除夕夜直播》",
-        "url": "https://mypikpak.com/s/VOmP0IvHwkLMKOSe7N7f1zIDo2"
+        "title": "20260105 阿彌陀佛聖誕全球直播開示",
+        "url": "https://www.alipan.com/s/8opuDH9H9qv"
     }
 ];
