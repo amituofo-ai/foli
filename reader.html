@@ -283,10 +283,13 @@
   function goBack() {
       const urlParams = new URLSearchParams(window.location.search);
       const from = urlParams.get('from');
+      const query = urlParams.get('query');
       
       if (from === 'search') {
-          // Return to search tab
-          window.location.href = 'index.html#search';
+          // Return to search tab and restore query so results show again
+          const base = 'index.html';
+          const qs = (query && query.trim()) ? '?query=' + encodeURIComponent(query.trim()) : '';
+          window.location.href = base + qs + '#search';
       } else {
           // Default to Dharma persistence
           localStorage.setItem('dharma_tab_state', 'sutras');
