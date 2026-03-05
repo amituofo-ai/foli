@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <link rel="manifest" href="manifest.json?v=20.9">
+  <link rel="manifest" href="manifest.json?v=21.0">
   <link rel="apple-touch-icon" href="icons/icon-512.png">
   <title>佛历</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -21,21 +21,21 @@
   };
 
 </script>
-  <script src="lunar.js?v=20.9"></script>
+  <script src="lunar.js?v=21.0"></script>
   <!-- i18n Definitions -->
-  <script src="i18n.js?v=20.9"></script>
-  <script src="sutras_data.js?v=20.9"></script>
+  <script src="i18n.js?v=21.0"></script>
+  <script src="sutras_data.js?v=21.0"></script>
   <!-- Load Recipe Data -->
-  <script src="recipe_data.js?v=20.9"></script>
-  <script src="diet_logic.js?v=20.9"></script>
-  <script src="video_data.js?v=20.9"></script>
-  <script src="audio_data_v13.js?v=20.9"></script>
+  <script src="recipe_data.js?v=21.0"></script>
+  <script src="diet_logic.js?v=21.0"></script>
+  <script src="video_data.js?v=21.0"></script>
+  <script src="audio_data_v13.js?v=21.0"></script>
   <!-- Load Search Data Lazily -->
-  <!-- <script src="search_data.js?v=20.9"></script> -->
+  <!-- <script src="search_data.js?v=21.0"></script> -->
   <!-- Load AI Chat -->
-  <script src="ai_chat.js?v=20.9"></script>
-  <script src="events_data.js?v=20.9"></script>
-  <script src="live_downloads_data.js?v=20.9"></script>
+  <script src="ai_chat.js?v=21.0"></script>
+  <script src="events_data.js?v=21.0"></script>
+  <script src="live_downloads_data.js?v=21.0"></script>
   <script>
     function showTooltip(event, html) {
       const tooltip = document.getElementById('event-tooltip');
@@ -782,6 +782,14 @@
   </button>
 </nav>
 
+<!-- 更新提醒橫幅（發現新版本時顯示） -->
+<div id="update-banner" class="fixed left-4 right-4 bottom-20 lg:bottom-6 z-[45] hidden flex items-center justify-between gap-3 px-4 py-3 rounded-2xl shadow-lg border border-amber-200/80 bg-gradient-to-r from-amber-50 to-orange-50 backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-300" style="display: none;">
+  <span class="text-sm font-medium text-[#5c4033] flex-1" id="update-banner-text">發現新版本，點擊更新以獲取最新內容</span>
+  <button type="button" id="update-banner-btn" class="shrink-0 px-4 py-2 rounded-xl bg-[#b35c1e] text-white text-sm font-bold shadow-md hover:bg-[#9a4f1a] active:scale-95 transition-all">
+    <span id="update-banner-btn-text">更新</span>
+  </button>
+</div>
+
 <!-- Settings Modal (Glassmorphism) -->
 <div id="settings-modal" class="fixed inset-0 z-50 hidden" style="display: none;">
     <div class="absolute inset-0 bg-black/25 backdrop-blur-md transition-opacity" onclick="toggleSettings()"></div>
@@ -1314,7 +1322,7 @@
     isSearchDataLoading = true;
     return new Promise((resolve, reject) => {
          const script = document.createElement('script');
-         script.src = 'search_data.js?v=4';
+         script.src = 'search_data.js?v=21.0';
          script.onload = () => {
             isSearchDataLoading = false;
             resolve();
@@ -3087,24 +3095,69 @@
     </script>
 
     <script>
-      // Service Worker Registration
-      if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw-v2.js').then((registration) => { // <-- 请确保这里是 sw-v2.js
-    // 檢查是否有新的 SW 在等待
-    registration.onupdatefound = () => {
-      const installingWorker = registration.installing;
-      installingWorker.onstatechange = () => {
-        if (installingWorker.state === 'installed') {
-          if (navigator.serviceWorker.controller) {
-            // 發現新版本！強制刷新頁面
-            console.log('發現新內容，正在自動刷新...');
-            window.location.reload();
+      // Service Worker 註冊與更新提醒
+      (function() {
+        if (!('serviceWorker' in navigator)) return;
+        var registration = null;
+        var updateBanner = document.getElementById('update-banner');
+        var updateBannerText = document.getElementById('update-banner-text');
+        var updateBannerBtn = document.getElementById('update-banner-btn');
+
+        function showUpdateBanner() {
+          if (!updateBanner) return;
+          var lang = localStorage.getItem('app_language') || 'zh-TW';
+          if (updateBannerText) {
+            updateBannerText.textContent = lang === 'en' ? 'New version available. Tap to update.' : '發現新版本，點擊更新以獲取最新內容';
+          }
+          if (document.getElementById('update-banner-btn-text')) {
+            document.getElementById('update-banner-btn-text').textContent = lang === 'en' ? 'Update' : '更新';
+          }
+          updateBanner.classList.remove('hidden');
+          updateBanner.style.display = 'flex';
+        }
+        function hideUpdateBanner() {
+          if (updateBanner) {
+            updateBanner.classList.add('hidden');
+            updateBanner.style.display = 'none';
           }
         }
-      };
-    };
-  });
-}
+
+        navigator.serviceWorker.register('/sw-v2.js?v=21.1').then(function(reg) {
+          registration = reg;
+          reg.onupdatefound = function() {
+            var installing = reg.installing;
+            if (!installing) return;
+            installing.onstatechange = function() {
+              if (installing.state === 'installed') {
+                if (!navigator.serviceWorker.controller) {
+                  reg.waiting && reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                  return;
+                }
+                showUpdateBanner();
+              }
+            };
+          };
+          if (reg.waiting && navigator.serviceWorker.controller) showUpdateBanner();
+          setInterval(function() { reg.update(); }, 60 * 60 * 1000);
+        });
+
+        document.addEventListener('visibilitychange', function() {
+          if (document.visibilityState === 'visible' && registration) registration.update();
+        });
+
+        if (updateBannerBtn) {
+          updateBannerBtn.addEventListener('click', function() {
+            if (registration && registration.waiting) {
+              registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+            hideUpdateBanner();
+          });
+        }
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+          hideUpdateBanner();
+          window.location.reload();
+        });
+      })();
     </script>
   <script>
     // Special events functionality

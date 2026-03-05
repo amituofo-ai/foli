@@ -1,35 +1,44 @@
-const CACHE_NAME = 'foli-cache-v20.9';
+const CACHE_NAME = 'foli-cache-v21.1';
 const ASSETS_TO_CACHE = [
   './',
+  './index.html',
+  './index.html?v=21.0',
   './flag.png',
-  './index.html?v=20.9',
-  './reader.html?v=20.9',
-  './add_event.html?v=20.9',
-  './manifest.json?v=20.9',
+  './reader.html?v=21.0',
+  './add_event.html?v=21.0',
+  './manifest.json?v=21.0',
   './icons/icon-512.png',
-  './i18n.js?v=20.9',
-  './lunar.js?v=20.9',
-  './sutras_data.js?v=20.9',
-  './recipe_data.js?v=20.9',
-  './diet_logic.js?v=20.9',
-  './video_data.js?v=20.9',
-  './audio_data_v13.js?v=20.9',
-  './ai_chat.js?v=20.9',
-  './video_snippet.js?v=20.9',
-  './search_data.js?v=20.9',
-  './events_data.js?v=20.9',
-  './live_downloads_data.js?v=20.9'
+  './i18n.js?v=21.0',
+  './lunar.js?v=21.0',
+  './sutras_data.js?v=21.0',
+  './recipe_data.js?v=21.0',
+  './diet_logic.js?v=21.0',
+  './video_data.js?v=21.0',
+  './audio_data_v13.js?v=21.0',
+  './ai_chat.js?v=21.0',
+  './search_data.js?v=21.0',
+  './events_data.js?v=21.0',
+  './live_downloads_data.js?v=21.0',
+  'https://cdn.tailwindcss.com'
 ];
 
-// Install Event: Cache Core Assets
+// Install Event: Cache Core Assets (per-item so one 404 doesn't block activate)
+// 不在此處 skipWaiting，由頁面點「更新」時發送 SKIP_WAITING，以便顯示更新提醒
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('SW: Pre-caching offline assets');
-      return cache.addAll(ASSETS_TO_CACHE);
+      return Promise.allSettled(ASSETS_TO_CACHE.map((url) => cache.add(url).catch((err) => {
+        console.warn('SW: Cache add failed', url, err);
+      })));
     })
   );
-  self.skipWaiting(); // Activate worker immediately
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Activate Event: Cleanup Old Caches
@@ -88,30 +97,38 @@ self.addEventListener('fetch', (event) => {
       return; // Let the browser handle it (network only)
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      // 1. Return cached response if found (Cache First)
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+  event.respondWith((async () => {
+    const reqUrl = new URL(event.request.url);
+    const sameOrigin = reqUrl.origin === self.location.origin;
 
-      // 2. If not in cache, fetch from network
-      return fetch(event.request).then((networkResponse) => {
-        // Check if we received a valid response
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic' && networkResponse.type !== 'cors' && networkResponse.type !== 'opaque') {
-          return networkResponse;
-        }
-
-        // 3. Cache the new resource (Dynamic Caching)
-        // Clone the response because it's a stream and can only be consumed once
-        const responseToCache = networkResponse.clone();
-
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
-
-        return networkResponse;
+    const matchByPathname = async () => {
+      if (!sameOrigin) return null;
+      const cache = await caches.open(CACHE_NAME);
+      const keys = await cache.keys();
+      const pathMatch = keys.find((req) => {
+        try {
+          const u = new URL(req.url);
+          return u.origin === reqUrl.origin && u.pathname === reqUrl.pathname;
+        } catch (e) { return false; }
       });
-    })
-  );
+      return pathMatch ? cache.match(pathMatch) : null;
+    };
+
+    let resp = await caches.match(event.request);
+    if (resp) return resp;
+    resp = await matchByPathname();
+    if (resp) return resp;
+
+    try {
+      const networkResponse = await fetch(event.request);
+      if (networkResponse && networkResponse.status === 200 && (networkResponse.type === 'basic' || networkResponse.type === 'cors' || networkResponse.type === 'opaque')) {
+        const clone = networkResponse.clone();
+        caches.open(CACHE_NAME).then((c) => c.put(event.request, clone));
+      }
+      return networkResponse;
+    } catch (err) {
+      const fallback = await matchByPathname();
+      return fallback || new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+    }
+  })());
 });
