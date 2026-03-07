@@ -1,4 +1,4 @@
-const CACHE_NAME = 'foli-cache-v21.1';
+const CACHE_NAME = 'foli-cache-v21.2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -14,7 +14,7 @@ const ASSETS_TO_CACHE = [
   './recipe_data.js?v=21.0',
   './diet_logic.js?v=21.0',
   './video_data.js?v=21.0',
-  './audio_data_v13.js?v=21.0',
+  './audio_data_v13.js?v=21.2',
   './ai_chat.js?v=21.0',
   './search_data.js?v=21.0',
   './events_data.js?v=21.0',

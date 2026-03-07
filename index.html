@@ -29,7 +29,7 @@
   <script src="recipe_data.js?v=21.0"></script>
   <script src="diet_logic.js?v=21.0"></script>
   <script src="video_data.js?v=21.0"></script>
-  <script src="audio_data_v13.js?v=21.0"></script>
+  <script src="audio_data_v13.js?v=21.2"></script>
   <!-- Load Search Data Lazily -->
   <!-- <script src="search_data.js?v=21.0"></script> -->
   <!-- Load AI Chat -->
@@ -3122,7 +3122,7 @@
           }
         }
 
-        navigator.serviceWorker.register('/sw-v2.js?v=21.1').then(function(reg) {
+        navigator.serviceWorker.register('/sw-v2.js?v=21.2').then(function(reg) {
           registration = reg;
           reg.onupdatefound = function() {
             var installing = reg.installing;
