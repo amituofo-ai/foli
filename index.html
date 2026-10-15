@@ -7,7 +7,7 @@
   <title>佛历</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- 在线优先使用 CDN；断网时在解析阶段同步加载本地副本 -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="tailwindcss.js?v=22.1"></script>
   <script>
     if (!window.tailwind) {
       document.write('<script src="tailwindcss.js?v=22.1"><\/script>');
@@ -240,6 +240,7 @@
       box-shadow: 0 12px 40px rgba(0,0,0,0.2);
     }
   </style>
+  <link rel="stylesheet" href="interface.css?v=23.22">
 </head>
 <body class="bg-app text-[#4a3b32] pb-24 lg:pb-0 selection:bg-[#b35c1e] selection:text-white min-h-screen">
 
@@ -4282,7 +4283,7 @@
         var updateBanner = document.getElementById('update-banner');
         var updateBannerText = document.getElementById('update-banner-text');
         var updateBannerBtn = document.getElementById('update-banner-btn');
-        var updateNoticeVersion = '23.20';
+        var updateNoticeVersion = '23.22';
         var updateNoticeKey = 'foli_update_notice_seen_' + updateNoticeVersion;
 
         function showUpdateBanner() {
@@ -4305,7 +4306,7 @@
           }
         }
 
-        navigator.serviceWorker.register('/sw-v2.js?v=23.20').then(function(reg) {
+        navigator.serviceWorker.register('/sw-v2.js?v=23.22').then(function(reg) {
           registration = reg;
           reg.onupdatefound = function() {
             var installing = reg.installing;
