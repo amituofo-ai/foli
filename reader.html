@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
   <title>佛经阅读</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&amp;display=swap" media="print" onload="this.media='all'">
   <script src="tailwindcss.js?v=22.1"></script>
   <script>
     if (!window.tailwind) {
@@ -12,18 +13,19 @@
   </script>
   <style>
     :root {
-      --reader-paper: rgba(255, 252, 244, 0.84);
+      --reader-paper: #fffcf3;
       --reader-paper-border: rgba(145, 96, 38, 0.14);
-      --reader-text: #3f3127;
+      --reader-text: #342920;
       --reader-muted: rgba(91, 64, 51, 0.68);
       --reader-accent: #9a541c;
       --reader-gold: #d9a441;
       --reader-shadow: 0 24px 70px rgba(83, 54, 24, 0.13);
-      --reader-font-family: "I.Ming", "SimSun", "Songti SC", "STSong", "Noto Serif SC", serif;
+      --reader-song-family: "Noto Serif TC", "Source Han Serif TC", "Songti TC", "I.Ming", PMingLiU, "Songti SC", SimSun, serif;
+      --reader-font-family: var(--reader-song-family);
       --reader-font-tracking: 0.01em;
     }
     body {
-      font-family: var(--reader-font-family);
+      font-family: system-ui, sans-serif;
       color: var(--reader-text);
       background:
         radial-gradient(ellipse at 82% -8%, rgba(255,255,238,.82) 0%, rgba(245,218,145,.34) 36%, transparent 66%),
@@ -33,7 +35,7 @@
       -webkit-font-smoothing: antialiased;
     }
     body.reader-night {
-      --reader-paper: rgba(34, 28, 23, 0.9);
+      --reader-paper: #221c17;
       --reader-paper-border: rgba(218, 171, 87, 0.18);
       --reader-text: #eadbc1;
       --reader-muted: rgba(234, 219, 193, 0.66);
@@ -55,7 +57,7 @@
     }
     .reader-night .reader-header { background: rgba(22, 18, 15, 0.75); }
     body.reader-font-songke {
-      --reader-font-family: "I.Ming", "SimSun", "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", serif;
+      --reader-font-family: var(--reader-song-family);
       --reader-font-tracking: 0.012em;
     }
     body.reader-font-script {
@@ -63,7 +65,7 @@
       --reader-font-tracking: 0.035em;
     }
     body.reader-font-system {
-      --reader-font-family: "Noto Serif SC", "Songti SC", "STSong", "PingFang SC", -apple-system, BlinkMacSystemFont, serif;
+      --reader-font-family: system-ui, "PingFang TC", "Microsoft JhengHei", sans-serif;
       --reader-font-tracking: 0;
     }
     .reader-icon-btn {
@@ -96,20 +98,41 @@
       margin: 18px auto 0;
       background: linear-gradient(90deg, transparent, rgba(154, 84, 28, .38), transparent);
     }
-    .reader-content {
-      color: var(--reader-text);
-      text-align: justify;
-      white-space: pre-wrap;
-      letter-spacing: var(--reader-font-tracking);
-      word-break: break-word;
-      overflow-wrap: anywhere;
+    #article-title, .reader-content, #settings-preview-text {
+      font-family: var(--reader-font-family);
     }
-    .reader-content h2.reader-chapter {
-      margin: 2.4em 0 1.1em;
-      color: var(--reader-accent);
-      font-size: 1.08em;
-      font-weight: 800;
+    .reader-content {
+      --reader-default-size: 19px;
+      max-inline-size: 36em;
+      margin-inline: auto;
+      color: var(--reader-text);
+      font-size: var(--reader-default-size);
+      line-height: 1.9;
+      text-align: start;
+      white-space: pre-wrap;
+      line-break: strict;
+      overflow-wrap: anywhere;
+      letter-spacing: var(--reader-font-tracking);
+    }
+    @media (min-width: 768px) {
+      .reader-content { --reader-default-size: 20px; }
+    }
+    .reader-content .reader-chapter {
+      margin: 1.8em 0 .4em;
+      color: var(--reader-text);
+      font-size: 1.2em;
+      font-weight: 700;
+      line-height: 1.55;
       text-align: center;
+      letter-spacing: .025em;
+      scroll-margin-top: 5rem;
+    }
+    .reader-content .reader-chapter:first-child { margin-top: 0; }
+    .reader-content .reader-teaching-title { text-align: start; margin-bottom: 0; }
+    .reader-teaching-date {
+      color: var(--reader-muted);
+      font-family: system-ui, sans-serif;
+      font-size: .75em;
       letter-spacing: .04em;
     }
     .reader-panel {
@@ -170,12 +193,12 @@
   </div>
 </header>
 
-<main class="flex-1 px-3 py-5 sm:p-6 max-w-md lg:max-w-4xl mx-auto w-full relative">
+<main class="flex-1 px-2 py-4 sm:p-6 max-w-4xl mx-auto w-full relative">
     <div id="minimap"></div>
-    <div id="content-container" class="reader-shell min-h-[calc(100vh-110px)] px-5 py-7 sm:px-8 lg:px-12 lg:py-10 transition-all duration-300">
+    <div id="content-container" class="reader-shell min-h-[calc(100vh-110px)] px-4 py-7 sm:px-8 lg:px-12 lg:py-10 transition-all duration-300">
         <div id="article-title" class="text-[1.65rem] sm:text-3xl font-bold text-[var(--reader-text)] text-center leading-snug pt-2"></div>
         <div class="reader-title-rule"></div>
-        <div id="article-content" class="reader-content text-lg mt-8" style="font-size: 18px; line-height: 2;">
+        <div id="article-content" class="reader-content mt-7 sm:mt-9">
             <div class="flex flex-col items-center justify-center py-20 text-[var(--reader-muted)] gap-3">
                 <svg class="animate-spin h-8 w-8 text-[#8B4513]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -417,10 +440,10 @@
   function applyReaderPreferences() {
       setReaderFontStyle(localStorage.getItem('reader_font_style') || 'songke');
       setReaderTheme(localStorage.getItem('reader_theme') === 'night' ? 'night' : 'day');
-      const savedSize = localStorage.getItem('reader_font_size') || 18;
-      updateFontSize(savedSize, false);
-      const savedLineHeight = localStorage.getItem('reader_line_height') || 2;
-      updateLineHeight(savedLineHeight, false);
+      const savedSize = localStorage.getItem('reader_font_size');
+      if (savedSize) updateFontSize(savedSize, false);
+      const savedLineHeight = localStorage.getItem('reader_line_height');
+      if (savedLineHeight) updateLineHeight(savedLineHeight, false);
   }
 
   // Bookmark Logic
@@ -539,10 +562,12 @@
       if (modal.style.display === 'none' || modal.style.display === '') {
           closeReaderPanels('settings-modal');
           modal.style.display = 'block';
-          const currentSize = localStorage.getItem('reader_font_size') || 18;
+          const currentSize = parseFloat(getComputedStyle(document.getElementById('article-content')).fontSize);
           document.getElementById('font-size-slider').value = currentSize;
-          updateFontSize(currentSize, false);
-          const currentLineHeight = localStorage.getItem('reader_line_height') || 2;
+          document.getElementById('font-size-label').innerText = currentSize + 'px';
+          const preview = document.getElementById('settings-preview-text');
+          if (preview) preview.style.fontSize = currentSize + 'px';
+          const currentLineHeight = localStorage.getItem('reader_line_height') || 1.9;
           const lineHeightSlider = document.getElementById('line-height-slider');
           if (lineHeightSlider) lineHeightSlider.value = currentLineHeight;
           updateLineHeight(currentLineHeight, false);
@@ -664,14 +689,23 @@
           }
 
           const lines = String(text || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-          const html = lines.map(line => {
+          const isTeachingSubset = /^text-teachings\/subset-\d{2}\.txt$/.test(fileName || '');
+          const datePattern = /^\d{4}\/\d{2}\/\d{2}$/;
+          const html = lines.map((line, index) => {
               const trimmed = line.trim();
-              const escaped = highlightEscaped(escapeHtml(line));
-              if (trimmed && trimmed.length <= 44 && chapterPattern.test(trimmed)) {
-                  const id = `reader-chapter-${chapterIndex++}`;
-                  return `<h2 id="${id}" class="reader-chapter" data-toc-title="${escapeHtml(trimmed)}">${highlightEscaped(escapeHtml(trimmed))}</h2>`;
+              if (isTeachingSubset && datePattern.test(trimmed)) {
+                  const date = trimmed.replaceAll('/', '-');
+                  return `<time class="reader-teaching-date" datetime="${date}">${highlightEscaped(trimmed)}</time>`;
               }
-              return escaped;
+              const isTeachingTitle = isTeachingSubset && trimmed && trimmed.length <= 100 &&
+                  datePattern.test((lines[index + 1] || '').trim());
+              const isSutraChapter = !isTeachingSubset && trimmed.length <= 44 && chapterPattern.test(trimmed);
+              if (isTeachingTitle || isSutraChapter) {
+                  const id = `reader-chapter-${chapterIndex++}`;
+                  const titleClass = isTeachingTitle ? ' reader-teaching-title' : '';
+                  return `<h2 id="${id}" class="reader-chapter${titleClass}" data-toc-title="${escapeHtml(trimmed)}">${highlightEscaped(escapeHtml(trimmed))}</h2>`;
+              }
+              return highlightEscaped(escapeHtml(line));
           }).join('\n');
 
           contentDiv.innerHTML = html;
