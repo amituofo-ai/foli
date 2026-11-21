@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>佛经阅读</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&amp;display=swap" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&amp;display=swap" media="print" onload="this.media='all'">
   <script src="tailwindcss.js?v=22.1"></script>
   <script>
     if (!window.tailwind) {
@@ -22,6 +22,7 @@
       --reader-shadow: 0 24px 70px rgba(83, 54, 24, 0.13);
       --reader-song-family: "Noto Serif TC", "Source Han Serif TC", "Songti TC", "I.Ming", PMingLiU, "Songti SC", SimSun, serif;
       --reader-font-family: var(--reader-song-family);
+      --reader-font-weight: 600;
       --reader-font-tracking: 0.01em;
     }
     body {
@@ -56,16 +57,19 @@
       box-shadow: 0 10px 30px rgba(84, 55, 22, 0.08);
     }
     .reader-night .reader-header { background: rgba(22, 18, 15, 0.75); }
-    body.reader-font-songke {
+    body.reader-font-songke, #font-songke-btn {
       --reader-font-family: var(--reader-song-family);
+      --reader-font-weight: 600;
       --reader-font-tracking: 0.012em;
     }
-    body.reader-font-script {
-      --reader-font-family: "Kaiti SC", "STKaiti", "KaiTi", "FangSong", "FangSong_GB2312", "Songti SC", serif;
+    body.reader-font-script, #font-script-btn {
+      --reader-font-family: "Kaiti TC", "BiauKai", DFKai-SB, "Kaiti SC", STKaiti, KaiTi, var(--reader-song-family);
+      --reader-font-weight: 400;
       --reader-font-tracking: 0.035em;
     }
-    body.reader-font-system {
-      --reader-font-family: system-ui, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    body.reader-font-system, #font-system-btn {
+      --reader-font-family: "PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC", system-ui, sans-serif;
+      --reader-font-weight: 500;
       --reader-font-tracking: 0;
     }
     .reader-icon-btn {
@@ -98,8 +102,12 @@
       margin: 18px auto 0;
       background: linear-gradient(90deg, transparent, rgba(154, 84, 28, .38), transparent);
     }
-    #article-title, .reader-content, #settings-preview-text {
+    #article-title {
       font-family: var(--reader-font-family);
+    }
+    .font-btn, .reader-content, #settings-preview-text {
+      font-family: var(--reader-font-family);
+      font-weight: var(--reader-font-weight);
     }
     .reader-content {
       --reader-default-size: 19px;
@@ -278,9 +286,9 @@
                     <span class="text-xs text-[var(--reader-muted)] font-bold uppercase tracking-wider">字体风格</span>
                 </div>
                 <div class="grid grid-cols-3 gap-2">
-                    <button id="font-songke-btn" onclick="setReaderFontStyle('songke')" class="font-btn reader-field py-2 rounded-xl text-sm font-medium transition-all active:scale-95">宋刻</button>
-                    <button id="font-script-btn" onclick="setReaderFontStyle('script')" class="font-btn reader-field py-2 rounded-xl text-sm font-medium transition-all active:scale-95">写经</button>
-                    <button id="font-system-btn" onclick="setReaderFontStyle('system')" class="font-btn reader-field py-2 rounded-xl text-sm font-medium transition-all active:scale-95">系统</button>
+                    <button id="font-songke-btn" onclick="setReaderFontStyle('songke')" class="font-btn reader-field py-2 rounded-xl text-sm font-medium transition-all active:scale-95">粗宋體</button>
+                    <button id="font-script-btn" onclick="setReaderFontStyle('script')" class="font-btn reader-field py-2 rounded-xl text-sm font-medium transition-all active:scale-95">楷體</button>
+                    <button id="font-system-btn" onclick="setReaderFontStyle('system')" class="font-btn reader-field py-2 rounded-xl text-sm font-medium transition-all active:scale-95">黑體</button>
                 </div>
             </div>
 
@@ -433,7 +441,10 @@
       const style = localStorage.getItem('reader_font_style') || 'songke';
       ['songke', 'script', 'system'].forEach(name => {
           const btn = document.getElementById(`font-${name}-btn`);
-          if (btn) btn.classList.toggle('active', name === style);
+          if (btn) {
+              btn.classList.toggle('active', name === style);
+              btn.setAttribute('aria-pressed', String(name === style));
+          }
       });
   }
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'foli-cache-v23.26';
+const CACHE_NAME = 'foli-cache-v23.27';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
