@@ -1,8 +1,8 @@
-const CACHE_NAME = 'foli-cache-v23.24';
+const CACHE_NAME = 'foli-cache-v23.25';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './index.html?v=23.24',
+  './index.html?v=23.25',
   './interface.css?v=23.22',
   './pdf_viewer.html?v=23.0',
   './tailwindcss.js?v=22.1',
@@ -15,7 +15,6 @@ const ASSETS_TO_CACHE = [
   './i18n.js?v=21.0',
   './lunar.js?v=21.0',
   './sutras_data.js?v=21.0',
-  './search_data.js?v=22.3',
   './recipe_data.js?v=21.0',
   './diet_logic.js?v=21.0',
   './video_data.js?v=21.4',
@@ -32,7 +31,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('SW: Pre-caching offline assets');
-      return Promise.allSettled(ASSETS_TO_CACHE.map((url) => cache.add(url).catch((err) => {
+      return Promise.allSettled(ASSETS_TO_CACHE.map((url) => cache.add(new Request(url, { cache: 'reload' })).catch((err) => {
         console.warn('SW: Cache add failed', url, err);
       })));
     })
@@ -51,15 +50,14 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
+          if (cacheName.startsWith('foli-cache-') && cacheName !== CACHE_NAME) {
             console.log('SW: Clearing old cache', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  return self.clients.claim();
 });
 
 // Fetch Event: Cache First Strategy with Dynamic Caching
@@ -118,7 +116,8 @@ self.addEventListener('fetch', (event) => {
       return pathMatch ? cache.match(pathMatch) : null;
     };
 
-    let resp = await caches.match(event.request);
+    const cache = await caches.open(CACHE_NAME);
+    let resp = await cache.match(event.request);
     if (resp) return resp;
     resp = await matchByPathname();
     if (resp) return resp;

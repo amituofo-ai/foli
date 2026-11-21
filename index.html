@@ -4282,15 +4282,15 @@
         var updateBanner = document.getElementById('update-banner');
         var updateBannerText = document.getElementById('update-banner-text');
         var updateBannerBtn = document.getElementById('update-banner-btn');
-        var updateNoticeVersion = '23.24';
-        var updateNoticeKey = 'foli_update_notice_seen_' + updateNoticeVersion;
+        var hadController = Boolean(navigator.serviceWorker.controller);
+        var checkingForUpdate = false;
+        var lastUpdateCheck = 0;
 
         function showUpdateBanner() {
-          if (!updateBanner) return;
-          if (localStorage.getItem(updateNoticeKey) === '1') return;
+          if (!updateBanner || !registration || !registration.waiting || !navigator.serviceWorker.controller) return;
           var lang = localStorage.getItem('app_language') || 'zh-TW';
           if (updateBannerText) {
-            updateBannerText.textContent = lang === 'en' ? 'Updated the text teachings directory' : '更新文字開示目錄';
+            updateBannerText.textContent = lang === 'en' ? 'A new version is ready' : '新版本已準備就緒';
           }
           if (document.getElementById('update-banner-btn-text')) {
             document.getElementById('update-banner-btn-text').textContent = lang === 'en' ? 'Update' : '更新';
@@ -4305,32 +4305,49 @@
           }
         }
 
-        navigator.serviceWorker.register('/sw-v2.js?v=23.24').then(function(reg) {
+        async function checkForUpdate() {
+          if (!registration || document.visibilityState !== 'visible') return;
+          showUpdateBanner();
+          if (registration.waiting || registration.installing || checkingForUpdate ||
+              Date.now() - lastUpdateCheck < 15000) return;
+          checkingForUpdate = true;
+          lastUpdateCheck = Date.now();
+          try {
+            await registration.update();
+            showUpdateBanner();
+          } catch (error) {
+            console.debug('Service worker update check failed', error);
+          } finally {
+            checkingForUpdate = false;
+          }
+        }
+
+        function watchInstallingWorker() {
+          var worker = registration.installing;
+          if (worker) worker.addEventListener('statechange', showUpdateBanner);
+          showUpdateBanner();
+        }
+
+        navigator.serviceWorker.register('./sw-v2.js', { updateViaCache: 'none' }).then(function(reg) {
           registration = reg;
-          reg.onupdatefound = function() {
-            var installing = reg.installing;
-            if (!installing) return;
-            installing.onstatechange = function() {
-              if (installing.state === 'installed') {
-                if (!navigator.serviceWorker.controller) {
-                  reg.waiting && reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-                  return;
-                }
-                showUpdateBanner();
-              }
-            };
-          };
-          if (reg.waiting && navigator.serviceWorker.controller) showUpdateBanner();
-          setInterval(function() { reg.update(); }, 60 * 60 * 1000);
+          reg.addEventListener('updatefound', watchInstallingWorker);
+          watchInstallingWorker();
+          checkForUpdate();
+          setInterval(checkForUpdate, 5 * 60 * 1000);
+        }).catch(function(error) {
+          console.warn('Service worker registration failed', error);
         });
 
-        document.addEventListener('visibilitychange', function() {
-          if (document.visibilityState === 'visible' && registration) registration.update();
+        document.addEventListener('visibilitychange', checkForUpdate);
+        window.addEventListener('focus', checkForUpdate);
+        window.addEventListener('pageshow', checkForUpdate);
+        window.addEventListener('online', function() {
+          lastUpdateCheck = 0;
+          checkForUpdate();
         });
 
         if (updateBannerBtn) {
           updateBannerBtn.addEventListener('click', function() {
-            localStorage.setItem(updateNoticeKey, '1');
             if (registration && registration.waiting) {
               registration.waiting.postMessage({ type: 'SKIP_WAITING' });
             }
@@ -4339,7 +4356,8 @@
         }
         navigator.serviceWorker.addEventListener('controllerchange', function() {
           hideUpdateBanner();
-          window.location.reload();
+          if (hadController) window.location.reload();
+          hadController = Boolean(navigator.serviceWorker.controller);
         });
       })();
     </script>
