@@ -3943,27 +3943,26 @@
       
       const files = [
         { name: '佛制戒律', file: '諦深大師_文字開示_佛制戒律.txt' },
-        { name: '文字開示 第一頁', file: '諦深大師_文字開示_第一頁.txt' },
-        { name: '文字開示 第二頁', file: '諦深大師_文字開示_第二頁.txt' },
-        { name: '文字開示 第三頁', file: '諦深大師_文字開示_第三頁.txt' },
-        { name: '文字開示 第四頁', file: '諦深大師_文字開示_第四頁.txt' },
-        { name: '文字開示 第五頁', file: '諦深大師_文字開示_第五頁.txt' },
-        { name: '文字開示 第六頁', file: '諦深大師_文字開示_第六頁.txt' },
-        { name: '文字開示 第七頁', file: '諦深大師_文字開示_第七頁.txt' },
-        { name: '文字開示 第八頁', file: '諦深大師_文字開示_第八頁.txt' },
-        { name: '文字開示 第九頁', file: '諦深大師_文字開示_第九頁.txt' },
-        { name: '文字開示 第十頁', file: '諦深大師_文字開示_第十頁.txt' },
-        { name: '文字開示 第十一頁', file: '諦深大師_文字開示_第十一頁.txt' },
-        { name: '文字開示 第十二頁', file: '諦深大師_文字開示_第十二頁.txt' },
-        { name: '文字開示 第十三頁', file: '諦深大師_文字開示_第十三頁.txt' },
-        { name: '文字開示 第十四頁', file: '諦深大師_文字開示_第十四頁.txt' },
-        { name: '文字開示 第十五頁', file: '諦深大師_文字開示_第十五頁.txt' },
-        { name: '文字開示 第十六頁', file: '諦深大師_文字開示_第十六頁.txt' },
-        { name: '文字開示 第十七頁', file: '諦深大師_文字開示_第十七頁.txt' },
-        { name: '文字開示 第十八頁', file: '諦深大師_文字開示_第十八頁.txt' },
-        { name: '文字開示 第十九頁', file: '諦深大師_文字開示_第十九頁.txt' },
-        { name: '文字開示 第二十頁', file: '諦深大師_文字開示_第二十頁.txt' },
-        { name: '文字開示 第二十一頁', file: '諦深大師_文字開示_第二十一頁.txt' }
+        { name: '子集：皈依', file: 'text-teachings/subset-01.txt' },
+        { name: '子集：持戒', file: 'text-teachings/subset-02.txt' },
+        { name: '子集：破障', file: 'text-teachings/subset-03.txt' },
+        { name: '子集：斷業', file: 'text-teachings/subset-04.txt' },
+        { name: '子集：念佛', file: 'text-teachings/subset-05.txt' },
+        { name: '子集：修行', file: 'text-teachings/subset-06.txt' },
+        { name: '子集：佛法末世', file: 'text-teachings/subset-07.txt' },
+        { name: '子集：供養', file: 'text-teachings/subset-08.txt' },
+        { name: '子集：心得', file: 'text-teachings/subset-09.txt' },
+        { name: '子集：禪那', file: 'text-teachings/subset-10.txt' },
+        { name: '子集：往生', file: 'text-teachings/subset-11.txt' },
+        { name: '子集：功德', file: 'text-teachings/subset-12.txt' },
+        { name: '子集：善種', file: 'text-teachings/subset-13.txt' },
+        { name: '子集：護法', file: 'text-teachings/subset-14.txt' },
+        { name: '子集：妙湛寺建設', file: 'text-teachings/subset-15.txt' },
+        { name: '子集：隨緣', file: 'text-teachings/subset-16.txt' },
+        { name: '子集：戒律', file: 'text-teachings/subset-17.txt' },
+        { name: '子集：共修', file: 'text-teachings/subset-18.txt' },
+        { name: '子集：精進', file: 'text-teachings/subset-19.txt' },
+        { name: '子集：其他', file: 'text-teachings/subset-20.txt' }
       ];
 
       list.innerHTML = files.map(f => `
@@ -4283,7 +4282,7 @@
         var updateBanner = document.getElementById('update-banner');
         var updateBannerText = document.getElementById('update-banner-text');
         var updateBannerBtn = document.getElementById('update-banner-btn');
-        var updateNoticeVersion = '23.23';
+        var updateNoticeVersion = '23.24';
         var updateNoticeKey = 'foli_update_notice_seen_' + updateNoticeVersion;
 
         function showUpdateBanner() {
@@ -4291,7 +4290,7 @@
           if (localStorage.getItem(updateNoticeKey) === '1') return;
           var lang = localStorage.getItem('app_language') || 'zh-TW';
           if (updateBannerText) {
-            updateBannerText.textContent = lang === 'en' ? 'Fix practice text return' : '修复共修文字版返回';
+            updateBannerText.textContent = lang === 'en' ? 'Updated the text teachings directory' : '更新文字開示目錄';
           }
           if (document.getElementById('update-banner-btn-text')) {
             document.getElementById('update-banner-btn-text').textContent = lang === 'en' ? 'Update' : '更新';
@@ -4306,7 +4305,7 @@
           }
         }
 
-        navigator.serviceWorker.register('/sw-v2.js?v=23.23').then(function(reg) {
+        navigator.serviceWorker.register('/sw-v2.js?v=23.24').then(function(reg) {
           registration = reg;
           reg.onupdatefound = function() {
             var installing = reg.installing;
