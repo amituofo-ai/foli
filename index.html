@@ -142,27 +142,6 @@
     }
     .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 
-    /* 背景：佛教金黃 + 光源 + 深淺變化，蓮花紋理加強 */
-    .bg-app {
-      background-color: #d4b88c;
-      background-image:
-        /* 主光源：右上金黃暖光 */
-        radial-gradient(ellipse 100% 80% at 85% 5%, rgba(255, 248, 210, 0.92) 0%, rgba(255, 236, 180, 0.65) 22%, rgba(250, 220, 150, 0.3) 45%, transparent 68%),
-        /* 金黃色塊：中上區 */
-        radial-gradient(ellipse 80% 50% at 50% 15%, rgba(255, 230, 160, 0.4) 0%, rgba(245, 210, 130, 0.15) 50%, transparent 70%),
-        /* 次光源：左側柔和金光 */
-        radial-gradient(ellipse 55% 100% at 0% 45%, rgba(255, 242, 200, 0.6) 0%, rgba(240, 215, 160, 0.2) 50%, transparent 70%),
-        /* 暗區：左下與底部 */
-        radial-gradient(ellipse 85% 55% at 8% 102%, rgba(165, 130, 90, 0.5) 0%, rgba(145, 110, 75, 0.18) 42%, transparent 65%),
-        /* 暗區：右下 */
-        radial-gradient(ellipse 65% 75% at 102% 88%, rgba(185, 150, 100, 0.38) 0%, transparent 58%),
-        linear-gradient(165deg, #e2cfaa 0%, #f0e0c0 20%, #f5e8c8 40%, #e0c898 58%, #d4b878 75%, #e4d4a8 90%, #f0e4c4 100%);
-      background-attachment: fixed;
-      background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
-      background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
-      min-height: 100vh;
-    }
-
     /* 卡片通用：毛玻璃（半透明 + 強模糊），襯托背景色彩變化 */
     .card-glass {
       background: rgba(255, 252, 245, 0.52);
@@ -240,7 +219,7 @@
       box-shadow: 0 12px 40px rgba(0,0,0,0.2);
     }
   </style>
-  <link rel="stylesheet" href="interface.css?v=23.22">
+  <link rel="stylesheet" href="interface.css?v=23.32">
 </head>
 <body class="bg-app text-[#4a3b32] pb-24 lg:pb-0 selection:bg-[#b35c1e] selection:text-white min-h-screen">
 

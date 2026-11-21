@@ -7,6 +7,10 @@ html { color-scheme: light; }
   --archive-muted: #876748;
   --archive-bronze: #926329;
   --archive-line: #dfcba9;
+  --glass-card: linear-gradient(150deg, rgba(255, 253, 246, .62), rgba(255, 242, 218, .33));
+  --glass-nav: linear-gradient(150deg, rgba(255, 251, 241, .88), rgba(249, 232, 200, .72));
+  --glass-edge: rgba(255, 251, 240, .78);
+  --glass-shadow: 0 8px 26px rgba(118, 80, 27, .09), inset 0 1px rgba(255, 255, 255, .65);
 }
 body { margin: 0; letter-spacing: 0; }
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
@@ -14,24 +18,68 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
   outline: 2px solid var(--archive-bronze); outline-offset: 3px;
 }
 .bg-app {
-  background: linear-gradient(135deg, #f5ebd6, #f1e4cb 65%, #ead8b5);
+  --lamp-image-width: clamp(1100px, 100vw, 1700px);
+  --lamp-right: clamp(295px, 26.8vw, 456px);
+  --lamp-top: clamp(263px, 24vw, 408px);
+  --lamp-glow-size: clamp(265px, 30vw, 480px);
+  --lamp-fade-start: 380px;
+  --lamp-fade-end: 760px;
+  background-color: #f8edda;
+  background-image:
+    linear-gradient(180deg, transparent var(--lamp-fade-start), #f8edda var(--lamp-fade-end)),
+    radial-gradient(circle var(--lamp-glow-size) at calc(100% - var(--lamp-right)) var(--lamp-top),
+      rgba(255, 207, 91, .18) 8%, rgba(247, 177, 51, .14) 36%, rgba(170, 109, 43, .21) 75%, rgba(125, 77, 39, .32) 100%),
+    url("./lotus-oil-lamp.jpg");
+  background-position: right top;
+  background-repeat: no-repeat;
+  background-size: 100% 100%, 100% var(--lamp-fade-end), var(--lamp-image-width) auto;
+  min-height: 100vh;
   color: var(--archive-ink);
 }
-.bg-app .card-glass {
-  background: var(--archive-surface); border: 1px solid var(--archive-line); border-radius: 8px;
-  box-shadow: 0 3px 14px #76501b0c; backdrop-filter: none;
+.bg-app .card-glass,
+.bg-app header,
+.bg-app nav.fixed,
+.reader-header {
+  border-color: var(--glass-edge);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(12px) saturate(115%);
+  backdrop-filter: blur(12px) saturate(115%);
 }
-.bg-app .card-glass:hover { box-shadow: 0 6px 20px #76501b12; }
+.bg-app .card-glass {
+  background: var(--glass-card);
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 14px;
+}
+.bg-app .card-glass .card-glass {
+  background: rgba(255, 250, 239, .5);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.bg-app header,
+.bg-app nav.fixed,
+.reader-header {
+  background: var(--glass-nav);
+}
+@media (max-width: 767px) {
+  .bg-app {
+    --lamp-image-width: 650px;
+    --lamp-right: 174px;
+    --lamp-top: 155px;
+    --lamp-glow-size: 190px;
+    --lamp-fade-start: 210px;
+    --lamp-fade-end: 430px;
+  }
+}
 .bg-app .section-label { color: var(--archive-bronze); font-size: 12px; letter-spacing: 0; }
-.bg-app header { background: #f6ebd5; border-color: var(--archive-line); }
 .bg-app #app-title, .bg-app #calendar-header { color: var(--archive-ink); font-family: "Songti SC", "STSong", "SimSun", serif; }
 .bg-app header nav button { color: #795a35; }
 .bg-app header nav button:hover { background: #e9d8b7; }
 .bg-app header nav button.font-bold { background: #e7d2ac; color: #523114; }
 .bg-app header > div:last-child > a { background: #865d2d; box-shadow: 0 3px 8px #76501b16; }
 .bg-app header > div:last-child > a:hover { background: #704a21; }
-.bg-app #announcement-container article { background: #fcf1d9; border-color: #e4cfa3; }
-.bg-app #announcement-container details { background: #f4ead6; border-color: var(--archive-line); }
+.bg-app #announcement-container article { background: rgba(255, 248, 230, .65); border-color: #e4cfa3; }
+.bg-app #announcement-container details { background: rgba(255, 249, 237, .58); border-color: var(--archive-line); }
 .bg-app #announcement-container h3 { color: #754410; }
 .bg-app #weekday-header { color: var(--archive-muted); }
 .bg-app #calendar-grid > .day-cell { border-radius: 6px; }
@@ -41,14 +89,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visibl
 .bg-app #announcement-container article { border-radius: 6px; box-shadow: none; }
 .bg-app [id^="content-"] { border-radius: 8px; }
 .bg-app input, .bg-app textarea { max-width: 100%; }
-.bg-app nav.fixed { background: #fff8eaf5; border-color: var(--archive-line); bottom: max(12px, env(safe-area-inset-bottom)); border-radius: 8px; }
+.bg-app nav.fixed { bottom: max(12px, env(safe-area-inset-bottom)); border-radius: 18px; }
+.bg-app .bottom-nav-btn { color: #715039; }
+.bg-app .bottom-nav-btn.active { color: #744517; background: rgba(199, 141, 58, .19); }
 body:not(.reader-night):has(.reader-header) {
   background: #f1e4cb;
   --reader-text: #523114;
   --reader-muted: #876748;
   --reader-accent: #865d2d;
 }
-.reader-header { gap: 10px; background: #f6ebd5f5; }
+.reader-header { gap: 10px; }
+.reader-night .reader-header {
+  background: rgba(33, 26, 20, .83);
+  border-color: rgba(224, 170, 85, .2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .22);
+}
 .reader-header #header-title { min-width: 0; flex: 1; }
 .reader-header > div:last-child { flex-shrink: 0; gap: 5px; }
 .reader-icon-btn { width: 40px; height: 40px; border-radius: 8px; }
